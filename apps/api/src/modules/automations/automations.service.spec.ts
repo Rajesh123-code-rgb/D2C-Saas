@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { AutomationsService } from './automations.service';
-import { AutomationRule, AutomationStatus, TriggerType } from './automation-rule.entity';
+import { AutomationRule, AutomationStatus, TriggerType, ActionType } from './automation-rule.entity';
 import { AutomationLog } from './automation-log.entity';
 
 // Mock for BullMQ Queue
@@ -62,7 +62,7 @@ describe('AutomationsService', () => {
         triggerConfig: {},
         conditions: [],
         actions: [
-            { type: 'send_whatsapp', templateId: 'temp-1', delaySeconds: 0 },
+            { type: ActionType.SEND_WHATSAPP_TEMPLATE, templateId: 'temp-1', delaySeconds: 0 },
         ],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -124,7 +124,7 @@ describe('AutomationsService', () => {
                 name: 'New Automation',
                 triggerType: TriggerType.CONTACT_CREATED,
                 triggerConfig: {},
-                actions: [{ type: 'send_whatsapp', templateId: 'temp-1', delaySeconds: 0 }],
+                actions: [{ type: ActionType.SEND_WHATSAPP_TEMPLATE, templateId: 'temp-1', delaySeconds: 0 }],
             };
             const newAutomation = mockAutomationRule(data);
             ruleRepository.create.mockReturnValue(newAutomation);
@@ -216,9 +216,9 @@ describe('AutomationsService', () => {
     describe('Edge Cases - Actions', () => {
         it('should handle multi-step actions', async () => {
             const multiStepActions = [
-                { type: 'send_whatsapp', templateId: 'welcome', delaySeconds: 0 },
-                { type: 'send_whatsapp', templateId: 'follow_up', delaySeconds: 86400 },
-                { type: 'send_whatsapp', templateId: 'reminder', delaySeconds: 172800 },
+                { type: ActionType.SEND_WHATSAPP_TEMPLATE, templateId: 'welcome', delaySeconds: 0 },
+                { type: ActionType.SEND_WHATSAPP_TEMPLATE, templateId: 'follow_up', delaySeconds: 86400 },
+                { type: ActionType.SEND_WHATSAPP_TEMPLATE, templateId: 'reminder', delaySeconds: 172800 },
             ];
             const automation = mockAutomationRule({ actions: multiStepActions });
             ruleRepository.findOne.mockResolvedValue(automation);
@@ -240,6 +240,8 @@ describe('AutomationsService', () => {
 
     describe('getStats', () => {
         it('should return automation statistics', async () => {
+            // Mock find to return array for getStats
+            ruleRepository.find.mockResolvedValue([]);
             ruleRepository.count.mockResolvedValueOnce(10); // total
             ruleRepository.count.mockResolvedValueOnce(5);  // active
             ruleRepository.count.mockResolvedValueOnce(3);  // paused

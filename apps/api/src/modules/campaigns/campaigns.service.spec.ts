@@ -242,6 +242,8 @@ describe('CampaignsService', () => {
 
     describe('getStats', () => {
         it('should return campaign statistics', async () => {
+            // Mock find to return array for getStats
+            campaignRepository.find.mockResolvedValue([]);
             campaignRepository.count.mockResolvedValue(10);
             executionRepository.createQueryBuilder.mockReturnValue({
                 select: jest.fn().mockReturnThis(),
