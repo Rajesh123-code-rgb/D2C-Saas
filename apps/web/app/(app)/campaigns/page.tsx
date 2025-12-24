@@ -9,7 +9,6 @@ import {
     MessageSquare,
     Plus,
     Search,
-    Filter,
     Play,
     Pause,
     Calendar,
@@ -23,8 +22,6 @@ import {
     Mail,
     TrendingUp,
     Eye,
-    MousePointer,
-    Reply,
     ShoppingBag,
     Loader2,
 } from 'lucide-react';
@@ -157,50 +154,81 @@ export default function CampaignsPage() {
 
             {/* Stats */}
             <div className="grid gap-4 md:grid-cols-4">
-                <Card>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Messages Sent</p>
-                        <Send className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <Send className="h-4 w-4 text-violet-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{totalSent.toLocaleString()}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {Math.round((totalDelivered / totalSent) * 100)}% delivered
-                        </p>
+                        <div className="text-3xl font-bold">{totalSent.toLocaleString()}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                            <div className="flex-1 h-2 bg-violet-100 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-violet-500 rounded-full transition-all"
+                                    style={{ width: `${totalSent > 0 ? Math.round((totalDelivered / totalSent) * 100) : 0}%` }}
+                                />
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                                {totalSent > 0 ? Math.round((totalDelivered / totalSent) * 100) : 0}% delivered
+                            </span>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-500/10 via-transparent to-transparent border-blue-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Open Rate</p>
-                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <Eye className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-3xl font-bold">
                             {totalDelivered > 0 ? Math.round((campaigns.reduce((sum, c) => sum + (c.stats?.totalOpened || 0), 0) / totalDelivered) * 100) : 0}%
                         </div>
-                        <p className="text-xs text-muted-foreground">+5% from last month</p>
+                        <div className="flex items-center gap-1 mt-2">
+                            <TrendingUp className="h-3 w-3 text-green-500" />
+                            <span className="text-xs text-green-600 font-medium">+5%</span>
+                            <span className="text-xs text-muted-foreground">from last month</span>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-transparent to-transparent border-orange-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Conversions</p>
-                        <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <ShoppingBag className="h-4 w-4 text-orange-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{totalConverted}</div>
-                        <p className="text-xs text-muted-foreground">
-                            {Math.round((totalConverted / totalSent) * 100)}% conversion rate
-                        </p>
+                        <div className="text-3xl font-bold">{totalConverted.toLocaleString()}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                            <div className="flex-1 h-2 bg-orange-100 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-orange-500 rounded-full transition-all"
+                                    style={{ width: `${totalSent > 0 ? Math.min(Math.round((totalConverted / totalSent) * 100), 100) : 0}%` }}
+                                />
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                                {totalSent > 0 ? Math.round((totalConverted / totalSent) * 100) : 0}% rate
+                            </span>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Revenue Generated</p>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-emerald-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-green-600">₹{totalRevenue.toLocaleString()}</div>
-                        <p className="text-xs text-muted-foreground">From campaigns</p>
+                        <div className="text-3xl font-bold text-emerald-600">₹{totalRevenue.toLocaleString()}</div>
+                        <div className="flex items-center gap-1 mt-2">
+                            <BarChart3 className="h-3 w-3 text-emerald-500" />
+                            <span className="text-xs text-muted-foreground">From {campaigns.length} campaigns</span>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -294,63 +322,92 @@ export default function CampaignsPage() {
                                 </div>
 
                                 {/* Stats Row */}
-                                {stats.totalSent > 0 && (
+                                {stats.totalSent > 0 ? (
                                     <div className="grid grid-cols-5 gap-4 mt-6 pt-4 border-t">
-                                        <div className="text-center">
-                                            <div className="text-lg font-bold">{stats.totalSent.toLocaleString()}</div>
+                                        <div className="text-center p-3 bg-muted/30 rounded-lg">
+                                            <div className="text-lg font-bold text-violet-600">{stats.totalSent.toLocaleString()}</div>
                                             <div className="text-xs text-muted-foreground">Sent</div>
                                         </div>
-                                        <div className="text-center">
-                                            <div className="text-lg font-bold">{deliveryRate}%</div>
+                                        <div className="text-center p-3 bg-muted/30 rounded-lg">
+                                            <div className="text-lg font-bold text-blue-600">{deliveryRate}%</div>
                                             <div className="text-xs text-muted-foreground">Delivered</div>
                                         </div>
-                                        <div className="text-center">
-                                            <div className="text-lg font-bold">{openRate}%</div>
+                                        <div className="text-center p-3 bg-muted/30 rounded-lg">
+                                            <div className="text-lg font-bold text-cyan-600">{openRate}%</div>
                                             <div className="text-xs text-muted-foreground">Opened</div>
                                         </div>
-                                        <div className="text-center">
-                                            <div className="text-lg font-bold">{clickRate}%</div>
+                                        <div className="text-center p-3 bg-muted/30 rounded-lg">
+                                            <div className="text-lg font-bold text-orange-600">{clickRate}%</div>
                                             <div className="text-xs text-muted-foreground">Clicked</div>
                                         </div>
-                                        <div className="text-center">
-                                            <div className="text-lg font-bold text-green-600">₹{stats.conversionValue.toLocaleString()}</div>
-                                            <div className="text-xs text-muted-foreground">Revenue</div>
+                                        <div className="text-center p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                                            <div className="text-lg font-bold text-emerald-600">₹{stats.conversionValue.toLocaleString()}</div>
+                                            <div className="text-xs text-emerald-600/80">Revenue</div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="mt-6 pt-4 border-t">
+                                        <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground bg-muted/30 rounded-lg">
+                                            <BarChart3 className="h-4 w-4" />
+                                            <span className="text-sm">Analytics will appear once the campaign is sent</span>
                                         </div>
                                     </div>
                                 )}
 
                                 {/* Actions */}
-                                <div className="flex gap-2 mt-4">
-                                    {campaign.status === 'draft' && (
-                                        <>
-                                            <Button size="sm">
-                                                <Send className="mr-2 h-4 w-4" />
-                                                Send Now
+                                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                    <div className="flex gap-2">
+                                        {campaign.status === 'draft' && (
+                                            <>
+                                                <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
+                                                    <Send className="mr-2 h-4 w-4" />
+                                                    Send Now
+                                                </Button>
+                                                <Button size="sm" variant="outline" className="border-violet-200 text-violet-700 hover:bg-violet-50">
+                                                    <Calendar className="mr-2 h-4 w-4" />
+                                                    Schedule
+                                                </Button>
+                                            </>
+                                        )}
+                                        {campaign.status === 'scheduled' && (
+                                            <>
+                                                <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50">
+                                                    <Play className="mr-2 h-4 w-4" />
+                                                    Send Now
+                                                </Button>
+                                                <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50">
+                                                    <XCircle className="mr-2 h-4 w-4" />
+                                                    Cancel
+                                                </Button>
+                                            </>
+                                        )}
+                                        {campaign.status === 'running' && (
+                                            <Button size="sm" variant="outline" className="border-yellow-200 text-yellow-700 hover:bg-yellow-50">
+                                                <Pause className="mr-2 h-4 w-4" />
+                                                Pause Campaign
                                             </Button>
-                                            <Button size="sm" variant="outline">
-                                                <Calendar className="mr-2 h-4 w-4" />
-                                                Schedule
-                                            </Button>
-                                        </>
-                                    )}
-                                    {campaign.status === 'scheduled' && (
-                                        <Button size="sm" variant="outline">
-                                            <XCircle className="mr-2 h-4 w-4" />
-                                            Cancel
+                                        )}
+                                        {campaign.status === 'completed' && (
+                                            <>
+                                                <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                                                    <BarChart3 className="mr-2 h-4 w-4" />
+                                                    View Report
+                                                </Button>
+                                                <Button size="sm" variant="outline">
+                                                    <Mail className="mr-2 h-4 w-4" />
+                                                    Duplicate
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Button size="icon" variant="ghost" className="h-8 w-8">
+                                            <Eye className="h-4 w-4" />
                                         </Button>
-                                    )}
-                                    {campaign.status === 'running' && (
-                                        <Button size="sm" variant="outline">
-                                            <Pause className="mr-2 h-4 w-4" />
-                                            Pause
+                                        <Button size="icon" variant="ghost" className="h-8 w-8">
+                                            <MoreVertical className="h-4 w-4" />
                                         </Button>
-                                    )}
-                                    {campaign.status === 'completed' && (
-                                        <Button size="sm" variant="outline">
-                                            <BarChart3 className="mr-2 h-4 w-4" />
-                                            View Report
-                                        </Button>
-                                    )}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
