@@ -30,7 +30,7 @@ export default function LoginPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    token: response.token,
+                    token: response.accessToken,
                     user: response.user,
                     tenant: response.tenant,
                 }),
