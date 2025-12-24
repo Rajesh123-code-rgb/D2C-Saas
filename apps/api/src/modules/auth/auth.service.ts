@@ -195,6 +195,7 @@ export class AuthService {
     // Password Reset Methods
     async requestPasswordReset(email: string) {
         const user = await this.userRepository.findOne({ where: { email } });
+        const isDevelopment = process.env.NODE_ENV === 'development';
 
         if (!user) {
             // Show user not found message

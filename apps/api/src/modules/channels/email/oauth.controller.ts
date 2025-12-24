@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Request, Response } from 'express';
 import { google } from 'googleapis';
-import { Channel } from '../channel.entity';
+import { Channel, ChannelType, ChannelStatus } from '../channel.entity';
 
 @ApiTags('Email OAuth')
 @Controller('email/oauth')
@@ -101,16 +101,16 @@ export class EmailOAuthController {
             if (existingChannel) {
                 // Update existing channel
                 existingChannel.credentials = JSON.stringify(credentials);
-                existingChannel.displayName = `${data.email} (Gmail)`;
+                existingChannel.name = `${data.email} (Gmail)`;
                 await this.channelRepository.save(existingChannel);
             } else {
                 // Create new channel
                 await this.channelRepository.save({
                     tenantId,
-                    channelType: 'email',
-                    displayName: `${data.email} (Gmail)`,
+                    channelType: ChannelType.EMAIL,
+                    name: `${data.email} (Gmail)`,
                     credentials: JSON.stringify(credentials),
-                    isActive: true,
+                    status: ChannelStatus.CONNECTED,
                 });
             }
 

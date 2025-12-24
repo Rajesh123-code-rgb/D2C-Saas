@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EcommerceStore } from '../entities/store.entity';
 
-interface WooCommerceProduct {
+export interface WooCommerceProduct {
     id: number;
     name: string;
     sku: string;
@@ -12,7 +12,7 @@ interface WooCommerceProduct {
     stock_quantity: number | null;
 }
 
-interface WooCommerceOrder {
+export interface WooCommerceOrder {
     id: number;
     status: string;
     total: string;
@@ -20,7 +20,7 @@ interface WooCommerceOrder {
     customer_id: number;
 }
 
-interface WooCommerceSyncResult {
+export interface WooCommerceSyncResult {
     success: boolean;
     productsCount: number;
     ordersCount: number;
