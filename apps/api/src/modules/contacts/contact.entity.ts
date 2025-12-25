@@ -90,6 +90,16 @@ export class Contact {
     @Column({ type: 'timestamp', nullable: true })
     lastContactedAt: Date;
 
+    // Consent tracking for GDPR compliance
+    @Column({ type: 'boolean', default: false })
+    marketingConsent: boolean;
+
+    @Column({ type: 'timestamp', nullable: true })
+    consentUpdatedAt: Date;
+
+    @Column({ type: 'varchar', length: 50, nullable: true })
+    consentSource: string; // 'website', 'whatsapp', 'manual', 'import'
+
     @CreateDateColumn()
     createdAt: Date;
 

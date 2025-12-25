@@ -26,6 +26,7 @@ import { ChannelsModule } from './modules/channels/channels.module';
 import { ChatbotsModule } from './modules/chatbots/chatbots.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
+import { SecurityModule } from './modules/security/security.module';
 
 @Module({
     imports: [
@@ -77,6 +78,7 @@ import { OnboardingModule } from './modules/onboarding/onboarding.module';
         BillingModule,
         IntegrationsModule,
         GdprModule,
+        SecurityModule,
 
         // Feature Modules
         AuthModule,
