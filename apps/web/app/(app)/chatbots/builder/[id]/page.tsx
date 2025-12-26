@@ -229,22 +229,6 @@ export default function ChatbotBuilderPage({ params }: { params: { id: string } 
         setHasChanges(true);
     };
 
-    const handleConnect = (sourceId: string, targetId: string, sourceHandle?: string) => {
-        if (!chatbot) return;
-
-        const newConnection: ChatbotFlowConnection = {
-            id: `conn-${Date.now()}`,
-            sourceNodeId: sourceId,
-            targetNodeId: targetId,
-            sourceHandle,
-        };
-
-        setChatbot({
-            ...chatbot,
-            connections: [...chatbot.connections, newConnection],
-        });
-        setHasChanges(true);
-    };
 
     if (loading) {
         return (
@@ -369,10 +353,6 @@ export default function ChatbotBuilderPage({ params }: { params: { id: string } 
                                 const Icon = nodeConfig?.icon || MessageSquare;
                                 const isSelected = selectedNode?.id === node.id;
 
-                                // Find connections from this node
-                                const outConnections = chatbot.connections.filter(
-                                    c => c.sourceNodeId === node.id
-                                );
 
                                 return (
                                     <div key={node.id}>
