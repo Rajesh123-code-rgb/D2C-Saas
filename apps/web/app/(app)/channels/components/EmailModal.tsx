@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, AlertCircle, Mail, CheckCircle, ExternalLink, BookOpen, Settings2, HelpCircle, ArrowRight, Shield, Key } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, ExternalLink, BookOpen, Settings2, HelpCircle, ArrowRight, Shield, Key } from 'lucide-react';
 
 interface EmailModalProps {
     open: boolean;
@@ -42,7 +42,7 @@ export function EmailModal({ open, onOpenChange, onSuccess }: EmailModalProps) {
         const left = window.screenX + (window.outerWidth - width) / 2;
         const top = window.screenY + (window.outerHeight - height) / 2;
 
-        const popup = window.open(
+        window.open(
             `${apiUrl}/api/v1/email/oauth/gmail/authorize?tenantId=${tenantId}`,
             'Gmail OAuth',
             `width=${width},height=${height},left=${left},top=${top}`
