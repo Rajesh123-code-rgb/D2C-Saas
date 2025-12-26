@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,13 +18,10 @@ import {
     Play,
     Pause,
     Edit,
-    Copy,
     Trash2,
-    MoreVertical,
     Loader2,
     Users,
     TrendingUp,
-    Clock,
     Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -86,7 +83,7 @@ export default function ChatbotsPage() {
     const [stats, setStats] = useState<ChatbotStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filterChannel, setFilterChannel] = useState<string>('all');
+    const [filterChannel] = useState<string>('all');
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [creating, setCreating] = useState(false);
@@ -157,19 +154,6 @@ export default function ChatbotsPage() {
         }
     };
 
-    const handleToggleStatus = async (bot: Chatbot) => {
-        try {
-            const action = bot.status === 'active' ? 'deactivate' : 'activate';
-            const response = await fetch(`/api/chatbots/${bot.id}/${action}`, {
-                method: 'POST',
-            });
-            if (response.ok) {
-                fetchChatbots();
-            }
-        } catch (error) {
-            console.error('Error toggling status:', error);
-        }
-    };
 
     const handleDeleteBot = async (id: string) => {
         if (!confirm('Are you sure you want to delete this chatbot?')) return;
