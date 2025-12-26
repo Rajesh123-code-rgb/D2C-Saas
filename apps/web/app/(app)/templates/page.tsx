@@ -14,7 +14,6 @@ import {
     Clock,
     XCircle,
     Loader2,
-    FileText,
     Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -109,23 +108,7 @@ export default function TemplatesPage() {
         t.subject.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Status badge component
-    const StatusBadge = ({ status }: { status: string }) => {
-        const config = {
-            APPROVED: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
-            PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock },
-            REJECTED: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle },
-        }[status] || { bg: 'bg-gray-100', text: 'text-gray-700', icon: Clock };
 
-        const Icon = config.icon;
-
-        return (
-            <span className={cn('inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium', config.bg, config.text)}>
-                <Icon className="h-3 w-3" />
-                {status}
-            </span>
-        );
-    };
 
     return (
         <div className="space-y-6">

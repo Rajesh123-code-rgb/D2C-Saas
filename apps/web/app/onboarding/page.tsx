@@ -169,7 +169,6 @@ export default function OnboardingPage() {
     }
 
     const step = STEPS[currentStep];
-    const isLastStep = currentStep === STEPS.length - 1;
     const isCompleteStep = step.id === 'complete';
 
     return (

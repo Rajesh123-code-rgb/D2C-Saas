@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // GET /api/inbox/conversations/[id] - Get conversation details
 export async function GET(
-    request: Request,
+    _request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {

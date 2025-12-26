@@ -40,7 +40,7 @@ export async function POST(
 }
 
 export async function GET(
-    request: Request,
+    _request: Request,
     { params }: { params: { id: string } }
 ) {
     try {

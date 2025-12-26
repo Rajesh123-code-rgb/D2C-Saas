@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, '') + '/api/v1';
 
 export async function POST(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {

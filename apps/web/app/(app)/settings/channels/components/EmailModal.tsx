@@ -28,33 +28,7 @@ export function EmailModal({ open, onOpenChange, onSuccess }: EmailModalProps) {
         imapPort: '993',
     });
 
-    const handleGmailOAuth = async () => {
-        setLoading(true);
-        setError('');
 
-        try {
-            // In a real implementation, this would redirect to Google OAuth
-            setError('Gmail OAuth will be available soon. Please use SMTP/IMAP configuration for now or wait for OAuth implementation.');
-            setLoading(false);
-        } catch (err: any) {
-            setError(err.message || 'Failed to connect Gmail');
-            setLoading(false);
-        }
-    };
-
-    const handleMicrosoftOAuth = async () => {
-        setLoading(true);
-        setError('');
-
-        try {
-            // In a real implementation, this would redirect to Microsoft OAuth
-            setError('Microsoft OAuth will be available soon. Please use SMTP/IMAP configuration for now or wait for OAuth implementation.');
-            setLoading(false);
-        } catch (err: any) {
-            setError(err.message || 'Failed to connect Microsoft account');
-            setLoading(false);
-        }
-    };
 
     const handleSmtpConnect = async () => {
         if (!formData.name || !formData.email || !formData.password || !formData.smtpHost) {

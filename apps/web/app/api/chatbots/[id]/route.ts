@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -74,7 +74,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
