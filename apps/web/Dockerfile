@@ -16,20 +16,24 @@ COPY apps/web ./apps/web
 WORKDIR /app/apps/web
 RUN npm install
 
-# Build
+# Build (creates standalone output)
 RUN npm run build
 
-# Production stage
+# Production stage - use standalone output
 FROM node:20-alpine AS production
 
 WORKDIR /app
 
-COPY --from=base /app/apps/web/.next ./.next
+# Copy standalone output (includes necessary node_modules)
+COPY --from=base /app/apps/web/.next/standalone ./
+COPY --from=base /app/apps/web/.next/static ./.next/static
 COPY --from=base /app/apps/web/public ./public
-COPY --from=base /app/apps/web/package*.json ./
-COPY --from=base /app/apps/web/node_modules ./node_modules
 
 ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
 EXPOSE 3000
 
-CMD ["npm", "start"]
+# Run the standalone server directly
+CMD ["node", "server.js"]
