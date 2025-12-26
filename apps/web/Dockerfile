@@ -2,9 +2,8 @@ FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Copy root package files and tsconfig
+# Copy root package files only (not tsconfig)
 COPY package*.json ./
-COPY tsconfig.json ./
 
 # Install root dependencies
 RUN npm install
