@@ -24,10 +24,14 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy standalone output (includes necessary node_modules)
+# In monorepo, standalone output structure is:
+# .next/standalone/ - contains server.js and node_modules
+# .next/standalone/apps/web/.next/ - contains app build
+# We need to copy the entire standalone folder and static/public from original location
+
 COPY --from=base /app/apps/web/.next/standalone ./
-COPY --from=base /app/apps/web/.next/static ./.next/static
-COPY --from=base /app/apps/web/public ./public
+COPY --from=base /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=base /app/apps/web/public ./apps/web/public
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -35,5 +39,5 @@ ENV HOSTNAME="0.0.0.0"
 
 EXPOSE 3000
 
-# Run the standalone server directly
-CMD ["node", "server.js"]
+# Run the standalone server
+CMD ["node", "apps/web/server.js"]
