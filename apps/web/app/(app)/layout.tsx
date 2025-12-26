@@ -15,7 +15,6 @@ import {
     X,
     Bell,
     Search,
-    ChevronDown,
     ShoppingBag,
     ShoppingCart,
     Store,
