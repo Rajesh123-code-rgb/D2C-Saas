@@ -54,7 +54,7 @@ import { SecurityModule } from './modules/security/security.module';
                 password: configService.get('DATABASE_PASSWORD') || 'postgres',
                 database: configService.get('DATABASE_NAME') || 'omnichannel',
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                synchronize: process.env.NODE_ENV === 'development', // Only in dev!
+                synchronize: process.env.TYPEORM_SYNC === 'true' || process.env.NODE_ENV === 'development', // Enable via env var for initial setup
                 logging: process.env.NODE_ENV === 'development',
                 autoLoadEntities: true,
             }),
