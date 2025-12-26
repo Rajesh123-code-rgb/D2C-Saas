@@ -100,6 +100,7 @@ services:
       API_URL: ${API_URL}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       TYPEORM_SYNC: ${TYPEORM_SYNC:-false}
+      CORS_ORIGIN: ${FRONTEND_URL}
     ports:
       - "127.0.0.1:3001:3001" # Only localhost access (proxied via Nginx)
     depends_on:
