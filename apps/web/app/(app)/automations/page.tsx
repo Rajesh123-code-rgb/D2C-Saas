@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TemplateGallery } from '@/components/templates/TemplateGallery';
-import { templateLibrary, AdminAutomationTemplate } from '@/lib/api';
+import { templateLibrary } from '@/lib/api';
 
 interface Automation {
     id: string;

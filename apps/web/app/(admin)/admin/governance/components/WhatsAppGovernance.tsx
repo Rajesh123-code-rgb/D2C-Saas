@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TemplatePolicyEditor } from '../templates/components/TemplatePolicyEditor';
 import { TemplateMonitoring } from '../templates/components/TemplateMonitoring';
-import { MessageSquare } from 'lucide-react';
+
 
 export function WhatsAppGovernance() {
     return (

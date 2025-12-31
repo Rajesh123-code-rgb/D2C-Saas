@@ -42,6 +42,7 @@ const mockPackages: TopUpPackage[] = [
         currency: 'INR',
         isActive: true,
         isPopular: false,
+        sortOrder: 1,
     },
     {
         id: '2',
@@ -53,6 +54,7 @@ const mockPackages: TopUpPackage[] = [
         currency: 'INR',
         isActive: true,
         isPopular: true,
+        sortOrder: 2,
     },
     {
         id: '3',
@@ -64,6 +66,7 @@ const mockPackages: TopUpPackage[] = [
         currency: 'INR',
         isActive: true,
         isPopular: false,
+        sortOrder: 3,
     },
     {
         id: '4',
@@ -75,6 +78,7 @@ const mockPackages: TopUpPackage[] = [
         currency: 'INR',
         isActive: true,
         isPopular: false,
+        sortOrder: 4,
     },
 ];
 
@@ -87,11 +91,11 @@ export default function PackagesPage() {
     const fetchPackages = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await packagesApi.getAll();
+            const data = await packagesApi.getAll() as TopUpPackage[] | { data: TopUpPackage[] };
             if (data && Array.isArray(data)) {
                 setPackages(data);
-            } else if (data && data.data) {
-                setPackages(data.data);
+            } else if (data && (data as { data: TopUpPackage[] }).data) {
+                setPackages((data as { data: TopUpPackage[] }).data);
             }
         } catch (err: any) {
             console.warn('Could not fetch packages, using mock data:', err.message);

@@ -50,7 +50,7 @@ export function TemplatePolicyEditor() {
     const fetchPolicy = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await governanceApi.getTemplatePolicy();
+            const data = await governanceApi.getTemplatePolicy() as WhatsAppTemplatePolicy & { planRestrictions?: any; blockedKeywords?: string[] };
             // Deep merge with initial to ensure all nested fields exist
             // The API may return a different structure than expected
             const mergedPolicy: WhatsAppTemplatePolicy = {

@@ -8,7 +8,6 @@ import {
     Shield,
     Mail,
     CheckCircle,
-    XCircle,
     Ban,
     Key,
     Edit,
@@ -18,7 +17,7 @@ import {
     RefreshCw,
     Filter,
 } from 'lucide-react';
-import { CardHeader, CardTitle, CardContent } from '@/components/ui/card'; // Using GlassCard instead, keeping types if needed
+import { CardHeader, CardContent } from '@/components/ui/card'; // Using GlassCard instead, keeping types if needed
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

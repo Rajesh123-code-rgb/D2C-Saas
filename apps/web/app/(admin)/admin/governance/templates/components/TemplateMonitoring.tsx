@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { governanceApi } from '@/lib/admin/api';
-import { Loader2, RefreshCw, Search, ExternalLink } from 'lucide-react';
+import { Loader2, RefreshCw, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 export function TemplateMonitoring() {
@@ -57,8 +57,8 @@ export function TemplateMonitoring() {
             if (filters.category !== 'all') params.category = filters.category;
 
             const res = await governanceApi.getMonitoringTemplates(params);
-            setTemplates(res.data.templates);
-            setTotal(res.data.total);
+            setTemplates(res.templates);
+            setTotal(res.total);
         } catch (error) {
             console.error('Failed to fetch templates:', error);
         } finally {

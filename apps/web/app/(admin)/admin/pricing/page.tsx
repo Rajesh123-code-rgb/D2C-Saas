@@ -37,7 +37,6 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { pricingApi } from '@/lib/admin/api';
 
 interface PlanFeature {
     id: string;
@@ -176,7 +175,7 @@ export default function PricingPage() {
     const [editDialog, setEditDialog] = useState(false);
     const [newFeatureName, setNewFeatureName] = useState('');
     const [newFeatureCategory, setNewFeatureCategory] = useState('Features');
-    const [addFeatureDialog, setAddFeatureDialog] = useState(false);
+
 
     const fetchPlans = useCallback(async () => {
         setLoading(true);
@@ -281,7 +280,7 @@ export default function PricingPage() {
             features: [...editingPlan.features, newFeature]
         });
         setNewFeatureName('');
-        setAddFeatureDialog(false);
+
     };
 
     const addExistingFeature = (feature: PlanFeature) => {
