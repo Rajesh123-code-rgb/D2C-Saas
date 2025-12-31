@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
     BarChart3,
-    TrendingDown,
+
     Users,
     MessageSquare,
     DollarSign,
