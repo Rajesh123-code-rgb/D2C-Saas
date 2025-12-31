@@ -112,11 +112,11 @@ services:
       - ./uploads:/app/uploads
       - ./logs/api:/app/logs
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/v1/health" ]
+      test: [ "CMD-SHELL", "nc -z localhost 3001 || exit 1" ]
       interval: 30s
-      timeout: 15s
+      timeout: 10s
       retries: 5
-      start_period: 120s
+      start_period: 90s
     networks:
       - omnichannel-network
     deploy:
