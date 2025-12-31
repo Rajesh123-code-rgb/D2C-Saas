@@ -54,7 +54,7 @@ export class WhatsAppService {
             throw new HttpException('Channel is not active', HttpStatus.BAD_REQUEST);
         }
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const creds = this.decryptCredentials(channel.credentials);
         const phoneNumberId = creds['phoneNumberId'];
         const accessToken = creds['accessToken'];
 
@@ -114,7 +114,7 @@ export class WhatsAppService {
             throw new HttpException('Invalid WhatsApp channel', HttpStatus.BAD_REQUEST);
         }
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const creds = this.decryptCredentials(channel.credentials);
         const phoneNumberId = creds['phoneNumberId'];
         const accessToken = creds['accessToken'];
 
@@ -173,7 +173,7 @@ export class WhatsAppService {
             throw new HttpException('Invalid WhatsApp channel', HttpStatus.BAD_REQUEST);
         }
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const creds = this.decryptCredentials(channel.credentials);
         const phoneNumberId = creds['phoneNumberId'];
         const accessToken = creds['accessToken'];
 
@@ -226,7 +226,7 @@ export class WhatsAppService {
             throw new HttpException('Invalid WhatsApp channel', HttpStatus.BAD_REQUEST);
         }
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const creds = this.decryptCredentials(channel.credentials);
         const phoneNumberId = creds['phoneNumberId'];
         const accessToken = creds['accessToken'];
 
@@ -267,7 +267,7 @@ export class WhatsAppService {
             throw new HttpException('Invalid WhatsApp channel', HttpStatus.BAD_REQUEST);
         }
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const creds = this.decryptCredentials(channel.credentials);
         const wabaId = creds['wabaId'];
         const accessToken = creds['accessToken'];
 
@@ -304,7 +304,7 @@ export class WhatsAppService {
             throw new HttpException('Invalid WhatsApp channel', HttpStatus.BAD_REQUEST);
         }
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const creds = this.decryptCredentials(channel.credentials);
         const wabaId = creds['wabaId'];
         const accessToken = creds['accessToken'];
 
@@ -386,7 +386,7 @@ export class WhatsAppService {
         // Validate template against governance policy
         await this.templateGovernanceService.validateTemplate(channel.tenantId, templateData);
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const creds = this.decryptCredentials(channel.credentials);
         const wabaId = creds['wabaId'];
         const accessToken = creds['accessToken'];
 
@@ -628,5 +628,25 @@ export class WhatsAppService {
         } catch (error: any) {
             this.logger.error(`Error updating template status: ${error.message}`, error.stack);
         }
+    }
+
+    /**
+     * Decrypt channel credentials
+     */
+    private decryptCredentials(encryptedData: string): any {
+        const crypto = require('crypto');
+        const encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
+        const algorithm = 'aes-256-cbc';
+        const key = crypto.scryptSync(encryptionKey, 'salt', 32);
+
+        const parts = encryptedData.split(':');
+        const iv = Buffer.from(parts[0], 'hex');
+        const encrypted = parts[1];
+
+        const decipher = crypto.createDecipheriv(algorithm, key, iv);
+        let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+
+        return JSON.parse(decrypted);
     }
 }
