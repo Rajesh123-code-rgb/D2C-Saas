@@ -492,36 +492,55 @@ export class WhatsAppService {
             channel.id,
         );
 
-        // Extract message content
+        // Extract message content and media
         let content = '';
         let messageType = 'text';
-        let mediaData = null;
+        let media: any = undefined;
 
         if (message.type === 'text') {
             content = message.text.body;
         } else if (message.type === 'image') {
-            content = message.image.caption || 'Image';
+            content = message.image.caption || '[Image]';
             messageType = 'image';
-            mediaData = { id: message.image.id, mime_type: message.image.mime_type };
+            const mediaUrl = await this.getMediaUrl(channel.id, message.image.id);
+            media = {
+                url: mediaUrl,
+                mimeType: message.image.mime_type,
+                caption: message.image.caption
+            };
         } else if (message.type === 'video') {
-            content = message.video.caption || 'Video';
+            content = message.video.caption || '[Video]';
             messageType = 'video';
-            mediaData = { id: message.video.id, mime_type: message.video.mime_type };
+            const mediaUrl = await this.getMediaUrl(channel.id, message.video.id);
+            media = {
+                url: mediaUrl,
+                mimeType: message.video.mime_type,
+                caption: message.video.caption
+            };
         } else if (message.type === 'document') {
-            content = message.document.filename || 'Document';
+            content = message.document.filename || '[Document]';
             messageType = 'document';
-            mediaData = { id: message.document.id, mime_type: message.document.mime_type };
+            const mediaUrl = await this.getMediaUrl(channel.id, message.document.id);
+            media = {
+                url: mediaUrl,
+                mimeType: message.document.mime_type,
+                filename: message.document.filename
+            };
         } else if (message.type === 'audio') {
-            content = 'Audio message';
+            content = '[Audio message]';
             messageType = 'audio';
-            mediaData = { id: message.audio.id, mime_type: message.audio.mime_type };
+            const mediaUrl = await this.getMediaUrl(channel.id, message.audio.id);
+            media = {
+                url: mediaUrl,
+                mimeType: message.audio.mime_type
+            };
         } else if (message.type === 'location') {
-            content = 'Location';
+            content = `Location: ${message.location.latitude}, ${message.location.longitude}`;
             messageType = 'location';
-            mediaData = message.location;
+            media = message.location;
         }
 
-        // Create message
+        // Create message with media data
         await this.inboxService.createMessage(
             conversation.id,
             tenantId,
@@ -529,6 +548,8 @@ export class WhatsAppService {
                 direction: 'inbound' as any,
                 messageType: messageType as any,
                 content,
+                media,
+                externalMessageId: messageId,
             },
         );
 
@@ -536,6 +557,39 @@ export class WhatsAppService {
         await this.markAsRead(channel.id, messageId);
 
         this.logger.log(`Processed incoming message ${messageId} from ${from}`);
+    }
+
+    /**
+     * Get media URL from Meta API
+     */
+    private async getMediaUrl(channelId: string, mediaId: string): Promise<string | undefined> {
+        try {
+            const channel = await this.channelRepository.findOne({
+                where: { id: channelId },
+            });
+
+            if (!channel) {
+                this.logger.warn(`Channel ${channelId} not found for media URL fetch`);
+                return undefined;
+            }
+
+            const creds = this.decryptCredentials(channel.credentials);
+            const accessToken = creds['accessToken'];
+
+            // First, get the media URL from Meta
+            const response = await firstValueFrom(
+                this.httpService.get(`${this.apiUrl}/${mediaId}`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }),
+            );
+
+            return response.data.url;
+        } catch (error: any) {
+            this.logger.error(`Error fetching media URL: ${error.message}`);
+            return undefined;
+        }
     }
 
     /**
