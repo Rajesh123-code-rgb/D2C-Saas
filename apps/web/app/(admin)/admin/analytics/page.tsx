@@ -208,6 +208,14 @@ export default function AnalyticsPage() {
         return value.toLocaleString();
     };
 
+    const handleRefresh = () => {
+        setLoading(true);
+        // Simulate data refresh
+        setTimeout(() => {
+            setLoading(false);
+        }, 2000);
+    };
+
     return (
         <div className="space-y-8 pb-10">
             {/* Header */}
@@ -257,6 +265,7 @@ export default function AnalyticsPage() {
                     <Button
                         className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
                         disabled={loading}
+                        onClick={handleRefresh}
                     >
                         <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
                         Refresh
