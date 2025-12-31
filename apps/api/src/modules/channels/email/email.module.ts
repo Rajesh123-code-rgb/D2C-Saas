@@ -9,11 +9,14 @@ import { EmailTrackingController } from './email-tracking.controller';
 import { EmailOAuthController } from './oauth.controller';
 import { Message } from '../../inbox/message.entity';
 
+import { SuperAdminModule } from '../../super-admin/super-admin.module';
+
 @Module({
     imports: [
         TypeOrmModule.forFeature([Channel, Message]),
         InboxModule,
         ContactsModule,
+        SuperAdminModule,
     ],
     providers: [EmailService],
     controllers: [EmailController, EmailTrackingController, EmailOAuthController],

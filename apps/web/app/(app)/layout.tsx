@@ -49,6 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<any>(null);
     const [tenant, setTenant] = useState<any>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         // Load user and tenant data from cookies (if available)
@@ -63,9 +64,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             .find(row => row.startsWith('tenant='))
             ?.split('=')[1];
 
+        let userLoaded = false;
+
         if (userCookie) {
             try {
                 setUser(JSON.parse(decodeURIComponent(userCookie)));
+                userLoaded = true;
             } catch (e) {
                 console.error('Error parsing user cookie:', e);
             }
@@ -78,7 +82,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 console.error('Error parsing tenant cookie:', e);
             }
         }
-    }, []);
+
+        // If no user cookie found, clear cookies and redirect to login
+        if (!userLoaded) {
+            // Give a small delay to ensure we've checked properly
+            setTimeout(async () => {
+                // Double-check if user was set in the meantime
+                if (!userCookie) {
+                    console.log('No user data found, clearing session and redirecting...');
+                    // Clear cookies via API
+                    await fetch('/api/auth/cookies', { method: 'DELETE' }).catch(() => { });
+                    router.push('/login');
+                }
+                setIsLoading(false);
+            }, 500);
+        } else {
+            setIsLoading(false);
+        }
+    }, [router]);
 
     const handleLogout = async () => {
         // Clear cookies via API
@@ -86,7 +107,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         router.push('/login');
     };
 
-    if (!user) {
+    if (isLoading || !user) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <div className="text-center">

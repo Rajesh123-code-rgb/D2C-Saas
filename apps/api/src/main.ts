@@ -19,9 +19,30 @@ async function bootstrap() {
     app.use(compression());
     app.use(cookieParser()); // Parse cookies
 
-    // CORS
+    // CORS - Allow multiple origins for development
+    const allowedOrigins = (configService.get('CORS_ORIGIN') || 'http://localhost:3000')
+        .split(',')
+        .map((origin: string) => origin.trim());
+
+    // Add common development ports if using default
+    if (allowedOrigins.includes('http://localhost:3000')) {
+        allowedOrigins.push('http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003');
+    }
+
     app.enableCors({
-        origin: configService.get('CORS_ORIGIN') || 'http://localhost:3000',
+        origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+            // Allow requests with no origin (like mobile apps or Postman)
+            if (!origin) {
+                callback(null, true);
+                return;
+            }
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                console.log(`CORS blocked origin: ${origin}`);
+                callback(null, false);
+            }
+        },
         credentials: true,
     });
 

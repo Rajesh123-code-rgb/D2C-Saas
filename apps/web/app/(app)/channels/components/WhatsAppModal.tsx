@@ -79,17 +79,114 @@ export function WhatsAppModal({ open, onOpenChange, onSuccess }: WhatsAppModalPr
 
             console.log('Opening Meta login dialog...');
 
+            // Variables to store data from both events
+            let authCode: string | null = null;
+            let wabaData: { wabaId: string; phoneNumberId: string } | null = null;
+            let loginCompleted = false;
+            let messageListenerRemoved = false;
+
+            // Listen for postMessage from Meta iframe for WA_EMBEDDED_SIGNUP data
+            const handleMessage = (event: MessageEvent) => {
+                // Log all incoming messages for debugging
+                console.log('Received postMessage event:', {
+                    origin: event.origin,
+                    data: event.data,
+                    type: typeof event.data
+                });
+
+                // Accept messages from Meta domains
+                if (!event.origin.includes('facebook.com') && !event.origin.includes('fb.com')) {
+                    return;
+                }
+
+                try {
+                    // Parse the data if it's a string
+                    let messageData = event.data;
+                    if (typeof event.data === 'string') {
+                        try {
+                            messageData = JSON.parse(event.data);
+                        } catch {
+                            // Not JSON, check if it contains WA_EMBEDDED_SIGNUP
+                            if (event.data.includes('WA_EMBEDDED_SIGNUP')) {
+                                console.log('WA_EMBEDDED_SIGNUP detected in string message');
+                            }
+                            return;
+                        }
+                    }
+
+                    console.log('Parsed message data:', messageData);
+
+                    // Check for WA_EMBEDDED_SIGNUP event type in various formats
+                    const isWAEmbeddedSignup =
+                        messageData?.type === 'WA_EMBEDDED_SIGNUP' ||
+                        messageData?.event === 'WA_EMBEDDED_SIGNUP' ||
+                        messageData?.name === 'WA_EMBEDDED_SIGNUP' ||
+                        (messageData?.data && messageData?.data?.type === 'WA_EMBEDDED_SIGNUP');
+
+                    if (isWAEmbeddedSignup || messageData?.waba_id || messageData?.phone_number_id) {
+                        const data = messageData?.data || messageData;
+                        console.log('WA_EMBEDDED_SIGNUP data received:', data);
+
+                        wabaData = {
+                            wabaId: data.waba_id || data.wabaId || '',
+                            phoneNumberId: data.phone_number_id || data.phoneNumberId || ''
+                        };
+                        console.log('Captured WABA data from postMessage:', wabaData);
+
+                        // If we already have the auth code, proceed
+                        if (authCode && loginCompleted && !messageListenerRemoved) {
+                            messageListenerRemoved = true;
+                            window.removeEventListener('message', handleMessage);
+                            handleCodeExchangeWithWabaData(authCode, wabaData);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error processing message event:', error);
+                }
+            };
+
+            // Add the message listener before calling FB.login
+            window.addEventListener('message', handleMessage);
+
             window.FB.login((response: any) => {
                 console.log('FB.login response:', response);
+                console.log('FB.login authResponse:', response?.authResponse);
+                loginCompleted = true;
 
                 if (response.authResponse) {
-                    const { code } = response.authResponse;
+                    authCode = response.authResponse.code;
                     console.log('Received authorization code');
 
-                    // Exchange code for access token via backend
-                    handleCodeExchange(code);
+                    // Check if we have WABA data from the message event
+                    if (wabaData && wabaData.wabaId) {
+                        if (!messageListenerRemoved) {
+                            messageListenerRemoved = true;
+                            window.removeEventListener('message', handleMessage);
+                        }
+                        handleCodeExchangeWithWabaData(authCode!, wabaData);
+                    } else {
+                        // Wait a bit for the message event to arrive
+                        console.log('Waiting for WA_EMBEDDED_SIGNUP postMessage event...');
+                        setTimeout(() => {
+                            if (!messageListenerRemoved) {
+                                messageListenerRemoved = true;
+                                window.removeEventListener('message', handleMessage);
+                            }
+                            if (wabaData && wabaData.wabaId) {
+                                handleCodeExchangeWithWabaData(authCode!, wabaData);
+                            } else {
+                                // Still no WABA data, try without it (will use API fallback)
+                                console.log('No WABA data received from postMessage, proceeding with code only');
+                                handleCodeExchange(authCode!);
+                            }
+                        }, 3000);
+                    }
                 } else {
                     console.error('No auth response:', response);
+                    if (!messageListenerRemoved) {
+                        messageListenerRemoved = true;
+                        window.removeEventListener('message', handleMessage);
+                    }
                     setError(response.status === 'unknown'
                         ? 'Meta login failed. Make sure you have a valid Meta App ID and Config ID.'
                         : 'WhatsApp connection was cancelled'
@@ -113,6 +210,45 @@ export function WhatsAppModal({ open, onOpenChange, onSuccess }: WhatsAppModalPr
         }
     };
 
+    const handleCodeExchangeWithWabaData = async (code: string, wabaData: { wabaId: string; phoneNumberId: string }) => {
+        try {
+            console.log('Exchanging code with WABA data:', { wabaId: wabaData.wabaId, phoneNumberId: wabaData.phoneNumberId });
+
+            const response = await fetch('/api/channels', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    channelType: 'whatsapp',
+                    name: 'WhatsApp Business',
+                    credentials: {
+                        authCode: code,
+                        wabaId: wabaData.wabaId,
+                        phoneNumberId: wabaData.phoneNumberId
+                    },
+                }),
+            });
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to connect WhatsApp';
+                try {
+                    const data = await response.json();
+                    errorMessage = data.message || errorMessage;
+                } catch (e) {
+                    // Keep default message
+                }
+                throw new Error(errorMessage);
+            }
+
+            onSuccess();
+            onOpenChange(false);
+            resetForm();
+        } catch (err: any) {
+            setError(err.message || 'Failed to connect WhatsApp');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleCodeExchange = async (code: string) => {
         try {
             const response = await fetch('/api/channels', {
@@ -125,7 +261,16 @@ export function WhatsAppModal({ open, onOpenChange, onSuccess }: WhatsAppModalPr
                 }),
             });
 
-            if (!response.ok) throw new Error('Failed to connect WhatsApp');
+            if (!response.ok) {
+                let errorMessage = 'Failed to connect WhatsApp';
+                try {
+                    const data = await response.json();
+                    errorMessage = data.message || errorMessage;
+                } catch (e) {
+                    // Keep default message
+                }
+                throw new Error(errorMessage);
+            }
 
             onSuccess();
             onOpenChange(false);

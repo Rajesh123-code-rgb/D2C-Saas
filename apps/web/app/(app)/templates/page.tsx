@@ -21,6 +21,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { cn } from '@/lib/utils';
+import { TemplateGallery } from '@/components/templates/TemplateGallery';
+import { Sparkles } from 'lucide-react';
 
 // Types
 interface WhatsAppTemplate {
@@ -43,7 +45,7 @@ interface EmailTemplate {
 }
 
 export default function TemplatesPage() {
-    const [activeTab, setActiveTab] = useState<'whatsapp' | 'email'>('whatsapp');
+    const [activeTab, setActiveTab] = useState<'whatsapp' | 'email' | 'whatsapp-library' | 'email-library'>('whatsapp');
     const [whatsappTemplates, setWhatsappTemplates] = useState<WhatsAppTemplate[]>([]);
     const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
     const [loading, setLoading] = useState(true);
@@ -156,6 +158,30 @@ export default function TemplatesPage() {
                         {emailTemplates.length}
                     </span>
                 </button>
+                <button
+                    onClick={() => setActiveTab('whatsapp-library')}
+                    className={cn(
+                        'flex items-center gap-2 px-4 py-3 border-b-2 transition-colors',
+                        activeTab === 'whatsapp-library'
+                            ? 'border-purple-500 text-purple-600'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    )}
+                >
+                    <Sparkles className="h-4 w-4" />
+                    WhatsApp Library
+                </button>
+                <button
+                    onClick={() => setActiveTab('email-library')}
+                    className={cn(
+                        'flex items-center gap-2 px-4 py-3 border-b-2 transition-colors',
+                        activeTab === 'email-library'
+                            ? 'border-purple-500 text-purple-600'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    )}
+                >
+                    <Sparkles className="h-4 w-4" />
+                    Email Library
+                </button>
             </div>
 
             {/* Search and Actions */}
@@ -209,7 +235,7 @@ export default function TemplatesPage() {
                         />
                     )}
                 </div>
-            ) : (
+            ) : activeTab === 'email' ? (
                 /* Email Templates */
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredEmailTemplates.length > 0 ? (
@@ -230,10 +256,30 @@ export default function TemplatesPage() {
                         />
                     )}
                 </div>
+            ) : activeTab === 'whatsapp-library' ? (
+                /* WhatsApp Admin Library */
+                <TemplateGallery
+                    type="whatsapp"
+                    onSelect={(template) => {
+                        // User selected an admin WhatsApp template
+                        console.log('Selected WhatsApp template:', template);
+                        // Could open a modal to let user submit this template to Meta
+                    }}
+                />
+            ) : (
+                /* Email Admin Library */
+                <TemplateGallery
+                    type="email"
+                    onSelect={(template) => {
+                        // User selected an admin email template
+                        console.log('Selected Email template:', template);
+                        // Could open a modal to customize and use this template
+                    }}
+                />
             )}
 
             {/* Create Template Modal */}
-            {showCreateModal && (
+            {showCreateModal && (activeTab === 'whatsapp' || activeTab === 'email') && (
                 <CreateTemplateModal
                     type={activeTab}
                     onClose={() => setShowCreateModal(false)}

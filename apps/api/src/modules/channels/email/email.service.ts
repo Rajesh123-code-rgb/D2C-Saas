@@ -6,7 +6,7 @@ import * as nodemailer from 'nodemailer';
 import { Channel } from '../channel.entity';
 import { InboxService } from '../../inbox/inbox.service';
 import { ContactsService } from '../../contacts/contacts.service';
-
+import { EmailGovernanceService } from '../../super-admin/services/email-governance.service';
 interface EmailOptions {
     to: string | string[];
     subject: string;
@@ -34,6 +34,7 @@ export class EmailService {
         private readonly configService: ConfigService,
         private readonly inboxService: InboxService,
         private readonly contactsService: ContactsService,
+        private readonly emailGovernanceService: EmailGovernanceService,
         @InjectRepository(Channel)
         private readonly channelRepository: Repository<Channel>,
     ) {
@@ -110,6 +111,16 @@ export class EmailService {
         const channel = await this.channelRepository.findOne({
             where: { id: channelId },
         });
+
+        // Governance Validation
+        if (channel && channel.tenantId) {
+            await this.emailGovernanceService.validateEmail(channel.tenantId, {
+                subject: options.subject,
+                body: (options.html || options.text) || '',
+                attachments: options.attachments,
+            });
+        }
+
 
         if (!channel || channel.channelType !== 'email') {
             throw new Error('Invalid email channel');

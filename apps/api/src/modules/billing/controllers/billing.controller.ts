@@ -14,7 +14,7 @@ import { StripeService } from '../services/stripe.service';
 import { InvoicesService } from '../services/invoices.service';
 import { PlanTier } from '../entities/plan.entity';
 
-@Controller('api/v1/billing')
+@Controller('billing')
 export class BillingController {
     constructor(
         private readonly plansService: PlansService,

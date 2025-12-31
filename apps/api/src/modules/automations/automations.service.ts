@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -12,6 +12,7 @@ import {
     ConditionOperator,
 } from './automation-rule.entity';
 import { AutomationLog, ExecutionStatus, ExecutedAction } from './automation-log.entity';
+import { AutomationGovernanceService } from '../super-admin/services/automation-governance.service';
 
 export interface CreateAutomationDto {
     name: string;
@@ -34,9 +35,15 @@ export class AutomationsService {
         private readonly logRepository: Repository<AutomationLog>,
         @InjectQueue('automations')
         private readonly automationQueue: Queue,
+        private readonly governanceService: AutomationGovernanceService,
     ) { }
 
     async create(tenantId: string, dto: CreateAutomationDto): Promise<AutomationRule> {
+        const validation = await this.governanceService.validateAutomation(tenantId, dto);
+        if (!validation.valid) {
+            throw new BadRequestException(validation.errors.join(' '));
+        }
+
         const rule = this.ruleRepository.create({
             tenantId,
             name: dto.name,
@@ -87,6 +94,14 @@ export class AutomationsService {
         updates: Partial<CreateAutomationDto>,
     ): Promise<AutomationRule> {
         const rule = await this.findById(tenantId, id);
+
+        // Validate with updates applied
+        const merged = { ...rule, ...updates };
+        const validation = await this.governanceService.validateAutomation(tenantId, merged);
+        if (!validation.valid) {
+            throw new BadRequestException(validation.errors.join(' '));
+        }
+
         Object.assign(rule, updates);
         await this.ruleRepository.save(rule);
         return rule;
@@ -94,6 +109,13 @@ export class AutomationsService {
 
     async activate(tenantId: string, id: string): Promise<AutomationRule> {
         const rule = await this.findById(tenantId, id);
+
+        // Validate specifically for activation (checks max limit)
+        const validation = await this.governanceService.validateAutomation(tenantId, { ...rule, status: AutomationStatus.ACTIVE });
+        if (!validation.valid) {
+            throw new BadRequestException(validation.errors.join(' '));
+        }
+
         rule.status = AutomationStatus.ACTIVE;
         await this.ruleRepository.save(rule);
         this.logger.log(`Automation activated: ${rule.name}`);
@@ -138,6 +160,13 @@ export class AutomationsService {
         }
 
         this.logger.log(`Found ${automations.length} automations for ${eventType}`);
+
+        // Check execution limits globally for tenant before processing
+        const canExecute = await this.governanceService.checkExecutionLimit(tenantId);
+        if (!canExecute) {
+            this.logger.warn(`Execution limit reached for tenant ${tenantId}`);
+            return;
+        }
 
         for (const automation of automations) {
             // Check conditions

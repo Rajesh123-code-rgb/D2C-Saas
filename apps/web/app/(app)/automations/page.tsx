@@ -41,6 +41,8 @@ import {
     History,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TemplateGallery } from '@/components/templates/TemplateGallery';
+import { templateLibrary, AdminAutomationTemplate } from '@/lib/api';
 
 interface Automation {
     id: string;
@@ -588,7 +590,7 @@ export default function AutomationsPage() {
     };
 
     const fetchTemplates = async () => {
-        // Fallback templates
+        // Fallback templates for when API has no data
         const fallbackTemplates: Template[] = [
             { id: 'order_confirmation', name: 'Order Confirmation', description: 'Send WhatsApp message when a new order is placed', category: 'Orders', triggerType: 'order_created', preview: 'Order Created → Send WhatsApp Template → Add Tag', useCase: 'Instantly confirm orders to build customer trust. Reduces support inquiries by 40%.', flowSteps: ['Order placed on your store', 'WhatsApp confirmation sent', 'Customer tagged as "Order Placed"'] },
             { id: 'cod_confirmation', name: 'COD Order Confirmation', description: 'Request confirmation for Cash on Delivery orders', category: 'Orders', triggerType: 'cod_order_created', preview: 'COD Order → Send Confirmation → Wait 6h → Remind', useCase: 'Reduce COD order failures by getting customer commitment upfront.', flowSteps: ['COD order received', 'Confirmation request sent', 'Wait 6 hours', 'Send reminder if no response'] },
@@ -606,11 +608,27 @@ export default function AutomationsPage() {
 
         try {
             setLoadingTemplates(true);
-            const response = await fetch('/api/automations/templates');
-            if (!response.ok) throw new Error('Failed to fetch templates');
-            const data = await response.json();
-            const fetchedTemplates = Array.isArray(data) ? data : [];
-            setTemplates(fetchedTemplates.length > 0 ? fetchedTemplates : fallbackTemplates);
+            // Fetch admin-created templates from template library API
+            const adminTemplates = await templateLibrary.getAutomationTemplates();
+
+            // Map admin templates to the Template interface
+            const mappedTemplates: Template[] = adminTemplates.map(t => ({
+                id: t.id,
+                name: t.name,
+                description: t.description,
+                category: t.category,
+                triggerType: t.triggerType,
+                preview: t.nodes?.map(n => n.name).join(' → ') || '',
+                useCase: t.description,
+                flowSteps: t.nodes?.map(n => n.name) || [],
+            }));
+
+            // Combine admin templates with fallback (admin templates first)
+            const allTemplates = mappedTemplates.length > 0
+                ? [...mappedTemplates, ...fallbackTemplates]
+                : fallbackTemplates;
+
+            setTemplates(allTemplates);
         } catch (error) {
             console.error('Error fetching templates, using fallback:', error);
             setTemplates(fallbackTemplates);
@@ -622,6 +640,31 @@ export default function AutomationsPage() {
     const handleOpenTemplateEditor = async (templateId: string) => {
         try {
             setLoadingTemplate(templateId);
+
+            // First try to fetch from admin template library
+            try {
+                const adminTemplate = await templateLibrary.getAutomationTemplate(templateId);
+                if (adminTemplate) {
+                    setSelectedTemplate({
+                        id: adminTemplate.id,
+                        name: adminTemplate.name,
+                        description: adminTemplate.description,
+                        category: adminTemplate.category,
+                        triggerType: adminTemplate.triggerType,
+                        actions: adminTemplate.nodes?.map((n: any) => ({
+                            type: n.type,
+                            ...n.config,
+                        })) || [],
+                    });
+                    setEditingAutomation(null);
+                    setShowWorkflowEditor(true);
+                    return;
+                }
+            } catch {
+                // Admin template not found, try legacy API
+            }
+
+            // Fallback to legacy API
             const response = await fetch(`/api/automations/templates/${templateId}`);
             if (response.ok) {
                 const templateConfig = await response.json();
@@ -629,7 +672,7 @@ export default function AutomationsPage() {
                 setEditingAutomation(null);
                 setShowWorkflowEditor(true);
             } else {
-                // Fallback: use basic template info
+                // Fallback: use basic template info from state
                 const template = templates.find(t => t.id === templateId);
                 if (template) {
                     setSelectedTemplate({
@@ -827,6 +870,10 @@ export default function AutomationsPage() {
                         <TabsTrigger value="templates" className="flex items-center gap-2">
                             <Sparkles className="h-4 w-4" />
                             Automation Gallery
+                        </TabsTrigger>
+                        <TabsTrigger value="library" className="flex items-center gap-2">
+                            <Package className="h-4 w-4" />
+                            Admin Library
                         </TabsTrigger>
                     </TabsList>
 
@@ -1170,6 +1217,29 @@ export default function AutomationsPage() {
                             </CardContent>
                         </Card>
                     )}
+                </TabsContent>
+
+                {/* Admin Library Tab */}
+                <TabsContent value="library" className="space-y-4 mt-6">
+                    <TemplateGallery
+                        type="automation"
+                        onSelect={(template) => {
+                            // When user selects an admin template, open workflow editor with template data
+                            setSelectedTemplate({
+                                id: template.id,
+                                name: template.name,
+                                description: template.description,
+                                category: template.category,
+                                triggerType: template.triggerType,
+                                actions: template.nodes?.map((n: any) => ({
+                                    type: n.type,
+                                    ...n.config,
+                                })) || [],
+                            });
+                            setEditingAutomation(null);
+                            setShowWorkflowEditor(true);
+                        }}
+                    />
                 </TabsContent>
             </Tabs>
         </div>

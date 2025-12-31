@@ -19,6 +19,7 @@ import {
     Rocket,
     X,
 } from 'lucide-react';
+import { WalletOverview } from '@/components/dashboard/wallet-overview';
 
 interface DashboardMetrics {
     conversations: {
@@ -238,6 +239,7 @@ export default function DashboardPage() {
 
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <WalletOverview />
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Conversations</CardTitle>

@@ -78,17 +78,66 @@ export function WhatsAppModal({ open, onOpenChange, onSuccess }: WhatsAppModalPr
 
             console.log('Opening Meta login dialog...');
 
+            // Variables to store data from both events
+            let authCode: string | null = null;
+            let wabaData: { wabaId: string; phoneNumberId: string } | null = null;
+            let loginCompleted = false;
+
+            // Set up listener for WA_EMBEDDED_SIGNUP message event
+            const handleMessage = (event: MessageEvent) => {
+                console.log('Received message event:', event.data);
+
+                // Check if this is the WhatsApp embedded signup event
+                if (event.data?.type === 'WA_EMBEDDED_SIGNUP') {
+                    const data = event.data.data || event.data;
+                    console.log('WA_EMBEDDED_SIGNUP data:', data);
+
+                    wabaData = {
+                        wabaId: data.waba_id || data.wabaId || '',
+                        phoneNumberId: data.phone_number_id || data.phoneNumberId || ''
+                    };
+
+                    console.log('Captured WABA data:', wabaData);
+
+                    // If we already have the auth code, proceed with exchange
+                    if (authCode && loginCompleted) {
+                        window.removeEventListener('message', handleMessage);
+                        handleCodeExchangeWithWabaData(authCode, wabaData);
+                    }
+                }
+            };
+
+            window.addEventListener('message', handleMessage);
+
             window.FB.login((response: any) => {
                 console.log('FB.login response:', response);
+                loginCompleted = true;
 
                 if (response.authResponse) {
-                    const { code } = response.authResponse;
+                    authCode = response.authResponse.code;
                     console.log('Received authorization code');
 
-                    // Exchange code for access token via backend
-                    handleCodeExchange(code);
+                    // Check if we have WABA data from the message event
+                    if (wabaData) {
+                        window.removeEventListener('message', handleMessage);
+                        handleCodeExchangeWithWabaData(authCode!, wabaData);
+                    } else {
+                        // Wait a bit for the message event to arrive
+                        console.log('Waiting for WA_EMBEDDED_SIGNUP event...');
+                        setTimeout(() => {
+                            window.removeEventListener('message', handleMessage);
+                            if (wabaData) {
+                                handleCodeExchangeWithWabaData(authCode!, wabaData);
+                            } else {
+                                // Still no WABA data, try without it (will use API fallback)
+                                console.log('No WABA data received, proceeding with code only');
+                                handleCodeExchange(authCode!);
+                            }
+                        }, 2000);
+                    }
                 } else {
                     console.error('No auth response:', response);
+                    window.removeEventListener('message', handleMessage);
                     setError(response.status === 'unknown'
                         ? 'Meta login failed. Make sure you have a valid Meta App ID and Config ID.'
                         : 'WhatsApp connection was cancelled'
@@ -112,6 +161,45 @@ export function WhatsAppModal({ open, onOpenChange, onSuccess }: WhatsAppModalPr
         }
     };
 
+    const handleCodeExchangeWithWabaData = async (code: string, wabaData: { wabaId: string; phoneNumberId: string }) => {
+        try {
+            console.log('Exchanging code with WABA data:', { wabaId: wabaData.wabaId, phoneNumberId: wabaData.phoneNumberId });
+
+            const response = await fetch('/api/channels', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    channelType: 'whatsapp',
+                    name: 'WhatsApp Business',
+                    credentials: {
+                        authCode: code,
+                        wabaId: wabaData.wabaId,
+                        phoneNumberId: wabaData.phoneNumberId
+                    },
+                }),
+            });
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to connect WhatsApp';
+                try {
+                    const data = await response.json();
+                    errorMessage = data.message || errorMessage;
+                } catch (e) {
+                    // Keep default message
+                }
+                throw new Error(errorMessage);
+            }
+
+            onSuccess();
+            onOpenChange(false);
+            resetForm();
+        } catch (err: any) {
+            setError(err.message || 'Failed to connect WhatsApp');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleCodeExchange = async (code: string) => {
         try {
             const response = await fetch('/api/channels', {
@@ -124,7 +212,16 @@ export function WhatsAppModal({ open, onOpenChange, onSuccess }: WhatsAppModalPr
                 }),
             });
 
-            if (!response.ok) throw new Error('Failed to connect WhatsApp');
+            if (!response.ok) {
+                let errorMessage = 'Failed to connect WhatsApp';
+                try {
+                    const data = await response.json();
+                    errorMessage = data.message || errorMessage;
+                } catch (e) {
+                    // Keep default message
+                }
+                throw new Error(errorMessage);
+            }
 
             onSuccess();
             onOpenChange(false);

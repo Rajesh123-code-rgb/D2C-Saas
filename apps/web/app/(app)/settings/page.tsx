@@ -17,6 +17,8 @@ import {
     Edit,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WalletOverview } from '@/components/dashboard/wallet-overview';
+import { TransactionHistory } from '@/components/billing/transaction-history';
 
 const settingsTabs = [
     { id: 'general', label: 'General', icon: SettingsIcon },
@@ -406,6 +408,28 @@ function BillingSettings() {
                 </CardContent>
             </Card>
 
+
+
+            {/* Message Wallet Section */}
+            <div>
+                <h3 className="text-lg font-medium mb-4">Message Credits</h3>
+                <div className="grid gap-6 md:grid-cols-2">
+                    <WalletOverview />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Auto-Recharge</CardTitle>
+                            <CardDescription>Automatically add credits when balance is low</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Not enabled</span>
+                                <Button variant="outline" size="sm" disabled>Configure</Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
             {/* Usage Section */}
             <Card>
                 <CardHeader>
@@ -493,6 +517,12 @@ function BillingSettings() {
                 </CardContent>
             </Card>
 
+            {/* Transaction History */}
+            <div>
+                <h3 className="text-lg font-medium mb-4">Credit Transactions</h3>
+                <TransactionHistory />
+            </div>
+
             {/* Invoice History */}
             <Card>
                 <CardHeader>
@@ -559,63 +589,65 @@ function BillingSettings() {
 
             {/* Plans Grid */}
             <div id="plans-section" className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {plans.map((plan: any) => {
-                    const monthlyPrice = parseFloat(String(plan.monthlyPrice)) || 0;
-                    const yearlyPrice = parseFloat(String(plan.yearlyPrice)) || 0;
-                    const price = billingCycle === 'monthly' ? monthlyPrice : yearlyPrice / 12;
-                    const isCurrentPlan = subscription?.plan?.tier === plan.tier;
+                {
+                    plans.map((plan: any) => {
+                        const monthlyPrice = parseFloat(String(plan.monthlyPrice)) || 0;
+                        const yearlyPrice = parseFloat(String(plan.yearlyPrice)) || 0;
+                        const price = billingCycle === 'monthly' ? monthlyPrice : yearlyPrice / 12;
+                        const isCurrentPlan = subscription?.plan?.tier === plan.tier;
 
-                    return (
-                        <Card key={plan.id} className={cn(
-                            'relative',
-                            plan.isPopular && 'border-primary shadow-md',
-                            isCurrentPlan && 'ring-2 ring-primary'
-                        )}>
-                            {plan.isPopular && (
-                                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-                                    <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-0.5 rounded-full">
-                                        Popular
-                                    </span>
-                                </div>
-                            )}
-                            <CardHeader className="text-center pb-2">
-                                <CardTitle className="text-lg">{plan.displayName}</CardTitle>
-                                <CardDescription className="text-xs">{plan.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="text-center">
-                                <div className="mb-4">
-                                    <span className="text-3xl font-bold">${price.toFixed(0)}</span>
-                                    <span className="text-muted-foreground text-sm">/mo</span>
-                                </div>
-                                <ul className="space-y-1.5 text-xs text-left mb-4">
-                                    <li className="flex items-center gap-1.5">
-                                        <span className="text-green-600">✓</span>
-                                        {formatLimit(plan.features?.maxContacts || 0)} Contacts
-                                    </li>
-                                    <li className="flex items-center gap-1.5">
-                                        <span className="text-green-600">✓</span>
-                                        {formatLimit(plan.features?.maxMessagesPerMonth || 0)} Messages
-                                    </li>
-                                    <li className="flex items-center gap-1.5">
-                                        <span className="text-green-600">✓</span>
-                                        {formatLimit(plan.features?.maxAgents || 0)} Team Members
-                                    </li>
-                                </ul>
-                                <Button
-                                    className="w-full"
-                                    size="sm"
-                                    variant={isCurrentPlan ? 'outline' : plan.isPopular ? 'default' : 'outline'}
-                                    disabled={isCurrentPlan || upgrading === plan.tier}
-                                    onClick={() => !isCurrentPlan && handleUpgrade(plan.tier)}
-                                >
-                                    {upgrading === plan.tier ? (
-                                        <span className="animate-spin">...</span>
-                                    ) : isCurrentPlan ? 'Current' : 'Upgrade'}
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                        return (
+                            <Card key={plan.id} className={cn(
+                                'relative',
+                                plan.isPopular && 'border-primary shadow-md',
+                                isCurrentPlan && 'ring-2 ring-primary'
+                            )}>
+                                {plan.isPopular && (
+                                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                                        <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-0.5 rounded-full">
+                                            Popular
+                                        </span>
+                                    </div>
+                                )}
+                                <CardHeader className="text-center pb-2">
+                                    <CardTitle className="text-lg">{plan.displayName}</CardTitle>
+                                    <CardDescription className="text-xs">{plan.description}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="text-center">
+                                    <div className="mb-4">
+                                        <span className="text-3xl font-bold">${price.toFixed(0)}</span>
+                                        <span className="text-muted-foreground text-sm">/mo</span>
+                                    </div>
+                                    <ul className="space-y-1.5 text-xs text-left mb-4">
+                                        <li className="flex items-center gap-1.5">
+                                            <span className="text-green-600">✓</span>
+                                            {formatLimit(plan.features?.maxContacts || 0)} Contacts
+                                        </li>
+                                        <li className="flex items-center gap-1.5">
+                                            <span className="text-green-600">✓</span>
+                                            {formatLimit(plan.features?.maxMessagesPerMonth || 0)} Messages
+                                        </li>
+                                        <li className="flex items-center gap-1.5">
+                                            <span className="text-green-600">✓</span>
+                                            {formatLimit(plan.features?.maxAgents || 0)} Team Members
+                                        </li>
+                                    </ul>
+                                    <Button
+                                        className="w-full"
+                                        size="sm"
+                                        variant={isCurrentPlan ? 'outline' : plan.isPopular ? 'default' : 'outline'}
+                                        disabled={isCurrentPlan || upgrading === plan.tier}
+                                        onClick={() => !isCurrentPlan && handleUpgrade(plan.tier)}
+                                    >
+                                        {upgrading === plan.tier ? (
+                                            <span className="animate-spin">...</span>
+                                        ) : isCurrentPlan ? 'Current' : 'Upgrade'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        );
+                    })
+                }
             </div>
         </div>
     );

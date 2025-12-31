@@ -9,12 +9,17 @@ import { InboxModule } from '../../inbox/inbox.module';
 import { ContactsModule } from '../../contacts/contacts.module';
 import { Message } from '../../inbox/message.entity';
 
+import { SuperAdminModule } from '../../super-admin/super-admin.module';
+
+import { WhatsAppTemplate } from './entities/whatsapp-template.entity';
+
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Channel, Message]),
+        TypeOrmModule.forFeature([Channel, Message, WhatsAppTemplate]),
         HttpModule,
         InboxModule,
         ContactsModule,
+        SuperAdminModule,
     ],
     controllers: [WhatsAppController],
     providers: [WhatsAppService, WhatsAppWebhookService],

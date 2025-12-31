@@ -27,6 +27,7 @@ import { ChatbotsModule } from './modules/chatbots/chatbots.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { SecurityModule } from './modules/security/security.module';
+import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 
 @Module({
     imports: [
@@ -98,6 +99,9 @@ import { SecurityModule } from './modules/security/security.module';
         ChatbotsModule,
         AnalyticsModule,
         OnboardingModule,
+
+        // Super Admin Module
+        SuperAdminModule,
     ],
 })
 export class AppModule { }

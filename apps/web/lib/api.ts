@@ -146,12 +146,115 @@ class ApiClient {
             return false;
         }
     }
+    // Generic methods
+    public async get<T>(url: string, params?: any): Promise<T> {
+        const response = await this.client.get<T>(url, { params });
+        return response.data;
+    }
+
+    public async post<T>(url: string, data?: any): Promise<T> {
+        const response = await this.client.post<T>(url, data);
+        return response.data;
+    }
+
+    public async put<T>(url: string, data?: any): Promise<T> {
+        const response = await this.client.put<T>(url, data);
+        return response.data;
+    }
+
+    public async patch<T>(url: string, data?: any): Promise<T> {
+        const response = await this.client.patch<T>(url, data);
+        return response.data;
+    }
+
+    public async delete<T>(url: string): Promise<T> {
+        const response = await this.client.delete<T>(url);
+        return response.data;
+    }
 }
 
 // Export singleton instance
 export const api = new ApiClient();
 
 // Export types
+// Template Library endpoints (admin-created templates for users)
+export const templateLibrary = {
+    // Automation templates
+    getAutomationTemplates: async (category?: string): Promise<AdminAutomationTemplate[]> => {
+        try {
+            return await api.get<AdminAutomationTemplate[]>('/templates/library/automation', { params: { category } });
+        } catch {
+            return [];
+        }
+    },
+
+    getAutomationTemplate: (id: string) =>
+        api.get<AdminAutomationTemplate>(`/templates/library/automation/${id}`),
+
+    // WhatsApp templates
+    getWhatsAppTemplates: async (category?: string): Promise<AdminWhatsAppTemplate[]> => {
+        try {
+            return await api.get<AdminWhatsAppTemplate[]>('/templates/library/whatsapp', { params: { category } });
+        } catch {
+            return [];
+        }
+    },
+
+    getWhatsAppTemplate: (id: string) =>
+        api.get<AdminWhatsAppTemplate>(`/templates/library/whatsapp/${id}`),
+
+    // Email templates
+    getEmailTemplates: async (category?: string): Promise<AdminEmailTemplate[]> => {
+        try {
+            return await api.get<AdminEmailTemplate[]>('/templates/library/email', { params: { category } });
+        } catch {
+            return [];
+        }
+    },
+
+    getEmailTemplate: (id: string) =>
+        api.get<AdminEmailTemplate>(`/templates/library/email/${id}`),
+};
+
+// Admin template types
+export interface AdminAutomationTemplate {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    triggerType: string;
+    nodes: { id: string; type: string; name: string; config: Record<string, any> }[];
+    isActive: boolean;
+    allowedPlans: string[];
+    usageCount: number;
+}
+
+export interface AdminWhatsAppTemplate {
+    id: string;
+    name: string;
+    displayName: string;
+    category: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+    language: string;
+    headerType: 'none' | 'text' | 'image' | 'video' | 'document';
+    headerContent: string;
+    bodyText: string;
+    footerText: string;
+    buttons: { type: string; text: string; value?: string }[];
+    allowedPlans: string[];
+}
+
+export interface AdminEmailTemplate {
+    id: string;
+    name: string;
+    displayName: string;
+    category: 'newsletter' | 'promotional' | 'transactional' | 'notification';
+    subject: string;
+    preheader: string;
+    htmlContent: string;
+    textContent: string;
+    allowedPlans: string[];
+}
+
 export interface User {
     id: string;
     email: string;
@@ -174,3 +277,4 @@ export interface AuthResponse {
     tenant: Tenant;
     token: string;
 }
+

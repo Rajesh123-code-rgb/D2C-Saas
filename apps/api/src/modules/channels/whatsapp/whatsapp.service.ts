@@ -9,6 +9,10 @@ import { InboxService } from '../../inbox/inbox.service';
 import { ContactsService } from '../../contacts/contacts.service';
 import { Message, MessageStatus } from '../../inbox/message.entity';
 
+import { TemplateGovernanceService } from '../../super-admin/services/template-governance.service';
+
+import { WhatsAppTemplate } from './entities/whatsapp-template.entity';
+
 @Injectable()
 export class WhatsAppService {
     private readonly logger = new Logger(WhatsAppService.name);
@@ -19,11 +23,16 @@ export class WhatsAppService {
         private readonly httpService: HttpService,
         private readonly inboxService: InboxService,
         private readonly contactsService: ContactsService,
+        private readonly templateGovernanceService: TemplateGovernanceService,
         @InjectRepository(Channel)
         private readonly channelRepository: Repository<Channel>,
         @InjectRepository(Message)
         private readonly messageRepository: Repository<Message>,
+        @InjectRepository(WhatsAppTemplate)
+        private readonly templateRepository: Repository<WhatsAppTemplate>,
     ) { }
+
+    // ... (methods)
 
     /**
      * Send a text message via WhatsApp
@@ -284,6 +293,77 @@ export class WhatsAppService {
     }
 
     /**
+     * Sync templates from Meta to local DB
+     */
+    async syncTemplates(channelId: string): Promise<any[]> {
+        const channel = await this.channelRepository.findOne({
+            where: { id: channelId },
+        });
+
+        if (!channel || channel.channelType !== 'whatsapp') {
+            throw new HttpException('Invalid WhatsApp channel', HttpStatus.BAD_REQUEST);
+        }
+
+        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        const wabaId = creds['wabaId'];
+        const accessToken = creds['accessToken'];
+
+        if (!wabaId || !accessToken) {
+            throw new HttpException('Missing WABA ID or Access Token', HttpStatus.BAD_REQUEST);
+        }
+
+        const url = `${this.apiUrl}/${wabaId}/message_templates?limit=100`;
+
+        try {
+            const response = await firstValueFrom(
+                this.httpService.get(url, {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                }),
+            );
+
+            const templates = response.data.data;
+            const savedTemplates = [];
+
+            for (const t of templates) {
+                let template = await this.templateRepository.findOne({
+                    where: { metaTemplateId: t.id, channelId: channel.id },
+                });
+
+                if (!template) {
+                    template = this.templateRepository.create({
+                        tenantId: channel.tenantId,
+                        channelId: channel.id,
+                        metaTemplateId: t.id,
+                    });
+                }
+
+                template.name = t.name;
+                template.language = t.language;
+                template.category = t.category;
+                template.status = t.status;
+                template.components = t.components;
+                template.qualityScore = t.quality_score?.score || 'UNKNOWN';
+                template.syncedAt = new Date(); // Only update this on sync
+
+                // Map rejection reason if exists
+                if (t.rejected_reason) {
+                    template.rejectionReason = t.rejected_reason;
+                }
+
+                savedTemplates.push(await this.templateRepository.save(template));
+            }
+
+            return savedTemplates;
+        } catch (error: any) {
+            this.logger.error(`Error syncing templates: ${error.message}`, error.stack);
+            throw new HttpException(
+                error.response?.data || 'Failed to sync templates',
+                error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    /**
      * Create a message template
      */
     async createTemplate(
@@ -302,6 +382,9 @@ export class WhatsAppService {
         if (!channel || channel.channelType !== 'whatsapp') {
             throw new HttpException('Invalid WhatsApp channel', HttpStatus.BAD_REQUEST);
         }
+
+        // Validate template against governance policy
+        await this.templateGovernanceService.validateTemplate(channel.tenantId, templateData);
 
         const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
         const wabaId = creds['wabaId'];
@@ -355,6 +438,13 @@ export class WhatsAppService {
                 for (const status of value.statuses) {
                     await this.handleStatusUpdate(status, tenantId);
                 }
+            }
+
+            // Handle template status updates
+            if (value.event && value.message_template_id) {
+                await this.handleTemplateUpdate(value, tenantId);
+            } else if (changes?.field === 'message_template_status_update') {
+                await this.handleTemplateUpdate(value, tenantId);
             }
         } catch (error: any) {
             this.logger.error(`Error processing webhook: ${error.message}`, error.stack);
@@ -499,6 +589,44 @@ export class WhatsAppService {
             this.logger.log(`Message ${messageId} status updated to ${statusValue}`);
         } catch (error: any) {
             this.logger.error(`Error updating message status: ${error.message}`, error.stack);
+        }
+    }
+
+    /**
+     * Handle template status update
+     */
+    private async handleTemplateUpdate(value: any, tenantId: string): Promise<void> {
+        const templateId = value.message_template_id;
+        const event = value.event; // APPROVED, REJECTED, PAUSED
+        const reason = value.reason;
+
+        try {
+            const template = await this.templateRepository.findOne({
+                where: { metaTemplateId: templateId.toString() },
+            });
+
+            if (!template) {
+                this.logger.warn(`Template ${templateId} not found for status update`);
+                return;
+            }
+
+            // Verify tenant matches (optional safely check)
+            if (template.tenantId !== tenantId) {
+                this.logger.warn(`Tenant mismatch for template ${templateId}: Expected ${template.tenantId}, got ${tenantId}`);
+                // We might proceed anyway if we trust the webhook, or return.
+                // Meta webhooks usually come for a specific WABA which belongs to a tenant.
+            }
+
+            template.status = event;
+            if (reason) {
+                template.rejectionReason = reason;
+            }
+            template.syncedAt = new Date();
+
+            await this.templateRepository.save(template);
+            this.logger.log(`Template ${templateId} status updated to ${event}`);
+        } catch (error: any) {
+            this.logger.error(`Error updating template status: ${error.message}`, error.stack);
         }
     }
 }
