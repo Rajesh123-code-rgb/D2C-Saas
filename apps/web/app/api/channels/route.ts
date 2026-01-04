@@ -3,6 +3,10 @@ import { cookies } from 'next/headers';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+// Disable route caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(_request: Request) {
     try {
         const cookieStore = await cookies();
@@ -20,6 +24,7 @@ export async function GET(_request: Request) {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
+            cache: 'no-store', // Disable fetch caching
         });
 
         if (!response.ok) {
@@ -38,7 +43,15 @@ export async function GET(_request: Request) {
         }
 
         const data = await response.json();
-        return NextResponse.json(data);
+
+        // Return with no-cache headers
+        return NextResponse.json(data, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            }
+        });
     } catch (error: any) {
         console.error('Error fetching channels:', error);
         return NextResponse.json(
