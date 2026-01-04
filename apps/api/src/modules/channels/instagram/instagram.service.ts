@@ -27,6 +27,63 @@ export class InstagramService {
     }
 
     /**
+     * Subscribe app to Facebook Page for receiving Instagram DM webhooks
+     * Per Meta docs: Required to receive messaging webhooks
+     * @see https://developers.facebook.com/docs/messenger-platform/webhooks
+     */
+    async subscribeToPage(pageId: string, pageAccessToken: string): Promise<boolean> {
+        const url = `${this.apiUrl}/${pageId}/subscribed_apps`;
+
+        try {
+            this.logger.log(`Subscribing to page ${pageId} for messages webhook...`);
+
+            const response = await firstValueFrom(
+                this.httpService.post(url, null, {
+                    params: {
+                        subscribed_fields: 'messages,messaging_postbacks,messaging_optins',
+                        access_token: pageAccessToken,
+                    },
+                }),
+            );
+
+            if (response.data?.success) {
+                this.logger.log(`✅ Successfully subscribed to page ${pageId}`);
+                return true;
+            } else {
+                this.logger.warn(`Page subscription response: ${JSON.stringify(response.data)}`);
+                return false;
+            }
+        } catch (error: any) {
+            this.logger.error(`Failed to subscribe to page ${pageId}: ${error.message}`);
+            if (error.response?.data) {
+                this.logger.error(`Error details: ${JSON.stringify(error.response.data)}`);
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Unsubscribe app from Facebook Page webhooks
+     */
+    async unsubscribeFromPage(pageId: string, pageAccessToken: string): Promise<boolean> {
+        const url = `${this.apiUrl}/${pageId}/subscribed_apps`;
+
+        try {
+            const response = await firstValueFrom(
+                this.httpService.delete(url, {
+                    params: { access_token: pageAccessToken },
+                }),
+            );
+
+            this.logger.log(`Unsubscribed from page ${pageId}`);
+            return response.data?.success || false;
+        } catch (error: any) {
+            this.logger.error(`Failed to unsubscribe from page: ${error.message}`);
+            return false;
+        }
+    }
+
+    /**
      * Send a text message via Instagram Messenger
      */
     async sendTextMessage(
