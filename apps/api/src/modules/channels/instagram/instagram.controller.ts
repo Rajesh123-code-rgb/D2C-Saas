@@ -112,10 +112,30 @@ export class InstagramController {
             for (const entry of body.entry || []) {
                 this.logger.log(`Entry ID: ${entry.id}`);
                 this.logger.log(`Entry messaging array length: ${entry.messaging?.length || 0}`);
+                this.logger.log(`Entry changes array length: ${entry.changes?.length || 0}`);
 
-                const messaging = entry.messaging?.[0];
+                // Instagram webhooks can come in two formats:
+                // 1. messaging array - direct DM format
+                // 2. changes array - subscription changes format
+
+                let messaging = entry.messaging?.[0];
+
+                // If no messaging, check changes format
+                if (!messaging && entry.changes?.length > 0) {
+                    const change = entry.changes[0];
+                    if (change.field === 'messages' && change.value) {
+                        this.logger.log('Converting changes format to messaging format');
+                        messaging = {
+                            sender: change.value.sender,
+                            recipient: change.value.recipient,
+                            message: change.value.message,
+                            timestamp: change.value.timestamp,
+                        };
+                    }
+                }
+
                 if (!messaging) {
-                    this.logger.warn('No messaging data in entry');
+                    this.logger.warn('No messaging data in entry (checked both messaging and changes formats)');
                     continue;
                 }
 
@@ -124,10 +144,10 @@ export class InstagramController {
                 this.logger.log(`Message text: ${messaging.message?.text}`);
 
                 // Get the Instagram Account ID (recipient is our page/account)
-                const instagramAccountId = messaging.recipient?.id;
+                const instagramAccountId = messaging.recipient?.id || entry.id;
 
-                if (!instagramAccountId) {
-                    this.logger.warn('No recipient ID in webhook');
+                if (!instagramAccountId || instagramAccountId === '0') {
+                    this.logger.warn('No valid recipient ID in webhook (might be a test event)');
                     continue;
                 }
 
@@ -146,8 +166,13 @@ export class InstagramController {
                 // Process message asynchronously (Meta requires response within 5 seconds)
                 // Using setImmediate to not block the webhook response
                 setImmediate(() => {
+                    // Construct entry in the expected format for processing
+                    const normalizedEntry = {
+                        ...entry,
+                        messaging: [messaging],
+                    };
                     this.instagramService
-                        .processIncomingMessage({ entry: [entry] }, tenantId)
+                        .processIncomingMessage({ entry: [normalizedEntry] }, tenantId)
                         .then(() => {
                             this.logger.log('✅ Message processed successfully');
                         })
