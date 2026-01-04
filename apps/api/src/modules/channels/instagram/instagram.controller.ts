@@ -28,7 +28,16 @@ export class InstagramController {
         private readonly configService: ConfigService,
     ) {
         this.verifyToken = this.configService.get<string>('META_VERIFY_TOKEN') || '';
-        this.appSecret = this.configService.get<string>('META_APP_SECRET') || '';
+        // Use Instagram-specific secret if available, otherwise fall back to Meta App Secret
+        this.appSecret = this.configService.get<string>('INSTAGRAM_APP_SECRET')
+            || this.configService.get<string>('META_APP_SECRET')
+            || '';
+
+        if (this.configService.get<string>('INSTAGRAM_APP_SECRET')) {
+            this.logger.log('Using INSTAGRAM_APP_SECRET for webhook verification');
+        } else {
+            this.logger.log('Using META_APP_SECRET for Instagram webhook verification');
+        }
     }
 
     /**
