@@ -29,14 +29,15 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Inbox', href: '/inbox', icon: Inbox },
+    { name: 'WhatsApp', href: '/inbox', icon: MessageSquare }, // Was Inbox
+    { name: 'Email', href: '/email/inbox', icon: Inbox }, // New Email Inbox
     { name: 'Contacts', href: '/contacts', icon: Users },
     { name: 'Segments', href: '/segments', icon: Target },
     { name: 'Orders', href: '/orders', icon: ShoppingBag },
     { name: 'Abandoned Carts', href: '/abandoned-carts', icon: ShoppingCart },
     { name: 'Stores', href: '/settings/stores', icon: Store },
     { name: 'Channels', href: '/channels', icon: Radio },
-    { name: 'Campaigns', href: '/campaigns', icon: MessageSquare },
+    { name: 'Campaigns', href: '/campaigns', icon: BarChart3 }, // Use BarChart3 or similar
     { name: 'Templates', href: '/templates', icon: FileText },
     { name: 'Automations', href: '/automations', icon: Zap },
     { name: 'Chatbots', href: '/chatbots', icon: Bot },

@@ -277,4 +277,52 @@ export interface AuthResponse {
     tenant: Tenant;
     token: string;
 }
+// Email API
+export const emailApi = {
+    send: (data: { channelId: string; to: string; subject: string; html?: string; text?: string }) =>
+        api.post('/email/send', data),
+    sendTemplate: (data: { channelId: string; to: string; templateId: string; variables: Record<string, string> }) =>
+        api.post('/email/send-template', data),
+};
 
+// Inbox API
+export const inboxApi = {
+    getConversations: (params?: { status?: string; channelType?: string; limit?: number; offset?: number }) =>
+        api.get<any[]>('/inbox/conversations', params),
+
+    getConversation: (id: string) =>
+        api.get<any>(`/inbox/conversations/${id}`),
+
+    getMessages: (id: string, params?: { limit?: number; offset?: number }) =>
+        api.get<any[]>(`/inbox/conversations/${id}/messages`, params),
+
+    sendMessage: (id: string, data: { content?: string; messageType?: string; media?: any }) =>
+        api.post(`/inbox/conversations/${id}/messages`, data),
+
+    updateStatus: (id: string, status: string) =>
+        api.patch(`/inbox/conversations/${id}/status`, { status }),
+
+    assignConversation: (id: string, assignedToId: string | null) =>
+        api.patch(`/inbox/conversations/${id}/assign`, { assignedToId }),
+};
+
+// Channels API
+export const channelsApi = {
+    getChannels: () =>
+        api.get<any[]>('/channels'),
+
+    createChannel: (data: { channelType: string; name: string; credentials: any; config?: any }) =>
+        api.post('/channels', data),
+
+    updateChannel: (id: string, data: any) =>
+        api.put(`/channels/${id}`, data),
+
+    deleteChannel: (id: string) =>
+        api.delete(`/channels/${id}`),
+
+    testConnection: (id: string) =>
+        api.post(`/channels/${id}/test`, {}),
+
+    checkCompliance: (id: string) =>
+        api.get(`/channels/${id}/compliance`),
+};

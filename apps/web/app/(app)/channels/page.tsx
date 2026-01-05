@@ -63,13 +63,14 @@ const channelTypes = [
     {
         type: 'instagram',
         name: 'Instagram Direct',
-        description: 'Connect multiple Instagram accounts to manage direct messages',
+        description: 'Connect Instagram accounts to manage direct messages',
         icon: Instagram,
         color: 'text-pink-600',
         bgColor: 'bg-pink-50',
         borderColor: 'border-pink-200',
         gradient: 'from-pink-500 to-purple-600',
         buttonText: 'Add Instagram Account',
+        comingSoon: true,
     },
     {
         type: 'email',
@@ -378,13 +379,20 @@ export default function ChannelsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Button
-                                            onClick={() => handleConnect(channelType.type)}
-                                            className={cn('bg-gradient-to-r text-white hover:opacity-90', channelType.gradient)}
-                                        >
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            {channelType.buttonText}
-                                        </Button>
+                                        {(channelType as any).comingSoon ? (
+                                            <Badge variant="secondary" className="bg-gradient-to-r from-pink-100 to-purple-100 text-pink-700 border-pink-200 px-4 py-2">
+                                                <Clock className="mr-2 h-4 w-4" />
+                                                Coming Soon
+                                            </Badge>
+                                        ) : (
+                                            <Button
+                                                onClick={() => handleConnect(channelType.type)}
+                                                className={cn('bg-gradient-to-r text-white hover:opacity-90', channelType.gradient)}
+                                            >
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                {channelType.buttonText}
+                                            </Button>
+                                        )}
                                         {channelsOfType.length > 0 && (
                                             <Button
                                                 variant="ghost"

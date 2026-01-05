@@ -16,6 +16,7 @@ import {
     Zap,
     RefreshCw,
     Loader2,
+    Mail,
 } from 'lucide-react';
 import { CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -28,6 +29,7 @@ const mockStats: DashboardStats = {
     users: { total: 1245, active: 890 },
     revenue: { today: 12500, month: 328500, growth: 12.5 },
     messages: { today: 45230, month: 1234567 },
+    emails: { today: 12450, month: 345000 },
     conversations: { marketing: 45000, utility: 78000, service: 23000 },
 };
 
@@ -229,6 +231,23 @@ export default function AdminDashboardPage() {
                         </p>
                     </CardContent>
                 </GlassCard>
+
+                <GlassCard className="glass-card-hover group">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-slate-400">
+                            Emails Today
+                        </CardTitle>
+                        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 group-hover:text-orange-300 transition-colors">
+                            <Mail className="h-4 w-4" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-orange-100 transition-colors">{formatNumber(stats.emails?.today || 0)}</div>
+                        <p className="text-xs text-slate-400">
+                            {formatNumber(stats.emails?.month || 0)} total this month
+                        </p>
+                    </CardContent>
+                </GlassCard>
             </div>
 
             {/* Conversation Categories */}
@@ -357,8 +376,8 @@ export default function AdminDashboardPage() {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={`h-10 w-10 rounded-full flex items-center justify-center border transition-all ${tx.creditsAmount > 0
-                                                ? 'bg-green-500/10 border-green-500/20 text-green-400 group-hover:border-green-500/40'
-                                                : 'bg-red-500/10 border-red-500/20 text-red-400 group-hover:border-red-500/40'
+                                            ? 'bg-green-500/10 border-green-500/20 text-green-400 group-hover:border-green-500/40'
+                                            : 'bg-red-500/10 border-red-500/20 text-red-400 group-hover:border-red-500/40'
                                             }`}>
                                             {tx.creditsAmount > 0 ? (
                                                 <TrendingUp className="h-5 w-5" />

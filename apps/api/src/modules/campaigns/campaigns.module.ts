@@ -9,6 +9,7 @@ import { CampaignsController } from './campaigns.controller';
 import { CampaignsProcessor } from './campaigns.processor';
 import { SegmentsModule } from '../segments/segments.module';
 import { WhatsAppModule } from '../channels/whatsapp/whatsapp.module';
+import { EmailModule } from '../channels/email/email.module';
 import { ContactsModule } from '../contacts/contacts.module';
 import { Channel } from '../channels/channel.entity';
 import { Contact } from '../contacts/contact.entity';
@@ -29,6 +30,7 @@ import { Contact } from '../contacts/contact.entity';
         forwardRef(() => SegmentsModule),
         forwardRef(() => WhatsAppModule),
         forwardRef(() => ContactsModule),
+        forwardRef(() => EmailModule),
     ],
     providers: [CampaignsService, CampaignsProcessor],
     controllers: [CampaignsController],

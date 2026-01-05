@@ -19,10 +19,14 @@ export class ChannelsService {
     }
 
     async findAll(tenantId: string): Promise<Channel[]> {
+        console.log(`[ChannelsService] findAll called with tenantId: ${tenantId}`);
+
         const channels = await this.channelsRepository.find({
             where: { tenantId },
             order: { createdAt: 'DESC' },
         });
+
+        console.log(`[ChannelsService] Found ${channels.length} channels for tenant ${tenantId}`);
 
         // Decrypt credentials for display (only show partial info)
         return channels.map(channel => ({

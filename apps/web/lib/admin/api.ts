@@ -409,6 +409,7 @@ export interface DashboardStats {
     users: { total: number; active: number };
     revenue: { today: number; month: number; growth: number };
     messages: { today: number; month: number };
+    emails: { today: number; month: number };
     conversations: { marketing: number; utility: number; service: number };
 }
 

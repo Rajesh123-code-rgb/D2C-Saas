@@ -12,6 +12,7 @@ import {
 } from './entities/campaign.entity';
 import { CampaignsService } from './campaigns.service';
 import { WhatsAppService } from '../channels/whatsapp/whatsapp.service';
+import { EmailService } from '../channels/email/email.service';
 import { Channel } from '../channels/channel.entity';
 import { Contact } from '../contacts/contact.entity';
 
@@ -53,6 +54,8 @@ export class CampaignsProcessor extends WorkerHost {
         private readonly campaignsService: CampaignsService,
         @Inject(forwardRef(() => WhatsAppService))
         private readonly whatsAppService: WhatsAppService,
+        @Inject(forwardRef(() => EmailService))
+        private readonly emailService: EmailService,
     ) {
         super();
     }
@@ -272,18 +275,41 @@ export class CampaignsProcessor extends WorkerHost {
             throw new Error('Contact has no email address');
         }
 
-        // TODO: Integrate with email service (Nodemailer, SendGrid, etc.)
-        // For now, log and mark as sent for testing
-        this.logger.log({
-            message: 'Email would be sent',
-            executionId: execution.id,
-            contactEmail: contact.email,
-            subject: content.emailSubject,
+        this.logger.log(`Sending email campaign message to ${contact.email}`);
+
+        // Find the email channel for this tenant
+        // Optimization: Could pass channelId in content if known, but lookup is safer
+        const channel = await this.channelRepository.findOne({
+            where: {
+                tenantId: campaign.tenantId,
+                channelType: 'email' as any,
+                status: 'connected' as any,
+            },
         });
 
-        // Mark as sent (placeholder for email integration)
+        if (!channel) {
+            throw new Error('No connected email channel found for this tenant');
+        }
+
+        // Send via Email Service
+        const result = await this.emailService.sendEmail(channel.id, {
+            to: contact.email,
+            subject: content.emailSubject || 'No Subject',
+            html: content.emailBody || '',
+            text: content.emailBody?.replace(/<[^>]*>/g, '') || '', // Simple strip tags
+            messageId: execution.id, // For tracking
+        });
+
+        // Mark as sent
         await this.campaignsService.updateExecutionStatus(execution.id, 'sent', {
-            externalMessageId: `email_${Date.now()}`,
+            externalMessageId: result.messageId,
+        });
+
+        this.logger.log({
+            message: 'Email campaign message sent',
+            executionId: execution.id,
+            contactEmail: contact.email,
+            messageId: result.messageId,
         });
     }
 

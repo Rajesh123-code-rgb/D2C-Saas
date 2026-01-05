@@ -13,6 +13,21 @@ import {
     Zap,
 } from 'lucide-react';
 
+interface ChannelStats {
+    totalSent: number;
+    totalDelivered: number;
+    totalOpened: number;
+    totalClicked: number;
+    totalReplied: number;
+    totalConverted: number;
+    conversionValue: number;
+    deliveryRate: number;
+    openRate: number;
+    clickRate: number;
+    replyRate: number;
+    conversionRate: number;
+}
+
 interface CampaignMetrics {
     totalCampaigns: number;
     activeCampaigns: number;
@@ -29,10 +44,13 @@ interface CampaignMetrics {
     clickRate: number;
     replyRate: number;
     conversionRate: number;
+    email?: ChannelStats;
+    whatsapp?: ChannelStats;
     campaignPerformance: Array<{
         id: string;
         name: string;
         status: string;
+        type?: string;
         sent: number;
         delivered: number;
         opened: number;
@@ -226,6 +244,70 @@ export default function AnalyticsPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Email Analytics Section */}
+            {(campaignMetrics?.email?.totalSent || 0) > 0 && (
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <div className="p-1.5 bg-blue-100 rounded-md">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-blue-600"
+                            >
+                                <rect width="20" height="16" x="2" y="4" rx="2" />
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                            </svg>
+                        </div>
+                        Email Performance
+                    </h3>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card className="bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Delivery Rate</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{(campaignMetrics?.email?.deliveryRate || 0).toFixed(1)}%</div>
+                                <p className="text-xs text-muted-foreground">{campaignMetrics?.email?.totalDelivered || 0} emails delivered</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Open Rate</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{(campaignMetrics?.email?.openRate || 0).toFixed(1)}%</div>
+                                <p className="text-xs text-muted-foreground">{campaignMetrics?.email?.totalOpened || 0} emails opened</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Click Rate</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{(campaignMetrics?.email?.clickRate || 0).toFixed(1)}%</div>
+                                <p className="text-xs text-muted-foreground">{campaignMetrics?.email?.totalClicked || 0} clicks generated</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Sent Volume</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{(campaignMetrics?.email?.totalSent || 0).toLocaleString()}</div>
+                                <p className="text-xs text-muted-foreground">Total emails sent</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            )}
 
             <div className="grid gap-6 lg:grid-cols-2">
                 {/* Messages Chart */}

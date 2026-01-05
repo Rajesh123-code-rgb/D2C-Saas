@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle, Mail, CheckCircle } from 'lucide-react';
+import { channelsApi } from '@/lib/api';
 
 interface EmailModalProps {
     open: boolean;
@@ -40,65 +41,18 @@ export function EmailModal({ open, onOpenChange, onSuccess }: EmailModalProps) {
         setError('');
 
         try {
-            const response = await fetch('/api/channels', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    channelType: 'email',
-                    name: formData.name,
-                    credentials: {
-                        email: formData.email,
-                        password: formData.password,
-                        smtpHost: formData.smtpHost,
-                        smtpPort: parseInt(formData.smtpPort),
-                        imapHost: formData.imapHost || formData.smtpHost,
-                        imapPort: parseInt(formData.imapPort),
-                    },
-                }),
+            await channelsApi.createChannel({
+                channelType: 'email',
+                name: formData.name,
+                credentials: {
+                    email: formData.email,
+                    password: formData.password,
+                    smtpHost: formData.smtpHost,
+                    smtpPort: parseInt(formData.smtpPort),
+                    imapHost: formData.imapHost || formData.smtpHost,
+                    imapPort: parseInt(formData.imapPort),
+                },
             });
-
-            if (!response.ok) {
-                // Parse error response
-                let errorMessage = 'Failed to connect email account';
-
-                try {
-                    const data = await response.json();
-
-                    // Handle specific error types
-                    if (response.status === 401) {
-                        errorMessage = '⚠️ Authentication Failed\n\nYou need to be logged in to connect channels. Please log in and try again.';
-                    } else if (response.status === 403) {
-                        errorMessage = '⚠️ Permission Denied\n\nYou don\'t have permission to add channels. Please contact your administrator.';
-                    } else if (data.message) {
-                        const msg = data.message.toLowerCase();
-
-                        // SMTP/IMAP connection errors
-                        if (msg.includes('etimedout') || msg.includes('timeout')) {
-                            errorMessage = '❌ Connection Timeout\n\nCouldn\'t reach the email server. Please check:\n• SMTP/IMAP host address is correct\n• Port numbers are correct (587 for SMTP, 993 for IMAP)\n• Your firewall allows outgoing connections\n• The email server is online';
-                        } else if (msg.includes('econnrefused') || msg.includes('connection refused')) {
-                            errorMessage = '❌ Connection Refused\n\nThe email server rejected the connection. Please verify:\n• SMTP host: ' + formData.smtpHost + '\n• SMTP port: ' + formData.smtpPort + '\n• Server is accepting connections on this port';
-                        } else if (msg.includes('authentication failed') || msg.includes('invalid credentials')) {
-                            errorMessage = '❌ Authentication Failed\n\nEmail or password is incorrect. For Gmail users:\n• Enable 2-Step Verification in Google Account\n• Generate an App Password (not your regular password)\n• Use the App Password in the password field\n\nFor other providers, verify your email and password are correct.';
-                        } else if (msg.includes('unauthorized') || msg.includes('auth')) {
-                            errorMessage = '⚠️ Login Required\n\nPlease log in to your account first, then try connecting your email.';
-                        } else if (msg.includes('tls') || msg.includes('ssl')) {
-                            errorMessage = '❌ Secure Connection Error\n\nCouldn\'t establish a secure connection. Try:\n• Port 587 with STARTTLS for SMTP\n• Port 993 with SSL/TLS for IMAP\n• Check if your email provider requires SSL/TLS';
-                        } else {
-                            // Use backend error message
-                            errorMessage = '❌ Connection Failed\n\n' + data.message;
-                        }
-                    }
-                } catch (parseError) {
-                    // If JSON parsing fails, use status-based message
-                    if (response.status === 401) {
-                        errorMessage = '⚠️ Please log in to connect channels';
-                    } else if (response.status >= 500) {
-                        errorMessage = '❌ Server Error\n\nThe server encountered an error. Please try again later.';
-                    }
-                }
-
-                throw new Error(errorMessage);
-            }
 
             onSuccess();
             onOpenChange(false);
@@ -106,12 +60,37 @@ export function EmailModal({ open, onOpenChange, onSuccess }: EmailModalProps) {
         } catch (err: any) {
             console.error('Email connection error:', err);
 
-            // Handle network errors
-            if (err.message.includes('Failed to fetch') || err.name === 'TypeError') {
-                setError('❌ Network Error\n\nCouldn\'t connect to the server. Please check:\n• Your internet connection\n• The application server is running\n• Try refreshing the page');
-            } else {
-                setError(err.message || '❌ Failed to connect email account\n\nPlease check your settings and try again.');
+            // Extract error message from Axios response
+            const data = err.response?.data;
+            const status = err.response?.status;
+            let errorMessage = 'Failed to connect email account';
+
+            if (status === 401) {
+                errorMessage = '⚠️ Authentication Failed\n\nYou need to be logged in to connect channels. Please log in and try again.';
+            } else if (status === 403) {
+                errorMessage = '⚠️ Permission Denied\n\nYou don\'t have permission to add channels. Please contact your administrator.';
+            } else if (data?.message) {
+                const msg = data.message.toLowerCase();
+
+                // SMTP/IMAP connection errors
+                if (msg.includes('etimedout') || msg.includes('timeout')) {
+                    errorMessage = '❌ Connection Timeout\n\nCouldn\'t reach the email server. Please check:\n• SMTP/IMAP host address is correct\n• Port numbers are correct (587 for SMTP, 993 for IMAP)\n• Your firewall allows outgoing connections\n• The email server is online';
+                } else if (msg.includes('econnrefused') || msg.includes('connection refused')) {
+                    errorMessage = '❌ Connection Refused\n\nThe email server rejected the connection. Please verify:\n• SMTP host: ' + formData.smtpHost + '\n• SMTP port: ' + formData.smtpPort + '\n• Server is accepting connections on this port';
+                } else if (msg.includes('authentication failed') || msg.includes('invalid credentials')) {
+                    errorMessage = '❌ Authentication Failed\n\nEmail or password is incorrect. For Gmail users:\n• Enable 2-Step Verification in Google Account\n• Generate an App Password (not your regular password)\n• Use the App Password in the password field\n\nFor other providers, verify your email and password are correct.';
+                } else if (msg.includes('unauthorized') || msg.includes('auth')) {
+                    errorMessage = '⚠️ Login Required\n\nPlease log in to your account first, then try connecting your email.';
+                } else if (msg.includes('tls') || msg.includes('ssl')) {
+                    errorMessage = '❌ Secure Connection Error\n\nCouldn\'t establish a secure connection. Try:\n• Port 587 with STARTTLS for SMTP\n• Port 993 with SSL/TLS for IMAP\n• Check if your email provider requires SSL/TLS';
+                } else {
+                    errorMessage = '❌ Connection Failed\n\n' + data.message;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
             }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

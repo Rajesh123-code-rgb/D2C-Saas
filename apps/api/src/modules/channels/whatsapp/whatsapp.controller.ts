@@ -10,10 +10,12 @@ import {
     Logger,
     RawBodyRequest,
     Req,
+    UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { WhatsAppService } from './whatsapp.service';
 import { WhatsAppWebhookService } from './whatsapp-webhook.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @ApiTags('WhatsApp')
 @Controller('whatsapp')
@@ -117,6 +119,8 @@ export class WhatsAppController {
      * Send a text message
      */
     @Post('send-message')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Send a WhatsApp text message' })
     async sendMessage(
         @Body()
@@ -126,7 +130,20 @@ export class WhatsAppController {
             message: string;
         },
     ): Promise<any> {
-        return this.whatsappService.sendTextMessage(body.channelId, body.to, body.message);
+        this.logger.log(`=== SEND TEST MESSAGE ===>`);
+        this.logger.log(`Channel ID: ${body.channelId}`);
+        this.logger.log(`To: ${body.to}`);
+        this.logger.log(`Message: ${body.message}`);
+
+        try {
+            const result = await this.whatsappService.sendTextMessage(body.channelId, body.to, body.message);
+            this.logger.log(`Message sent successfully: ${JSON.stringify(result)}`);
+            return result;
+        } catch (error: any) {
+            this.logger.error(`Failed to send message: ${error.message}`);
+            this.logger.error(`Error details: ${JSON.stringify(error.response?.data || error)}`);
+            throw error;
+        }
     }
 
     /**

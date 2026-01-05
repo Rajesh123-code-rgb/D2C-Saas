@@ -134,8 +134,8 @@ interface WhatsAppTemplate {
 const CHANNEL_TABS = [
     { id: 'all', label: 'All', icon: MessageSquare },
     { id: 'whatsapp', label: 'WhatsApp', icon: Phone },
-    { id: 'instagram', label: 'Instagram', icon: Instagram },
-    { id: 'email', label: 'Email', icon: Mail },
+    // { id: 'instagram', label: 'Instagram', icon: Instagram }, // Coming Soon
+    // { id: 'email', label: 'Email', icon: Mail }, // Moved to separate Email Inbox
 ];
 
 const STATUS_FILTERS = ['all', 'open', 'pending', 'resolved', 'snoozed'];

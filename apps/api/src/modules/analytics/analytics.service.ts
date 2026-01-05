@@ -48,6 +48,7 @@ export interface DashboardMetrics {
     };
     avgResponseTime: number;
     resolutionRate: number;
+    emailOpenRate: number;
 }
 
 export interface CampaignMetrics {
@@ -228,6 +229,25 @@ export class AnalyticsService {
         // Average response time (simplified)
         const avgResponseTime = 2.5;
 
+        // Email Performance (Last 30 days)
+        const emailCampaigns = await this.campaignRepository.find({
+            where: {
+                tenantId,
+                primaryChannel: 'email' as any,
+                createdAt: MoreThanOrEqual(startOfLastMonth), // Last ~60 days to be safe
+            },
+        });
+
+        let emailSent = 0;
+        let emailOpened = 0;
+        emailCampaigns.forEach(c => {
+            const stats = (c.stats || {}) as CampaignStats;
+            emailSent += stats.totalSent || 0;
+            emailOpened += stats.totalOpened || 0;
+        });
+
+        const emailOpenRate = emailSent > 0 ? (emailOpened / emailSent) * 100 : 0;
+
         return {
             conversations: {
                 total: totalConversations,
@@ -261,39 +281,59 @@ export class AnalyticsService {
             },
             avgResponseTime,
             resolutionRate: Math.round(resolutionRate * 10) / 10,
+            emailOpenRate: Math.round(emailOpenRate * 10) / 10,
         };
     }
 
-    async getCampaignMetrics(tenantId: string, dateRange?: DateRange): Promise<CampaignMetrics> {
+    async getCampaignMetrics(tenantId: string, dateRange?: DateRange): Promise<CampaignMetrics & { email: any; whatsapp: any }> {
         const campaigns = await this.campaignRepository.find({ where: { tenantId } });
 
         const totalCampaigns = campaigns.length;
         const activeCampaigns = campaigns.filter(c => c.status === CampaignStatus.RUNNING).length;
         const completedCampaigns = campaigns.filter(c => c.status === CampaignStatus.COMPLETED).length;
 
-        // Aggregate stats from all campaigns
-        let totalSent = 0;
-        let totalDelivered = 0;
-        let totalOpened = 0;
-        let totalClicked = 0;
-        let totalReplied = 0;
-        let totalConverted = 0;
-        let conversionValue = 0;
+        // Helper to calculate stats for a subset of campaigns
+        const calculateStats = (subset: Campaign[]) => {
+            let sent = 0, delivered = 0, opened = 0, clicked = 0, replied = 0, converted = 0, value = 0;
+
+            subset.forEach(c => {
+                const stats = (c.stats || {}) as CampaignStats;
+                sent += stats.totalSent || 0;
+                delivered += stats.totalDelivered || 0;
+                opened += stats.totalOpened || 0;
+                clicked += stats.totalClicked || 0;
+                replied += stats.totalReplied || 0;
+                converted += stats.totalConverted || 0;
+                value += stats.conversionValue || 0;
+            });
+
+            return {
+                totalSent: sent,
+                totalDelivered: delivered,
+                totalOpened: opened,
+                totalClicked: clicked,
+                totalReplied: replied,
+                totalConverted: converted,
+                conversionValue: value,
+                deliveryRate: sent > 0 ? (delivered / sent) * 100 : 0,
+                openRate: delivered > 0 ? (opened / delivered) * 100 : 0,
+                clickRate: opened > 0 ? (clicked / opened) * 100 : 0,
+                replyRate: delivered > 0 ? (replied / delivered) * 100 : 0,
+                conversionRate: delivered > 0 ? (converted / delivered) * 100 : 0,
+            };
+        };
+
+        const totalStats = calculateStats(campaigns);
+        const emailStats = calculateStats(campaigns.filter(c => c.primaryChannel === 'email'));
+        const whatsappStats = calculateStats(campaigns.filter(c => c.primaryChannel === 'whatsapp'));
 
         const campaignPerformance = campaigns.map(campaign => {
             const stats = (campaign.stats || {}) as CampaignStats;
-            totalSent += stats.totalSent || 0;
-            totalDelivered += stats.totalDelivered || 0;
-            totalOpened += stats.totalOpened || 0;
-            totalClicked += stats.totalClicked || 0;
-            totalReplied += stats.totalReplied || 0;
-            totalConverted += stats.totalConverted || 0;
-            conversionValue += stats.conversionValue || 0;
-
             return {
                 id: campaign.id,
                 name: campaign.name,
                 status: campaign.status,
+                type: campaign.primaryChannel, // Added type
                 sent: stats.totalSent || 0,
                 delivered: stats.totalDelivered || 0,
                 opened: stats.totalOpened || 0,
@@ -307,18 +347,9 @@ export class AnalyticsService {
             totalCampaigns,
             activeCampaigns,
             completedCampaigns,
-            totalSent,
-            totalDelivered,
-            totalOpened,
-            totalClicked,
-            totalReplied,
-            totalConverted,
-            conversionValue,
-            deliveryRate: totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0,
-            openRate: totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0,
-            clickRate: totalOpened > 0 ? (totalClicked / totalOpened) * 100 : 0,
-            replyRate: totalDelivered > 0 ? (totalReplied / totalDelivered) * 100 : 0,
-            conversionRate: totalDelivered > 0 ? (totalConverted / totalDelivered) * 100 : 0,
+            ...totalStats,
+            email: emailStats,
+            whatsapp: whatsappStats,
             campaignPerformance: campaignPerformance.slice(0, 10),
         };
     }

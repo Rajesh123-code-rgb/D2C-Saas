@@ -112,8 +112,18 @@ export class EmailService {
             where: { id: channelId },
         });
 
+        if (!channel || channel.channelType !== 'email') {
+            throw new Error('Invalid email channel');
+        }
+
+        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
+        // Support 'provider' field in credentials or fallback to env
+        const provider = creds.provider || this.configService.get<string>('EMAIL_SERVICE');
+        const fromEmail = creds.email || this.configService.get<string>('EMAIL_FROM');
+        const fromName = creds.displayName || 'OmniChannel';
+
         // Governance Validation
-        if (channel && channel.tenantId) {
+        if (channel.tenantId) {
             await this.emailGovernanceService.validateEmail(channel.tenantId, {
                 subject: options.subject,
                 body: (options.html || options.text) || '',
@@ -121,17 +131,54 @@ export class EmailService {
             });
         }
 
+        // Use SendGrid Native SDK if provider is sendgrid
+        if (provider === 'sendgrid') {
+            const apiKey = creds.apiKey || this.configService.get<string>('SENDGRID_API_KEY');
+            if (!apiKey) throw new Error('SendGrid API Key not found');
 
-        if (!channel || channel.channelType !== 'email') {
-            throw new Error('Invalid email channel');
+            const sgMail = require('@sendgrid/mail');
+            sgMail.setApiKey(apiKey);
+
+            const msg = {
+                to: options.to,
+                from: { email: fromEmail, name: fromName },
+                subject: options.subject,
+                text: options.text || '',
+                html: options.html || options.text || '',
+                cc: options.cc,
+                bcc: options.bcc,
+                replyTo: options.replyTo,
+                attachments: options.attachments?.map(att => ({
+                    content: att.content?.toString('base64'),
+                    filename: att.filename,
+                    type: att.contentType || 'application/octet-stream',
+                    disposition: 'attachment',
+                })),
+                trackingSettings: {
+                    clickTracking: { enable: true },
+                    openTracking: { enable: true },
+                },
+            };
+
+            try {
+                const [response] = await sgMail.send(msg);
+                this.logger.log(`[SendGrid] Email sent to ${Array.isArray(options.to) ? options.to.join(',') : options.to}: ${response.headers['x-message-id']}`);
+                return {
+                    success: true,
+                    messageId: response.headers['x-message-id'],
+                    provider: 'sendgrid'
+                };
+            } catch (error: any) {
+                this.logger.error(`[SendGrid] Error sending: ${error.message}`);
+                // Fallback to nodemailer if provided? No, specific error is better
+                throw error;
+            }
         }
 
-        const creds = channel.credentials ? JSON.parse(channel.credentials) : {};
-        const fromEmail = creds['email'] || this.configService.get<string>('EMAIL_FROM');
-        const fromName = creds['displayName'] || 'OmniChannel';
-
+        // Fallback to Nodemailer (SMTP)
         if (!this.transporter) {
-            throw new Error('Email transporter not configured');
+            // Try to re-init with channel credentials if possible, or fail
+            throw new Error('Email transporter not configured and no provider specified');
         }
 
         const mailOptions = {
@@ -146,7 +193,6 @@ export class EmailService {
             replyTo: options.replyTo || fromEmail,
         };
 
-        // Inject tracking pixel for HTML emails (if enabled and message ID provided)
         if (mailOptions.html && options.messageId) {
             const baseUrl = this.configService.get<string>('BASE_URL') || 'http://localhost:3000';
             const trackingPixel = `<img src="${baseUrl}/api/email/track/${options.messageId}/open" width="1" height="1" style="display:none;border:0;" alt="" />`;
@@ -155,14 +201,14 @@ export class EmailService {
 
         try {
             const result = await this.transporter.sendMail(mailOptions);
-            this.logger.log(`Email sent to ${options.to}: ${result.messageId}`);
+            this.logger.log(`[SMTP] Email sent to ${options.to}: ${result.messageId}`);
             return {
                 success: true,
                 messageId: result.messageId,
-                smtpMessageId: result.messageId, // SMTP message ID from server
+                provider: 'smtp',
             };
         } catch (error: any) {
-            this.logger.error(`Error sending email: ${error.message}`, error.stack);
+            this.logger.error(`[SMTP] Error sending email: ${error.message}`, error.stack);
             throw error;
         }
     }

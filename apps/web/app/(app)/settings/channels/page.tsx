@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { WhatsAppModal } from './components/WhatsAppModal';
 import { InstagramModal } from './components/InstagramModal';
 import { EmailModal } from './components/EmailModal';
+import { channelsApi } from '@/lib/api';
 
 interface Channel {
     id: string;
@@ -101,16 +102,13 @@ export default function ChannelsPage() {
 
     const fetchChannels = async () => {
         try {
-            const response = await fetch('/api/channels');
-            if (response.ok) {
-                const data = await response.json();
-                setChannels(Array.isArray(data) ? data : []);
-            } else if (response.status === 401) {
-                // User not logged in - show empty state
+            const data = await channelsApi.getChannels();
+            setChannels(Array.isArray(data) ? data : []);
+        } catch (error: any) {
+            console.error('Error fetching channels:', error);
+            if (error.response?.status === 401) {
                 setChannels([]);
             }
-        } catch (error) {
-            console.error('Error fetching channels:', error);
         } finally {
             setLoading(false);
         }
@@ -130,19 +128,12 @@ export default function ChannelsPage() {
         if (!confirm('Are you sure you want to disconnect this channel? This action cannot be undone.')) return;
 
         try {
-            const response = await fetch(`/api/channels/${channelId}`, {
-                method: 'DELETE',
-            });
-            if (response.ok) {
-                setChannels(channels.filter(c => c.id !== channelId));
-                setSuccessMessage('Channel disconnected successfully');
-            } else {
-                const data = await response.json();
-                alert(data.message || 'Failed to disconnect channel');
-            }
-        } catch (error) {
+            await channelsApi.deleteChannel(channelId);
+            setChannels(channels.filter(c => c.id !== channelId));
+            setSuccessMessage('Channel disconnected successfully');
+        } catch (error: any) {
             console.error('Error disconnecting channel:', error);
-            alert('Failed to disconnect channel');
+            alert(error.response?.data?.message || 'Failed to disconnect channel');
         }
     };
 
@@ -151,11 +142,12 @@ export default function ChannelsPage() {
         setTestResult(null);
 
         try {
-            const response = await fetch(`/api/channels/${channelId}`, {
-                method: 'PATCH',
-            });
-            const data = await response.json();
+            const data: any = await channelsApi.testConnection(channelId);
             setTestResult({
+                id: channelId,
+                success: data.success !== false,
+                message: data.message || (data.success !== false ? 'Connection successful' : 'Connection failed'),
+            }); setTestResult({
                 id: channelId,
                 success: data.success !== false,
                 message: data.message || (data.success !== false ? 'Connection successful' : 'Connection failed'),
@@ -167,11 +159,11 @@ export default function ChannelsPage() {
                     c.id === channelId ? { ...c, status: 'connected' as const } : c
                 ));
             }
-        } catch (error) {
+        } catch (error: any) {
             setTestResult({
                 id: channelId,
                 success: false,
-                message: 'Connection test failed',
+                message: error.response?.data?.message || 'Connection test failed',
             });
         } finally {
             setTestingChannel(null);
