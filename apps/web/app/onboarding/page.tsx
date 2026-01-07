@@ -202,7 +202,7 @@ export default function OnboardingPage() {
                                         className={cn(
                                             'w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all',
                                             isCompleted && !isSkipped
-                                                ? 'bg-primary border-primary text-white'
+                                                ? 'bg-primary border-primary text-primary-foreground'
                                                 : isSkipped
                                                     ? 'bg-yellow-100 border-yellow-500 text-yellow-600'
                                                     : isCurrent

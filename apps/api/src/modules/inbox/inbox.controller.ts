@@ -7,13 +7,18 @@ import {
     Query,
     Body,
     UseGuards,
+    UseInterceptors,
+    UploadedFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { InboxService } from './inbox.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ConversationStatus } from './conversation.entity';
 import { ChannelType } from '../channels/channel.entity';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface ConversationFilters {
     status?: ConversationStatus;
@@ -110,6 +115,57 @@ export class InboxController {
         },
     ) {
         return this.inboxService.sendMessage(id, tenantId, userId, body as any);
+    }
+
+    @Post('conversations/:id/media')
+    @ApiOperation({ summary: 'Upload media for conversation' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadMedia(
+        @Param('id') id: string,
+        @CurrentUser('tenantId') tenantId: string,
+        @UploadedFile() file: any,
+    ) {
+        // Verify conversation exists and belongs to tenant
+        await this.inboxService.getConversation(id, tenantId);
+
+        // Create uploads directory if it doesn't exist
+        const uploadsDir = path.join(process.cwd(), 'uploads', 'media');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
+        // Generate unique filename
+        const timestamp = Date.now();
+        const ext = path.extname(file.originalname);
+        const filename = `${id}-${timestamp}${ext}`;
+        const filepath = path.join(uploadsDir, filename);
+
+        // Save file
+        fs.writeFileSync(filepath, file.buffer);
+
+        // Return URL that can be used to send media
+        const baseUrl = process.env.API_URL || 'http://localhost:3001';
+        const mediaUrl = `${baseUrl}/uploads/media/${filename}`;
+
+        return {
+            url: mediaUrl,
+            mediaUrl: mediaUrl, // Alias for compatibility
+            filename: file.originalname,
+            mimeType: file.mimetype,
+            size: file.size,
+        };
     }
 
     @Patch('conversations/:id/status')

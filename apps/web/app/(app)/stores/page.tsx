@@ -123,35 +123,41 @@ export default function StoresPage() {
 
             {/* Stats */}
             <div className="grid gap-4 md:grid-cols-3">
-                <Card>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Connected Stores</p>
-                        <Store className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <Store className="h-4 w-4 text-violet-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stores.length}</div>
+                        <div className="text-2xl font-bold text-violet-700">{stores.length}</div>
                         <p className="text-xs text-muted-foreground">All active and syncing</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-500/10 via-transparent to-transparent border-blue-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Total Orders</p>
-                        <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <ShoppingBag className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-blue-700">
                             {totalOrders.toLocaleString()}
                         </div>
                         <p className="text-xs text-muted-foreground">Across all stores</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Total Products</p>
-                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <Package className="h-4 w-4 text-emerald-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-emerald-700">
                             {totalProducts.toLocaleString()}
                         </div>
                         <p className="text-xs text-muted-foreground">Synced from stores</p>

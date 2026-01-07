@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Plus,
@@ -14,7 +15,6 @@ import {
     Bot,
     MessageSquare,
     Instagram,
-    Mail,
     Play,
     Pause,
     Edit,
@@ -30,7 +30,7 @@ interface Chatbot {
     id: string;
     name: string;
     description: string;
-    channel: 'whatsapp' | 'instagram' | 'email';
+    channel: 'whatsapp' | 'instagram';
     status: 'active' | 'paused' | 'draft';
     conversationsCount: number;
     messagesCount: number;
@@ -63,12 +63,6 @@ const channelConfig = {
         bgColor: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500',
         label: 'Instagram'
     },
-    email: {
-        icon: Mail,
-        color: 'bg-blue-100 text-blue-700 border-blue-200',
-        bgColor: 'bg-blue-500',
-        label: 'Email'
-    },
 };
 
 const statusConfig = {
@@ -90,7 +84,7 @@ export default function ChatbotsPage() {
     const [newBotData, setNewBotData] = useState({
         name: '',
         description: '',
-        channel: '' as 'whatsapp' | 'instagram' | 'email' | '',
+        channel: '' as 'whatsapp' | 'instagram' | '',
     });
 
     useEffect(() => {
@@ -102,11 +96,16 @@ export default function ChatbotsPage() {
             setLoading(true);
             const response = await fetch('/api/chatbots');
             if (!response.ok) throw new Error('Failed to fetch chatbots');
-            const data = await response.json();
-            setChatbots(Array.isArray(data) ? data : []);
+            const rawData = await response.json();
+            // Filter out bots with unsupported/removed channels (like 'email')
+            const validBots = Array.isArray(rawData)
+                ? rawData.filter((b: Chatbot) => channelConfig[b.channel])
+                : [];
+
+            setChatbots(validBots);
 
             // Calculate stats
-            const bots = Array.isArray(data) ? data : [];
+            const bots = validBots;
             setStats({
                 total: bots.length,
                 active: bots.filter((b: Chatbot) => b.status === 'active').length,
@@ -115,7 +114,6 @@ export default function ChatbotsPage() {
                 byChannel: {
                     whatsapp: bots.filter((b: Chatbot) => b.channel === 'whatsapp').length,
                     instagram: bots.filter((b: Chatbot) => b.channel === 'instagram').length,
-                    email: bots.filter((b: Chatbot) => b.channel === 'email').length,
                 },
                 totalConversations: bots.reduce((sum: number, b: Chatbot) => sum + (b.conversationsCount || 0), 0),
                 totalMessages: bots.reduce((sum: number, b: Chatbot) => sum + (b.messagesCount || 0), 0),
@@ -203,45 +201,53 @@ export default function ChatbotsPage() {
 
             {/* Stats */}
             <div className="grid gap-4 md:grid-cols-4">
-                <Card>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Total Chatbots</p>
-                        <Bot className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <Bot className="h-4 w-4 text-violet-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats?.total || 0}</div>
+                        <div className="text-2xl font-bold text-violet-700">{stats?.total || 0}</div>
                         <p className="text-xs text-muted-foreground">
                             {stats?.active || 0} active
                         </p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-500/10 via-transparent to-transparent border-blue-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Conversations</p>
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <Users className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats?.totalConversations?.toLocaleString() || 0}</div>
+                        <div className="text-2xl font-bold text-blue-700">{stats?.totalConversations?.toLocaleString() || 0}</div>
                         <p className="text-xs text-muted-foreground">Total handled</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-transparent to-transparent border-orange-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Messages Sent</p>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <MessageSquare className="h-4 w-4 text-orange-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats?.totalMessages?.toLocaleString() || 0}</div>
+                        <div className="text-2xl font-bold text-orange-700">{stats?.totalMessages?.toLocaleString() || 0}</div>
                         <p className="text-xs text-muted-foreground">Automated responses</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Resolution Rate</p>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-emerald-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">--</div>
+                        <div className="text-2xl font-bold text-emerald-700">--</div>
                         <p className="text-xs text-muted-foreground">Resolved without agent</p>
                     </CardContent>
                 </Card>
@@ -394,26 +400,35 @@ export default function ChatbotsPage() {
                         {/* Channel Selection */}
                         <div className="space-y-3">
                             <Label>Select Channel</Label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {(['whatsapp', 'instagram', 'email'] as const).map((channel) => {
+                            <div className="grid grid-cols-2 gap-3">
+                                {(['whatsapp', 'instagram'] as const).map((channel) => {
                                     const config = channelConfig[channel];
                                     const Icon = config.icon;
+                                    const isComingSoon = channel === 'instagram';
 
                                     return (
                                         <button
                                             key={channel}
-                                            onClick={() => setNewBotData({ ...newBotData, channel })}
+                                            disabled={isComingSoon}
+                                            onClick={() => !isComingSoon && setNewBotData({ ...newBotData, channel })}
                                             className={cn(
-                                                "flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all",
+                                                "flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all relative",
                                                 newBotData.channel === channel
                                                     ? "border-primary bg-primary/5"
-                                                    : "border-muted hover:border-primary/50"
+                                                    : "border-muted",
+                                                !isComingSoon && "hover:border-primary/50",
+                                                isComingSoon && "opacity-60 cursor-not-allowed bg-gray-50"
                                             )}
                                         >
                                             <div className={cn("p-2 rounded-lg text-white", config.bgColor)}>
                                                 <Icon className="h-5 w-5" />
                                             </div>
                                             <span className="text-sm font-medium">{config.label}</span>
+                                            {isComingSoon && (
+                                                <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] h-5 px-1.5 pointer-events-none">
+                                                    Coming Soon
+                                                </Badge>
+                                            )}
                                         </button>
                                     );
                                 })}

@@ -114,4 +114,12 @@ export class AuthController {
     async resetPassword(@Body() body: ResetPasswordDto) {
         return this.authService.resetPassword(body.email, body.resetToken, body.newPassword);
     }
+    @Post('change-password')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Change password' })
+    @ApiResponse({ status: 200, description: 'Password changed successfully' })
+    async changePassword(@Req() req: any, @Body() body: any) {
+        return this.authService.changePassword(req.user.id, body);
+    }
 }

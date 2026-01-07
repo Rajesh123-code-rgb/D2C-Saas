@@ -297,6 +297,27 @@ export class AuthService {
         return { message: 'Password reset successfully' };
     }
 
+    async changePassword(userId: string, changePasswordDto: any) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        const isMatch = await bcrypt.compare(changePasswordDto.currentPassword, user.passwordHash);
+        if (!isMatch) {
+            throw new UnauthorizedException('Invalid current password');
+        }
+
+        user.passwordHash = await bcrypt.hash(changePasswordDto.newPassword, 10);
+        await this.userRepository.save(user);
+
+        // Revoke all sessions
+        await this.logoutAll(userId);
+
+        return { message: 'Password updated successfully' };
+    }
+
     async validateUser(userId: string): Promise<User> {
         const user = await this.userRepository.findOne({
             where: { id: userId },

@@ -1021,7 +1021,7 @@ export default function InboxPage() {
                                 >
                                     <div className="flex items-start gap-3">
                                         <div className="relative flex-shrink-0">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-sm">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary-foreground text-sm">
                                                 {getContactInitials(conv.contact)}
                                             </div>
                                             <div
@@ -1067,7 +1067,7 @@ export default function InboxPage() {
                             <div className="border-b p-3">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary-foreground">
                                             {getContactInitials(selectedConversation.contact)}
                                         </div>
                                         <div>
@@ -1368,7 +1368,7 @@ export default function InboxPage() {
                             <div className="flex-1 overflow-y-auto p-3 space-y-4">
                                 {/* Contact Info */}
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 font-bold text-xl text-primary mb-2">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 font-bold text-xl text-primary-foreground mb-2">
                                         {getContactInitials(selectedConversation.contact)}
                                     </div>
                                     <h4 className="font-semibold">{getContactName(selectedConversation.contact)}</h4>

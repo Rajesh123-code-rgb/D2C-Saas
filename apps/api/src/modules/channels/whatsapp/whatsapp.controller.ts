@@ -4,6 +4,7 @@ import {
     Post,
     Query,
     Body,
+    Param,
     Headers,
     HttpCode,
     HttpStatus,
@@ -199,7 +200,7 @@ export class WhatsAppController {
      */
     @Get('templates/:channelId')
     @ApiOperation({ summary: 'Get WhatsApp message templates' })
-    async getTemplates(@Query('channelId') channelId: string): Promise<any> {
+    async getTemplates(@Param('channelId') channelId: string): Promise<any> {
         return this.whatsappService.getTemplates(channelId);
     }
 

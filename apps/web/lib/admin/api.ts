@@ -411,6 +411,17 @@ export interface DashboardStats {
     messages: { today: number; month: number };
     emails: { today: number; month: number };
     conversations: { marketing: number; utility: number; service: number };
+    campaigns?: {
+        total: number;
+        active: number;
+        abTestCampaigns: number;
+        emailCampaigns: number;
+        whatsappCampaigns: number;
+    };
+    channelStats?: {
+        whatsapp: { messages: number; mediaUploads: number; conversations: number };
+        email: { sent: number; opened: number; clicked: number; openRate: number };
+    };
 }
 
 export interface Alert {

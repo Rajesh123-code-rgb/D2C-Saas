@@ -257,7 +257,7 @@ export default function CustomerProfilePage() {
                 </Button>
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-xl">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary-foreground text-xl">
                             {contact.name?.split(' ').map(n => n[0]).join('') || '?'}
                         </div>
                         {contact.name || 'Unknown'}

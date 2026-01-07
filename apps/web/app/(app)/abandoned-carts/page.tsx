@@ -480,43 +480,51 @@ export default function AbandonedCartsPage() {
 
             {/* Stats */}
             <div className="grid gap-4 md:grid-cols-4">
-                <Card>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Total Abandoned</p>
-                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <ShoppingCart className="h-4 w-4 text-violet-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{carts.length}</div>
+                        <div className="text-2xl font-bold text-violet-700">{carts.length}</div>
                         <p className="text-xs text-muted-foreground">₹{totalValue.toLocaleString()} total value</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-transparent to-transparent border-orange-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Pending Payment</p>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <Clock className="h-4 w-4 text-orange-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
+                        <div className="text-2xl font-bold text-orange-700">{pendingCount}</div>
                         <p className="text-xs text-muted-foreground">Awaiting payment</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-red-500/10 via-transparent to-transparent border-red-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Payment Failed</p>
-                        <XCircle className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{failedCount}</div>
+                        <div className="text-2xl font-bold text-red-700">{failedCount}</div>
                         <p className="text-xs text-muted-foreground">Need follow-up</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Avg Cart Value</p>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-emerald-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-emerald-700">
                             ₹{carts.length > 0 ? Math.round(totalValue / carts.length).toLocaleString() : 0}
                         </div>
                         <p className="text-xs text-muted-foreground">Per abandoned cart</p>

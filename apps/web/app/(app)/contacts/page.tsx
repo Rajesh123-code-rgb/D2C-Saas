@@ -463,47 +463,55 @@ export default function ContactsPage() {
 
             {/* Stats Cards */}
             <div className="grid gap-4 md:grid-cols-4">
-                <Card>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Total Contacts</p>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <MessageSquare className="h-4 w-4 text-violet-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{contacts.length}</div>
+                        <div className="text-2xl font-bold text-violet-700">{contacts.length}</div>
                         <p className="text-xs text-muted-foreground">Across all channels</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Customers</p>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-emerald-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-emerald-700">
                             {contacts.filter((c) => c.lifecycleStage === 'customer').length}
                         </div>
                         <p className="text-xs text-muted-foreground">Active customers</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-transparent to-transparent border-orange-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Leads</p>
-                        <Tag className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <Tag className="h-4 w-4 text-orange-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-orange-700">
                             {contacts.filter((c) => c.lifecycleStage === 'lead').length}
                         </div>
                         <p className="text-xs text-muted-foreground">Potential customers</p>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-500/10 via-transparent to-transparent border-blue-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Avg. Engagement</p>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-blue-700">
                             {contacts.length > 0
                                 ? Math.round(
                                     contacts.reduce((acc, c) => acc + (c.engagementScore || 0), 0) /
@@ -644,7 +652,7 @@ export default function ContactsPage() {
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary-foreground">
                                                 {contact.name?.split(' ').map((n) => n[0]).join('') || '?'}
                                             </div>
                                             <span className="font-medium">{contact.name || 'Unknown'}</span>
@@ -978,7 +986,7 @@ export default function ContactsPage() {
                         </div>
                         <div className="p-4 space-y-4">
                             <div className="flex items-center gap-4">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 font-bold text-xl text-primary">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 font-bold text-xl text-primary-foreground">
                                     {selectedContact.name?.split(' ').map((n) => n[0]).join('') || '?'}
                                 </div>
                                 <div>

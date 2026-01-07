@@ -282,7 +282,8 @@ export class WhatsAppService {
                 }),
             );
 
-            return response.data;
+            const templates = response.data.data || [];
+            return templates.filter((t: any) => t.status === 'APPROVED');
         } catch (error: any) {
             this.logger.error(`Error fetching templates: ${error.message}`, error.stack);
             throw new HttpException(

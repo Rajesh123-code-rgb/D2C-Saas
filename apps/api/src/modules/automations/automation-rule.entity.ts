@@ -125,6 +125,7 @@ export interface ActionConfig {
     // For messages
     templateId?: string;
     message?: string;
+    subject?: string; // For email
     channel?: 'whatsapp' | 'email' | 'sms' | 'instagram';
     // For tags
     tagName?: string;

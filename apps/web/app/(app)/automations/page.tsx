@@ -39,10 +39,10 @@ import {
     Settings2,
     AlertCircle,
     History,
+    Mail,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { TemplateGallery } from '@/components/templates/TemplateGallery';
-import { templateLibrary } from '@/lib/api';
+import { templateLibrary, channelsApi, whatsappApi } from '@/lib/api';
 
 interface Automation {
     id: string;
@@ -92,6 +92,7 @@ interface ActionConfig {
     elseActions?: ActionConfig[];
     fieldName?: string;
     fieldValue?: any;
+    subject?: string; // Add subject support
 }
 
 const statusConfig: Record<string, { color: string; icon: any; label: string }> = {
@@ -143,9 +144,10 @@ const triggerLabels: Record<string, string> = {
 
 const actionTypeLabels: Record<string, { label: string; icon: any; color: string }> = {
     send_whatsapp_template: { label: 'Send WhatsApp Template', icon: Send, color: 'bg-green-500' },
+    send_email: { label: 'Send Email', icon: Mail, color: 'bg-blue-500' },
     send_whatsapp_message: { label: 'Send WhatsApp Message', icon: MessageSquare, color: 'bg-green-500' },
     send_instagram_dm: { label: 'Send Instagram DM', icon: Instagram, color: 'bg-pink-500' },
-    send_email: { label: 'Send Email', icon: Send, color: 'bg-blue-500' },
+
     add_tag: { label: 'Add Tag', icon: Tag, color: 'bg-purple-500' },
     remove_tag: { label: 'Remove Tag', icon: Tag, color: 'bg-gray-500' },
     wait: { label: 'Wait', icon: Clock, color: 'bg-orange-500' },
@@ -174,7 +176,32 @@ function WorkflowEditorModal({
     const [triggerConfig, setTriggerConfig] = useState<any>({});
     const [actions, setActions] = useState<ActionConfig[]>([]);
     const [saving, setSaving] = useState(false);
+
     const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null);
+    const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
+    const [whatsappTemplates, setWhatsappTemplates] = useState<any[]>([]);
+
+    // Fetch templates
+    useEffect(() => {
+        const loadTemplates = async () => {
+            const eTemplates = await templateLibrary.getEmailTemplates();
+            setEmailTemplates(eTemplates);
+
+            try {
+                // Fetch tenant's WhatsApp channel to get approved templates
+                const channels = await channelsApi.getChannels();
+                const waChannel = channels.find((c: any) => c.channelType === 'whatsapp');
+
+                if (waChannel) {
+                    const wTemplates = await whatsappApi.getTemplates(waChannel.id);
+                    setWhatsappTemplates(wTemplates);
+                }
+            } catch (err) {
+                console.warn('Failed to fetch WhatsApp templates', err);
+            }
+        };
+        loadTemplates();
+    }, []);
 
     // Initialize form when template or automation changes
     useEffect(() => {
@@ -304,7 +331,7 @@ function WorkflowEditorModal({
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-full bg-primary/20">
-                                    <Zap className="h-4 w-4 text-primary" />
+                                    <Zap className="h-4 w-4 text-primary-foreground" />
                                 </div>
                                 <div>
                                     <p className="font-medium text-sm">Trigger: {triggerLabels[triggerType] || triggerType}</p>
@@ -407,7 +434,30 @@ function WorkflowEditorModal({
                                                         {/* Expanded Edit Form */}
                                                         {isEditing && (
                                                             <div className="mt-4 pt-4 border-t space-y-3" onClick={(e) => e.stopPropagation()}>
-                                                                {(action.type === 'send_whatsapp_template' || action.type === 'send_instagram_dm') && (
+                                                                {action.type === 'send_whatsapp_template' && (
+                                                                    <div className="space-y-2">
+                                                                        <Label className="text-xs">Select Template</Label>
+                                                                        <Select
+                                                                            value={action.templateId || ''}
+                                                                            onValueChange={(v) => updateAction(index, { templateId: v })}
+                                                                        >
+                                                                            <SelectTrigger className="h-8 text-sm">
+                                                                                <SelectValue placeholder="Choose a WhatsApp template" />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                {whatsappTemplates.length === 0 ? (
+                                                                                    <SelectItem value="no_templates" disabled>No templates found</SelectItem>
+                                                                                ) : (
+                                                                                    whatsappTemplates.map((t) => (
+                                                                                        <SelectItem key={t.id} value={t.name}>{t.name} ({t.language || 'en'})</SelectItem>
+                                                                                    ))
+                                                                                )}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                )}
+
+                                                                {action.type === 'send_instagram_dm' && (
                                                                     <div className="space-y-2">
                                                                         <Label className="text-xs">Template ID</Label>
                                                                         <Input
@@ -418,6 +468,66 @@ function WorkflowEditorModal({
                                                                         />
                                                                     </div>
                                                                 )}
+
+                                                                {action.type === 'send_email' && (
+                                                                    <div className="space-y-4">
+                                                                        <Tabs defaultValue={action.templateId ? 'template' : 'custom'} className="w-full">
+                                                                            <TabsList className="grid w-full grid-cols-2">
+                                                                                <TabsTrigger value="custom">Custom Message</TabsTrigger>
+                                                                                <TabsTrigger value="template">Use Template</TabsTrigger>
+                                                                            </TabsList>
+
+                                                                            <TabsContent value="custom" className="space-y-2 pt-2">
+                                                                                <div className="space-y-2">
+                                                                                    <Label className="text-xs">Subject</Label>
+                                                                                    <Input
+                                                                                        value={action.subject || ''}
+                                                                                        onChange={(e) => updateAction(index, { subject: e.target.value, templateId: undefined })}
+                                                                                        placeholder="Email subject..."
+                                                                                        className="h-8 text-sm"
+                                                                                    />
+                                                                                </div>
+                                                                                <div className="space-y-2">
+                                                                                    <Label className="text-xs">Body</Label>
+                                                                                    <Textarea
+                                                                                        value={action.message || ''}
+                                                                                        onChange={(e) => updateAction(index, { message: e.target.value, templateId: undefined })}
+                                                                                        placeholder="Email content..."
+                                                                                        rows={4}
+                                                                                        className="text-sm"
+                                                                                    />
+                                                                                </div>
+                                                                            </TabsContent>
+
+                                                                            <TabsContent value="template" className="space-y-2 pt-2">
+                                                                                <div className="space-y-2">
+                                                                                    <Label className="text-xs">Select Template</Label>
+                                                                                    <Select
+                                                                                        value={action.templateId || ''}
+                                                                                        onValueChange={(v) => updateAction(index, { templateId: v, subject: undefined, message: undefined })}
+                                                                                    >
+                                                                                        <SelectTrigger className="h-8 text-sm">
+                                                                                            <SelectValue placeholder="Choose an email template" />
+                                                                                        </SelectTrigger>
+                                                                                        <SelectContent>
+                                                                                            {emailTemplates.length === 0 ? (
+                                                                                                <SelectItem value="no_templates" disabled>No templates found</SelectItem>
+                                                                                            ) : (
+                                                                                                emailTemplates.map((t) => (
+                                                                                                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                                                                                ))
+                                                                                            )}
+                                                                                        </SelectContent>
+                                                                                    </Select>
+                                                                                    <p className="text-[10px] text-muted-foreground">
+                                                                                        Templates are managed in the Email Builder.
+                                                                                    </p>
+                                                                                </div>
+                                                                            </TabsContent>
+                                                                        </Tabs>
+                                                                    </div>
+                                                                )}
+
                                                                 {action.type === 'send_whatsapp_message' && (
                                                                     <div className="space-y-2">
                                                                         <Label className="text-xs">Message</Label>
@@ -430,6 +540,7 @@ function WorkflowEditorModal({
                                                                         />
                                                                     </div>
                                                                 )}
+
                                                                 {(action.type === 'add_tag' || action.type === 'remove_tag') && (
                                                                     <div className="space-y-2">
                                                                         <Label className="text-xs">Tag Name</Label>
@@ -441,6 +552,7 @@ function WorkflowEditorModal({
                                                                         />
                                                                     </div>
                                                                 )}
+
                                                                 {action.type === 'wait' && (
                                                                     <div className="flex gap-2">
                                                                         <div className="space-y-2 flex-1">
@@ -496,6 +608,14 @@ function WorkflowEditorModal({
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    onClick={() => addAction('send_email')}
+                                    className="gap-1"
+                                >
+                                    <Mail className="h-3 w-3" /> Send Email
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => addAction('add_tag')}
                                     className="gap-1"
                                 >
@@ -547,7 +667,7 @@ function WorkflowEditorModal({
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -861,19 +981,15 @@ export default function AutomationsPage() {
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <TabsList>
                         <TabsTrigger value="automations" className="flex items-center gap-2">
-                            <Zap className="h-4 w-4" />
-                            My Automations
+                            <Workflow className="h-4 w-4" />
+                            My Workflows
                             {automations.length > 0 && (
                                 <Badge variant="secondary" className="ml-1">{automations.length}</Badge>
                             )}
                         </TabsTrigger>
                         <TabsTrigger value="templates" className="flex items-center gap-2">
-                            <Sparkles className="h-4 w-4" />
-                            Automation Gallery
-                        </TabsTrigger>
-                        <TabsTrigger value="library" className="flex items-center gap-2">
                             <Package className="h-4 w-4" />
-                            Admin Library
+                            Workflow Library
                         </TabsTrigger>
                     </TabsList>
 
@@ -881,7 +997,7 @@ export default function AutomationsPage() {
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder={activeTab === 'automations' ? 'Search automations...' : 'Search templates...'}
+                            placeholder={activeTab === 'automations' ? 'Search workflows...' : 'Search templates...'}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-9 w-64"
@@ -1161,7 +1277,7 @@ export default function AutomationsPage() {
                                                         <div className="mt-2 space-y-1.5 pl-1">
                                                             {template.flowSteps.map((step, index) => (
                                                                 <div key={index} className="flex items-start gap-2 text-xs">
-                                                                    <div className="flex-shrink-0 w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold mt-0.5">
+                                                                    <div className="flex-shrink-0 w-4 h-4 rounded-full bg-primary/20 text-primary-foreground flex items-center justify-center text-[10px] font-bold mt-0.5">
                                                                         {index + 1}
                                                                     </div>
                                                                     <span className="text-muted-foreground">{step}</span>
@@ -1217,29 +1333,6 @@ export default function AutomationsPage() {
                             </CardContent>
                         </Card>
                     )}
-                </TabsContent>
-
-                {/* Admin Library Tab */}
-                <TabsContent value="library" className="space-y-4 mt-6">
-                    <TemplateGallery
-                        type="automation"
-                        onSelect={(template) => {
-                            // When user selects an admin template, open workflow editor with template data
-                            setSelectedTemplate({
-                                id: template.id,
-                                name: template.name,
-                                description: template.description,
-                                category: template.category,
-                                triggerType: template.triggerType,
-                                actions: template.nodes?.map((n: any) => ({
-                                    type: n.type,
-                                    ...n.config,
-                                })) || [],
-                            });
-                            setEditingAutomation(null);
-                            setShowWorkflowEditor(true);
-                        }}
-                    />
                 </TabsContent>
             </Tabs>
         </div>

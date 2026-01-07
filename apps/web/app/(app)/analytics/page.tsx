@@ -192,52 +192,60 @@ export default function AnalyticsPage() {
 
             {/* Campaign Overview Stats */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Total Campaigns</p>
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <BarChart3 className="h-4 w-4 text-violet-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{campaignMetrics?.totalCampaigns || 0}</div>
+                        <div className="text-2xl font-bold text-violet-700">{campaignMetrics?.totalCampaigns || 0}</div>
                         <p className="text-xs text-muted-foreground">
                             {campaignMetrics?.activeCampaigns || 0} active, {campaignMetrics?.completedCampaigns || 0} completed
                         </p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-500/10 via-transparent to-transparent border-blue-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Messages Sent</p>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <MessageSquare className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{(campaignMetrics?.totalSent || 0).toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-blue-700">{(campaignMetrics?.totalSent || 0).toLocaleString()}</div>
                         <p className="text-xs text-muted-foreground">
                             {((campaignMetrics?.deliveryRate || 0)).toFixed(1)}% delivery rate
                         </p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-transparent to-transparent border-orange-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Open Rate</p>
-                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <CheckCircle className="h-4 w-4 text-orange-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{(campaignMetrics?.openRate || 0).toFixed(1)}%</div>
+                        <div className="text-2xl font-bold text-orange-700">{(campaignMetrics?.openRate || 0).toFixed(1)}%</div>
                         <p className="text-xs text-muted-foreground">
                             {campaignMetrics?.totalOpened || 0} opened
                         </p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <p className="text-sm font-medium">Conversion Rate</p>
-                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-emerald-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{(campaignMetrics?.conversionRate || 0).toFixed(1)}%</div>
+                        <div className="text-2xl font-bold text-emerald-700">{(campaignMetrics?.conversionRate || 0).toFixed(1)}%</div>
                         <p className="text-xs text-muted-foreground">
                             {campaignMetrics?.totalConverted || 0} conversions
                         </p>
@@ -307,6 +315,121 @@ export default function AnalyticsPage() {
                         </Card>
                     </div>
                 </div>
+            )}
+
+            {/* Unified Channel Comparison */}
+            {campaignMetrics && (campaignMetrics.email || campaignMetrics.whatsapp) && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <BarChart3 className="h-5 w-5" />
+                            Channel Performance Comparison
+                        </CardTitle>
+                        <CardDescription>Side-by-side comparison of WhatsApp and Email campaign metrics</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b">
+                                        <th className="text-left py-3 px-4 font-medium">Metric</th>
+                                        <th className="text-center py-3 px-4 font-medium">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className="p-1 bg-green-100 rounded">
+                                                    <MessageSquare className="h-4 w-4 text-green-600" />
+                                                </div>
+                                                WhatsApp
+                                            </div>
+                                        </th>
+                                        <th className="text-center py-3 px-4 font-medium">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className="p-1 bg-blue-100 rounded">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                                                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                                    </svg>
+                                                </div>
+                                                Email
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b hover:bg-muted/30">
+                                        <td className="py-3 px-4">Messages Sent</td>
+                                        <td className="text-center py-3 px-4 font-semibold text-green-700 dark:text-green-400">
+                                            {(campaignMetrics.whatsapp?.totalSent || 0).toLocaleString()}
+                                        </td>
+                                        <td className="text-center py-3 px-4 font-semibold text-blue-700 dark:text-blue-400">
+                                            {(campaignMetrics.email?.totalSent || 0).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                    <tr className="border-b hover:bg-muted/30">
+                                        <td className="py-3 px-4">Delivery Rate</td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                {(campaignMetrics.whatsapp?.deliveryRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                {(campaignMetrics.email?.deliveryRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="border-b hover:bg-muted/30">
+                                        <td className="py-3 px-4">Open Rate</td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                {(campaignMetrics.whatsapp?.openRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                {(campaignMetrics.email?.openRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="border-b hover:bg-muted/30">
+                                        <td className="py-3 px-4">Click Rate</td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                {(campaignMetrics.whatsapp?.clickRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                {(campaignMetrics.email?.clickRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="border-b hover:bg-muted/30">
+                                        <td className="py-3 px-4">Conversion Rate</td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                {(campaignMetrics.whatsapp?.conversionRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                        <td className="text-center py-3 px-4">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                {(campaignMetrics.email?.conversionRate || 0).toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr className="bg-muted/20">
+                                        <td className="py-3 px-4 font-medium">Revenue Generated</td>
+                                        <td className="text-center py-3 px-4 font-bold text-green-700 dark:text-green-400">
+                                            ${(campaignMetrics.whatsapp?.conversionValue || 0).toLocaleString()}
+                                        </td>
+                                        <td className="text-center py-3 px-4 font-bold text-blue-700 dark:text-blue-400">
+                                            ${(campaignMetrics.email?.conversionValue || 0).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
             )}
 
             <div className="grid gap-6 lg:grid-cols-2">
@@ -436,7 +559,7 @@ export default function AnalyticsPage() {
                             {automationMetrics?.topAutomations?.slice(0, 5).map((automation, index) => (
                                 <div key={automation.id} className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary-foreground">
                                             {index + 1}
                                         </div>
                                         <span className="font-medium">{automation.name}</span>

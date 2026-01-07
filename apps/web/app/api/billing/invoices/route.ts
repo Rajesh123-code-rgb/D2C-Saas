@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function GET(request: NextRequest) {
     try {
-        const tenantId = request.nextUrl.searchParams.get('tenantId') || 'demo';
+        const { searchParams } = new URL(request.url);
+        const tenantId = searchParams.get('tenantId');
 
-        const response = await fetch(`${API_URL}/billing/invoices?tenantId=${tenantId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/v1/billing/invoices?tenantId=${tenantId}`, {
             headers: {
                 'Content-Type': 'application/json',
             },

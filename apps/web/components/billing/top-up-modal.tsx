@@ -178,7 +178,7 @@ export function TopUpModal({ open, onOpenChange, currentBalance, onSuccess }: To
                                         </div>
                                     </div>
 
-                                    <div className={`w-full h-8 flex items-center justify-center rounded-md transition-colors ${isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+                                    <div className={`w-full h-8 flex items-center justify-center rounded-md transition-colors ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                                         {isSelected ? <Check className="w-5 h-5" /> : 'Select'}
                                     </div>
                                 </div>

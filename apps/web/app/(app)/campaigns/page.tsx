@@ -468,6 +468,15 @@ function CreateCampaignModal({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // A/B Testing State
+    const [enableAbTest, setEnableAbTest] = useState(false);
+    const [abTestSampleSize, setAbTestSampleSize] = useState(20);
+    const [abTestWinnerMetric, setAbTestWinnerMetric] = useState<'open_rate' | 'click_rate' | 'conversion_rate'>('open_rate');
+    const [variantASubject, setVariantASubject] = useState('');
+    const [variantABody, setVariantABody] = useState('');
+    const [variantBSubject, setVariantBSubject] = useState('');
+    const [variantBBody, setVariantBBody] = useState('');
+
     // Find the segment name for display
     const selectedSegmentData = segments.find(s => s.id === selectedSegment);
 
@@ -536,9 +545,20 @@ function CreateCampaignModal({
             } else {
                 campaignData.content = {
                     channel: 'email',
-                    emailSubject: emailSubject,
-                    emailBody: emailBody,
+                    emailSubject: enableAbTest ? variantASubject : emailSubject,
+                    emailBody: enableAbTest ? variantABody : emailBody,
                 };
+
+                // Add A/B test configuration
+                if (enableAbTest) {
+                    campaignData.isAbTest = true;
+                    campaignData.abTestSampleSize = abTestSampleSize;
+                    campaignData.abTestWinnerMetric = abTestWinnerMetric;
+                    campaignData.variants = [
+                        { name: 'Variant A', content: { emailSubject: variantASubject, emailBody: variantABody }, percentage: 50 },
+                        { name: 'Variant B', content: { emailSubject: variantBSubject, emailBody: variantBBody }, percentage: 50 }
+                    ];
+                }
             }
 
             if (scheduleType === 'scheduled') {
@@ -570,7 +590,7 @@ function CreateCampaignModal({
         }
     };
 
-    const totalSteps = 4;
+    const totalSteps = channel === 'email' && enableAbTest ? 5 : 4;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -734,23 +754,116 @@ function CreateCampaignModal({
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">Subject Line *</label>
-                                                <Input
-                                                    placeholder="Enter email subject..."
-                                                    value={emailSubject}
-                                                    onChange={(e) => setEmailSubject(e.target.value)}
-                                                />
+                                            {/* A/B Test Toggle */}
+                                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                                <div>
+                                                    <p className="font-medium text-sm">Enable A/B Testing</p>
+                                                    <p className="text-xs text-muted-foreground">Test different subject lines and content</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setEnableAbTest(!enableAbTest)}
+                                                    className={cn(
+                                                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                                                        enableAbTest ? "bg-primary" : "bg-gray-300"
+                                                    )}
+                                                >
+                                                    <span className={cn(
+                                                        "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                                                        enableAbTest ? "translate-x-6" : "translate-x-1"
+                                                    )} />
+                                                </button>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">Email Body *</label>
-                                                <textarea
-                                                    className="w-full h-32 rounded-md border px-3 py-2 bg-background"
-                                                    placeholder="Write your email content..."
-                                                    value={emailBody}
-                                                    onChange={(e) => setEmailBody(e.target.value)}
-                                                />
-                                            </div>
+
+                                            {!enableAbTest ? (
+                                                <>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Subject Line *</label>
+                                                        <Input
+                                                            placeholder="Enter email subject..."
+                                                            value={emailSubject}
+                                                            onChange={(e) => setEmailSubject(e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Email Body *</label>
+                                                        <textarea
+                                                            className="w-full h-32 rounded-md border px-3 py-2 bg-background"
+                                                            placeholder="Write your email content..."
+                                                            value={emailBody}
+                                                            onChange={(e) => setEmailBody(e.target.value)}
+                                                        />
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {/* A/B Test Configuration */}
+                                                    <div className="grid grid-cols-2 gap-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Sample Size</label>
+                                                            <select
+                                                                value={abTestSampleSize}
+                                                                onChange={(e) => setAbTestSampleSize(Number(e.target.value))}
+                                                                className="w-full h-10 rounded-md border px-3 bg-background"
+                                                            >
+                                                                <option value={10}>10% of audience</option>
+                                                                <option value={20}>20% of audience</option>
+                                                                <option value={30}>30% of audience</option>
+                                                                <option value={50}>50% of audience</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Winner Metric</label>
+                                                            <select
+                                                                value={abTestWinnerMetric}
+                                                                onChange={(e) => setAbTestWinnerMetric(e.target.value as any)}
+                                                                className="w-full h-10 rounded-md border px-3 bg-background"
+                                                            >
+                                                                <option value="open_rate">Open Rate</option>
+                                                                <option value="click_rate">Click Rate</option>
+                                                                <option value="conversion_rate">Conversion Rate</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Variant A */}
+                                                    <div className="space-y-3 p-4 border-2 border-blue-200 bg-blue-50/30 rounded-lg">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded">A</span>
+                                                            <span className="font-medium text-sm">Variant A (50%)</span>
+                                                        </div>
+                                                        <Input
+                                                            placeholder="Subject line for Variant A..."
+                                                            value={variantASubject}
+                                                            onChange={(e) => setVariantASubject(e.target.value)}
+                                                        />
+                                                        <textarea
+                                                            className="w-full h-24 rounded-md border px-3 py-2 bg-background"
+                                                            placeholder="Email body for Variant A..."
+                                                            value={variantABody}
+                                                            onChange={(e) => setVariantABody(e.target.value)}
+                                                        />
+                                                    </div>
+
+                                                    {/* Variant B */}
+                                                    <div className="space-y-3 p-4 border-2 border-green-200 bg-green-50/30 rounded-lg">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded">B</span>
+                                                            <span className="font-medium text-sm">Variant B (50%)</span>
+                                                        </div>
+                                                        <Input
+                                                            placeholder="Subject line for Variant B..."
+                                                            value={variantBSubject}
+                                                            onChange={(e) => setVariantBSubject(e.target.value)}
+                                                        />
+                                                        <textarea
+                                                            className="w-full h-24 rounded-md border px-3 py-2 bg-background"
+                                                            placeholder="Email body for Variant B..."
+                                                            value={variantBBody}
+                                                            onChange={(e) => setVariantBBody(e.target.value)}
+                                                        />
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -806,7 +919,7 @@ function CreateCampaignModal({
                                                     <div>
                                                         <div className="flex items-center gap-3 mb-3">
                                                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                                <span className="text-primary font-bold">Y</span>
+                                                                <span className="text-primary-foreground font-bold">Y</span>
                                                             </div>
                                                             <div className="flex-1">
                                                                 <p className="font-medium text-sm">Your Business</p>
@@ -902,6 +1015,11 @@ function CreateCampaignModal({
                                         <p><strong>Channel:</strong> {channel === 'whatsapp' ? 'WhatsApp' : 'Email'}</p>
                                         <p><strong>Segment:</strong> {selectedSegmentData?.name || '-'} ({selectedSegmentData?.contactCount || 0} contacts)</p>
                                         <p><strong>Schedule:</strong> {scheduleType === 'now' ? 'Send immediately' : `${scheduledDate} at ${scheduledTime}`}</p>
+                                        {channel === 'email' && enableAbTest && (
+                                            <p className="text-primary font-medium">
+                                                <strong>A/B Test:</strong> Testing {abTestSampleSize}% sample, winner by {abTestWinnerMetric.replace('_', ' ')}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -920,7 +1038,8 @@ function CreateCampaignModal({
                                     (step === 1 && !channel) ||
                                     (step === 2 && (!name || !selectedSegment)) ||
                                     (step === 3 && channel === 'whatsapp' && !selectedTemplate) ||
-                                    (step === 3 && channel === 'email' && (!emailSubject || !emailBody))
+                                    (step === 3 && channel === 'email' && !enableAbTest && (!emailSubject || !emailBody)) ||
+                                    (step === 3 && channel === 'email' && enableAbTest && (!variantASubject || !variantABody || !variantBSubject || !variantBBody))
                                 }
                             >
                                 Continue

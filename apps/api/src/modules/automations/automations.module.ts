@@ -20,6 +20,8 @@ import { AutomationsController } from './automations.controller';
 // Dependencies
 import { ContactsModule } from '../contacts/contacts.module';
 import { WhatsAppModule } from '../channels/whatsapp/whatsapp.module';
+import { EmailModule } from '../channels/email/email.module';
+import { ChannelsModule } from '../channels/channels.module';
 import { SuperAdminModule } from '../super-admin/super-admin.module';
 
 @Module({
@@ -29,7 +31,11 @@ import { SuperAdminModule } from '../super-admin/super-admin.module';
             name: 'automations',
         }),
         forwardRef(() => ContactsModule),
+        forwardRef(() => ContactsModule),
         forwardRef(() => WhatsAppModule),
+        forwardRef(() => WhatsAppModule),
+        forwardRef(() => EmailModule),
+        ChannelsModule,
         SuperAdminModule,
     ],
     providers: [

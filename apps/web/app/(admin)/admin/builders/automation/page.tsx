@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { buildersApi } from '@/lib/admin/api';
+import { templateLibrary } from '@/lib/api';
 import {
     Plus,
     Edit,
@@ -71,12 +72,14 @@ interface AutomationTemplate {
 }
 
 const categories = [
-    { value: 'welcome', label: 'Welcome & Onboarding', icon: Users },
-    { value: 'cart', label: 'Cart Recovery', icon: Tag },
-    { value: 'nurture', label: 'Lead Nurturing', icon: MessageSquare },
-    { value: 'support', label: 'Customer Support', icon: Mail },
-    { value: 'notification', label: 'Notifications', icon: Zap },
-    { value: 'feedback', label: 'Feedback & Surveys', icon: GitBranch },
+    { value: 'Orders', label: 'Orders', icon: Users },
+    { value: 'Cart Recovery', label: 'Cart Recovery', icon: Tag },
+    { value: 'Payments', label: 'Payments', icon: Tag },
+    { value: 'Customer Lifecycle', label: 'Customer Lifecycle', icon: Users },
+    { value: 'Engagement', label: 'Engagement', icon: MessageSquare },
+    { value: 'Support', label: 'Support', icon: Mail },
+    { value: 'Instagram', label: 'Instagram', icon: MessageSquare },
+    { value: 'Reviews', label: 'Reviews', icon: GitBranch },
 ];
 
 const triggerTypes = [
@@ -189,6 +192,10 @@ const defaultTemplates = [
     { name: 'insta_dm_welcome', displayName: 'Instagram DM Welcome', description: 'Auto-respond to new Instagram DMs', category: 'Instagram', trigger: 'instagram_dm' },
     { name: 'new_contact_welcome', displayName: 'New Contact Welcome', description: 'Welcome new contacts with introductory message', category: 'Engagement', trigger: 'contact_created' },
     { name: 'review_request', displayName: 'Review Request', description: 'Request product review after delivery', category: 'Reviews', trigger: 'order_delivered' },
+    // Email Templates
+    { name: 'welcome_email_sequence', displayName: 'Welcome Email Sequence', description: 'Send a welcome email to new subscribers', category: 'Engagement', trigger: 'contact_created' },
+    { name: 'order_confirmation_email', displayName: 'Order Confirmation Email', description: 'Send detailed order receipt via email', category: 'Orders', trigger: 'order_created' },
+    { name: 'abandoned_cart_email_recovery', displayName: 'Abandoned Cart Email Recovery', description: 'Recover lost sales with an email reminder', category: 'Cart Recovery', trigger: 'cart_abandoned' },
 ];
 
 export default function AutomationBuilderPage() {
@@ -201,6 +208,20 @@ export default function AutomationBuilderPage() {
     const [editDialog, setEditDialog] = useState(false);
     const [previewDialog, setPreviewDialog] = useState(false);
     const [previewTemplate, setPreviewTemplate] = useState<AutomationTemplate | null>(null);
+    const [editingNode, setEditingNode] = useState<WorkflowNode | null>(null);
+    const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
+
+    useEffect(() => {
+        const loadEmailTemplates = async () => {
+            try {
+                const temps = await templateLibrary.getEmailTemplates();
+                setEmailTemplates(temps);
+            } catch (err) {
+                console.error('Failed to load email templates', err);
+            }
+        };
+        loadEmailTemplates();
+    }, []);
 
     const filteredTemplates = templates.filter(t => {
         const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -361,6 +382,22 @@ export default function AutomationBuilderPage() {
             ...editingTemplate,
             nodes: [...editingTemplate.nodes, newNode],
         });
+        // Auto-open edit for new nodes if they require config
+        if (subtype === 'send_email' || subtype === 'send_whatsapp' || type === 'delay') {
+            setEditingNode(newNode);
+        }
+    };
+
+    const updateNodeConfig = (nodeId: string, updates: Record<string, any>) => {
+        if (!editingTemplate) return;
+        setEditingTemplate({
+            ...editingTemplate,
+            nodes: editingTemplate.nodes.map(n =>
+                n.id === nodeId ? { ...n, config: { ...n.config, ...updates } } : n
+            ),
+        });
+        // Update local editing node state too
+        setEditingNode(prev => prev && prev.id === nodeId ? { ...prev, config: { ...prev.config, ...updates } } : prev);
     };
 
     const removeNode = (nodeId: string) => {
@@ -745,7 +782,10 @@ export default function AutomationBuilderPage() {
                                                             {index + 1}
                                                         </div>
 
-                                                        <GlassCard className="flex items-center gap-4 p-4 hover:border-slate-600 transition-colors">
+                                                        <GlassCard
+                                                            className="flex items-center gap-4 p-4 hover:border-indigo-500/50 transition-all cursor-pointer group-hover/node:bg-slate-800/50"
+                                                            onClick={() => setEditingNode(node)}
+                                                        >
                                                             <div className={cn(
                                                                 "p-3 rounded-lg flex-shrink-0",
                                                                 node.type === 'trigger' ? 'bg-amber-500/20' :
@@ -872,6 +912,192 @@ export default function AutomationBuilderPage() {
                                     Save Template
                                 </>
                             )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Node Dialog */}
+            <Dialog open={!!editingNode} onOpenChange={(open) => !open && setEditingNode(null)}>
+                <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-white/10 max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-white">Configure Node</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Set parameters for {editingNode?.name}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {editingNode && (
+                        <div className="space-y-4 py-4">
+                            {editingNode.config.subtype === 'send_email' && (
+                                <div className="space-y-2">
+                                    <Label className="text-slate-300">Email Template</Label>
+                                    <Select
+                                        value={editingNode.config.templateId || ''}
+                                        onValueChange={(v) => updateNodeConfig(editingNode.id, { templateId: v })}
+                                    >
+                                        <SelectTrigger className="bg-slate-950/50 border-slate-800 text-white">
+                                            <SelectValue placeholder="Select a template" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-900 border-slate-800">
+                                            {emailTemplates.length === 0 ? (
+                                                <SelectItem value="none" disabled>No templates available</SelectItem>
+                                            ) : (
+                                                emailTemplates.map(t => (
+                                                    <SelectItem key={t.id} value={t.id} className="text-white">
+                                                        {t.name}
+                                                    </SelectItem>
+                                                ))
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-[10px] text-slate-500">
+                                        Select the email template to send.
+                                    </p>
+                                </div>
+                            )}
+
+                            {editingNode.config.subtype === 'send_whatsapp' && (
+                                <div className="space-y-2">
+                                    <Label className="text-slate-300">WhatsApp Template</Label>
+                                    <Input
+                                        placeholder="Template Name (e.g. welcome_msg)"
+                                        value={editingNode.config.template || ''}
+                                        onChange={(e) => updateNodeConfig(editingNode.id, { template: e.target.value })}
+                                        className="bg-slate-950/50 border-slate-800 text-white"
+                                    />
+                                </div>
+                            )}
+
+                            {editingNode.type === 'delay' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Duration</Label>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={editingNode.config.duration || 1}
+                                            onChange={(e) => updateNodeConfig(editingNode.id, { duration: parseInt(e.target.value) })}
+                                            className="bg-slate-950/50 border-slate-800 text-white"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Unit</Label>
+                                        <Select
+                                            value={editingNode.config.unit || 'hours'}
+                                            onValueChange={(v) => updateNodeConfig(editingNode.id, { unit: v })}
+                                        >
+                                            <SelectTrigger className="bg-slate-950/50 border-slate-800 text-white">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-slate-900 border-slate-800">
+                                                <SelectItem value="minutes">Minutes</SelectItem>
+                                                <SelectItem value="hours">Hours</SelectItem>
+                                                <SelectItem value="days">Days</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button onClick={() => setEditingNode(null)} className="bg-indigo-600 text-white hover:bg-indigo-700">
+                            Done
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Node Dialog */}
+            <Dialog open={!!editingNode} onOpenChange={(open) => !open && setEditingNode(null)}>
+                <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-white/10 max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-white">Configure Node</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Set parameters for {editingNode?.name}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {editingNode && (
+                        <div className="space-y-4 py-4">
+                            {editingNode.config.subtype === 'send_email' && (
+                                <div className="space-y-2">
+                                    <Label className="text-slate-300">Email Template</Label>
+                                    <Select
+                                        value={editingNode.config.templateId || ''}
+                                        onValueChange={(v) => updateNodeConfig(editingNode.id, { templateId: v })}
+                                    >
+                                        <SelectTrigger className="bg-slate-950/50 border-slate-800 text-white">
+                                            <SelectValue placeholder="Select a template" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-900 border-slate-800">
+                                            {emailTemplates.length === 0 ? (
+                                                <SelectItem value="none" disabled>No templates available</SelectItem>
+                                            ) : (
+                                                emailTemplates.map(t => (
+                                                    <SelectItem key={t.id} value={t.id} className="text-white">
+                                                        {t.name}
+                                                    </SelectItem>
+                                                ))
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-[10px] text-slate-500">
+                                        Select the email template to send.
+                                    </p>
+                                </div>
+                            )}
+
+                            {editingNode.config.subtype === 'send_whatsapp' && (
+                                <div className="space-y-2">
+                                    <Label className="text-slate-300">WhatsApp Template</Label>
+                                    <Input
+                                        placeholder="Template Name (e.g. welcome_msg)"
+                                        value={editingNode.config.template || ''}
+                                        onChange={(e) => updateNodeConfig(editingNode.id, { template: e.target.value })}
+                                        className="bg-slate-950/50 border-slate-800 text-white"
+                                    />
+                                </div>
+                            )}
+
+                            {editingNode.type === 'delay' && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Duration</Label>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={editingNode.config.duration || 1}
+                                            onChange={(e) => updateNodeConfig(editingNode.id, { duration: parseInt(e.target.value) })}
+                                            className="bg-slate-950/50 border-slate-800 text-white"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Unit</Label>
+                                        <Select
+                                            value={editingNode.config.unit || 'hours'}
+                                            onValueChange={(v) => updateNodeConfig(editingNode.id, { unit: v })}
+                                        >
+                                            <SelectTrigger className="bg-slate-950/50 border-slate-800 text-white">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-slate-900 border-slate-800">
+                                                <SelectItem value="minutes">Minutes</SelectItem>
+                                                <SelectItem value="hours">Hours</SelectItem>
+                                                <SelectItem value="days">Days</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button onClick={() => setEditingNode(null)} className="bg-indigo-600 text-white hover:bg-indigo-700">
+                            Done
                         </Button>
                     </DialogFooter>
                 </DialogContent>

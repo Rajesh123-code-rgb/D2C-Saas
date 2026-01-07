@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as nodemailer from 'nodemailer';
 import { Channel } from '../channel.entity';
+import { EmailTemplate } from './entities/email-template.entity';
 import { InboxService } from '../../inbox/inbox.service';
 import { ContactsService } from '../../contacts/contacts.service';
 import { EmailGovernanceService } from '../../super-admin/services/email-governance.service';
@@ -37,6 +38,8 @@ export class EmailService {
         private readonly emailGovernanceService: EmailGovernanceService,
         @InjectRepository(Channel)
         private readonly channelRepository: Repository<Channel>,
+        @InjectRepository(EmailTemplate)
+        private readonly templateRepository: Repository<EmailTemplate>,
     ) {
         this.initializeTransporter();
     }
@@ -370,5 +373,36 @@ export class EmailService {
             this.logger.error(`Email verification failed: ${error.message}`);
             return false;
         }
+    }
+
+    // Template Management
+    async createTemplate(tenantId: string, data: Partial<EmailTemplate>): Promise<EmailTemplate> {
+        const template = this.templateRepository.create({
+            ...data,
+            tenantId,
+        });
+        return this.templateRepository.save(template);
+    }
+
+    async getTemplates(tenantId: string): Promise<EmailTemplate[]> {
+        return this.templateRepository.find({
+            where: { tenantId },
+            order: { createdAt: 'DESC' },
+        });
+    }
+
+    async getTemplate(tenantId: string, id: string): Promise<EmailTemplate | null> {
+        return this.templateRepository.findOne({
+            where: { id, tenantId },
+        });
+    }
+
+    async updateTemplate(tenantId: string, id: string, data: Partial<EmailTemplate>): Promise<EmailTemplate | null> {
+        await this.templateRepository.update({ id, tenantId }, data);
+        return this.getTemplate(tenantId, id);
+    }
+
+    async deleteTemplate(tenantId: string, id: string): Promise<void> {
+        await this.templateRepository.delete({ id, tenantId });
     }
 }

@@ -1,10 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Mail,
     Search,
@@ -20,13 +28,30 @@ import {
     Forward,
     Paperclip,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    X,
+    ChevronDown,
+    ChevronUp,
+    Bold,
+    Italic,
+    Underline,
+    Link2,
+    List,
+    ListOrdered,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { inboxApi, emailApi } from '@/lib/api';
+import { inboxApi, emailApi, channelsApi } from '@/lib/api';
 import { toast } from 'sonner';
 
 // Interfaces matching API response
+interface EmailChannel {
+    id: string;
+    name: string;
+    channelType: string;
+    status: string;
+    credentials?: any;
+}
+
 interface EmailThread {
     id: string;
     subject: string;
@@ -60,6 +85,13 @@ interface EmailMessage {
     attachments?: { name: string; size: string; type: string }[];
 }
 
+interface Attachment {
+    file: File;
+    name: string;
+    size: string;
+    type: string;
+}
+
 export default function EmailInboxPage() {
     const [activeFolder, setActiveFolder] = useState('inbox');
     const [searchQuery, setSearchQuery] = useState('');
@@ -69,52 +101,78 @@ export default function EmailInboxPage() {
     const [messages, setMessages] = useState<EmailMessage[]>([]);
     const [loadingMessages, setLoadingMessages] = useState(false);
 
+    // Email Channels
+    const [emailChannels, setEmailChannels] = useState<EmailChannel[]>([]);
+    const [selectedChannelId, setSelectedChannelId] = useState<string>('');
+    const [filterChannelId, setFilterChannelId] = useState<string>('all');
+
     // Compose State
     const [showCompose, setShowCompose] = useState(false);
     const [composeType, setComposeType] = useState<'new' | 'reply' | 'reply-all' | 'forward'>('new');
     const [draftSubject, setDraftSubject] = useState('');
     const [draftTo, setDraftTo] = useState('');
+    const [draftCc, setDraftCc] = useState('');
+    const [draftBcc, setDraftBcc] = useState('');
     const [draftBody, setDraftBody] = useState('');
     const [sending, setSending] = useState(false);
+    const [showCcBcc, setShowCcBcc] = useState(false);
+    const [attachments, setAttachments] = useState<Attachment[]>([]);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const editorRef = useRef<HTMLDivElement>(null);
+
+    // Fetch Email Channels
+    useEffect(() => {
+        fetchEmailChannels();
+    }, []);
+
+    const fetchEmailChannels = async () => {
+        try {
+            const data = await channelsApi.getChannels();
+            const emailChannels = (data as any[]).filter((c: any) => c.channelType === 'email' && c.status === 'connected');
+            setEmailChannels(emailChannels);
+            if (emailChannels.length > 0 && !selectedChannelId) {
+                setSelectedChannelId(emailChannels[0].id);
+            }
+        } catch (error) {
+            console.error('Failed to fetch email channels:', error);
+        }
+    };
 
     // Fetch Threads
     useEffect(() => {
         fetchThreads();
-    }, [activeFolder]);
+    }, [activeFolder, filterChannelId]);
 
     const fetchThreads = async () => {
         setLoading(true);
         try {
-            // Map folder to status/filters
             let status = undefined;
             if (activeFolder === 'inbox') status = 'open';
             if (activeFolder === 'done') status = 'resolved';
 
-            // Fetch conversations from Inbox API filtered by channelType=email
             const response = await inboxApi.getConversations({
                 channelType: 'email',
                 status: status as any,
-                limit: 50
+                limit: 50,
+                channelId: filterChannelId === 'all' ? undefined : filterChannelId
             });
 
-            // Map API response to EmailThread interface
-            const mappedThreads: EmailThread[] = response.map((conv: any) => ({
+            const mappedThreads: EmailThread[] = (response as any[]).map((conv: any) => ({
                 id: conv.id,
                 subject: conv.metadata?.subject || 'No Subject',
                 participants: [conv.contact?.name || conv.contact?.email || 'Unknown'],
                 lastMessage: conv.lastMessageContent || '',
                 lastMessageAt: conv.lastMessageAt,
                 unreadCount: conv.unreadCount || 0,
-                hasAttachments: false, // Todo: check metadata
-                folder: 'inbox', // Todo: map based on logic
+                hasAttachments: conv.metadata?.hasAttachments || false,
+                folder: 'inbox',
                 labels: conv.tags || [],
                 channelId: conv.channelId,
                 contact: conv.contact
             }));
 
             setThreads(mappedThreads);
-
-            // Auto select if none selected
             if (mappedThreads.length > 0 && !selectedThreadId) {
                 setSelectedThreadId(mappedThreads[0].id);
             }
@@ -136,9 +194,7 @@ export default function EmailInboxPage() {
         setLoadingMessages(true);
         try {
             const response = await inboxApi.getMessages(threadId);
-
-            // Map API response
-            const mappedMessages: EmailMessage[] = response.map((msg: any) => ({
+            const mappedMessages: EmailMessage[] = (response as any[]).map((msg: any) => ({
                 id: msg.id,
                 content: msg.content,
                 direction: msg.direction,
@@ -150,13 +206,12 @@ export default function EmailInboxPage() {
                     name: msg.direction === 'outbound' ? 'Me' : (threads.find(t => t.id === threadId)?.contact?.name || 'Unknown'),
                     email: msg.metadata?.from || ''
                 },
-                attachments: [] // Todo: map attachments if valid
-            })).reverse(); // Oldest first
+                attachments: msg.metadata?.attachments || []
+            })).reverse();
 
             setMessages(mappedMessages);
         } catch (error) {
             console.error('Failed to fetch messages:', error);
-            // toast.error('Failed to load messages');
         } finally {
             setLoadingMessages(false);
         }
@@ -165,46 +220,116 @@ export default function EmailInboxPage() {
     const handleCompose = (type: 'new' | 'reply' | 'reply-all' | 'forward', contextMessage?: EmailMessage) => {
         setComposeType(type);
         setShowCompose(true);
+        setAttachments([]);
+        setShowCcBcc(false);
 
         if (type === 'new') {
             setDraftSubject('');
             setDraftTo('');
+            setDraftCc('');
+            setDraftBcc('');
             setDraftBody('');
         } else if (contextMessage) {
-            setDraftSubject(type === 'forward' ? `Fwd: ${contextMessage.metadata?.subject || contextMessage.subject || ''}` : `Re: ${contextMessage.metadata?.subject || contextMessage.subject || ''}`);
-            setDraftTo(type === 'reply' ? (contextMessage.sender?.email || '') : '');
-            // Pre-fill body with quote if needed
-            setDraftBody('');
+            const originalSubject = contextMessage.metadata?.subject || '';
+            const senderEmail = contextMessage.sender?.email || '';
+
+            if (type === 'forward') {
+                setDraftSubject(`Fwd: ${originalSubject}`);
+                setDraftTo('');
+                // Quote original message
+                const quotedContent = `\n\n---------- Forwarded message ----------\nFrom: ${contextMessage.sender?.name} <${senderEmail}>\nDate: ${new Date(contextMessage.createdAt).toLocaleString()}\nSubject: ${originalSubject}\n\n${contextMessage.content}`;
+                setDraftBody(quotedContent);
+            } else {
+                setDraftSubject(`Re: ${originalSubject.replace(/^Re: /i, '')}`);
+                setDraftTo(senderEmail);
+                // Quote original message for reply
+                const quotedContent = `\n\nOn ${new Date(contextMessage.createdAt).toLocaleString()}, ${contextMessage.sender?.name} wrote:\n> ${contextMessage.content.replace(/\n/g, '\n> ')}`;
+                setDraftBody(quotedContent);
+            }
+            setDraftCc('');
+            setDraftBcc('');
         }
     };
 
+    const handleAttachmentClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files) return;
+
+        const newAttachments: Attachment[] = [];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            newAttachments.push({
+                file,
+                name: file.name,
+                size: formatFileSize(file.size),
+                type: file.type
+            });
+        }
+        setAttachments([...attachments, ...newAttachments]);
+        e.target.value = '';
+    };
+
+    const formatFileSize = (bytes: number): string => {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    const removeAttachment = (index: number) => {
+        setAttachments(attachments.filter((_, i) => i !== index));
+    };
+
+    const applyFormat = (command: string, value?: string) => {
+        document.execCommand(command, false, value);
+        editorRef.current?.focus();
+    };
+
     const handleSend = async () => {
+        if (!draftTo.trim()) {
+            toast.error('Please enter a recipient email address');
+            return;
+        }
+
+        const channelId = selectedChannelId || emailChannels[0]?.id;
+        if (!channelId) {
+            toast.error('No email channel available. Please configure one in Settings > Channels.');
+            return;
+        }
+
         setSending(true);
         try {
-            if (composeType === 'new') {
-                const channelId = threads[0]?.channelId;
-                if (!channelId) {
-                    toast.error('No email channel available to send from.');
-                    return;
-                }
+            const emailContent = editorRef.current?.innerHTML || draftBody;
 
+            if (composeType === 'new' || composeType === 'forward') {
                 await emailApi.send({
                     channelId: channelId,
                     to: draftTo,
                     subject: draftSubject,
-                    html: draftBody
+                    html: emailContent,
+                    // Note: Attachments would need base64 encoding - simplified for now
                 });
                 toast.success('Email sent successfully');
             } else {
                 if (!selectedThreadId) return;
                 await inboxApi.sendMessage(selectedThreadId, {
-                    content: draftBody,
+                    content: emailContent,
                     messageType: 'email',
                 });
                 toast.success('Reply sent');
                 fetchMessages(selectedThreadId);
             }
+
             setShowCompose(false);
+            setDraftTo('');
+            setDraftCc('');
+            setDraftBcc('');
+            setDraftSubject('');
+            setDraftBody('');
+            setAttachments([]);
         } catch (error) {
             console.error('Failed to send email:', error);
             toast.error('Failed to send email');
@@ -213,12 +338,14 @@ export default function EmailInboxPage() {
         }
     };
 
+    const selectedThread = threads.find(t => t.id === selectedThreadId);
+
     return (
         <div className="flex h-[calc(100vh-2rem)] gap-4">
             {/* Left Sidebar - Folders */}
             <div className="w-64 flex flex-col gap-2">
                 <Button
-                    className="w-full justify-start gap-2 mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md hover:shadow-lg transition-all"
+                    className="w-full justify-start gap-2 mb-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all"
                     size="lg"
                     onClick={() => handleCompose('new')}
                 >
@@ -240,7 +367,7 @@ export default function EmailInboxPage() {
                             className={cn(
                                 'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                                 activeFolder === item.id
-                                    ? 'bg-blue-50 text-blue-700'
+                                    ? 'bg-primary/10 text-primary-foreground'
                                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                             )}
                         >
@@ -251,7 +378,7 @@ export default function EmailInboxPage() {
                             {item.count > 0 && (
                                 <span className={cn(
                                     "text-xs px-2 py-0.5 rounded-full",
-                                    activeFolder === item.id ? "bg-blue-100 text-blue-700" : "bg-muted text-muted-foreground"
+                                    activeFolder === item.id ? "bg-primary/20 text-primary-foreground" : "bg-muted text-muted-foreground"
                                 )}>
                                     {item.count}
                                 </span>
@@ -259,6 +386,30 @@ export default function EmailInboxPage() {
                         </button>
                     ))}
                 </nav>
+
+                {/* Email Accounts */}
+                {emailChannels.length > 0 && (
+                    <div className="mt-6 pt-4 border-t">
+                        <h4 className="text-xs font-semibold text-muted-foreground mb-2 px-2">EMAIL ACCOUNTS</h4>
+                        <div className="space-y-1">
+                            {emailChannels.map((channel) => (
+                                <div
+                                    key={channel.id}
+                                    className={cn(
+                                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors",
+                                        selectedChannelId === channel.id
+                                            ? "bg-primary/10 text-primary-foreground"
+                                            : "text-muted-foreground hover:bg-muted"
+                                    )}
+                                    onClick={() => setSelectedChannelId(channel.id)}
+                                >
+                                    <Mail className="h-4 w-4" />
+                                    <span className="truncate">{channel.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Middle Column - Thread List */}
@@ -270,14 +421,39 @@ export default function EmailInboxPage() {
                             <RefreshCw className="h-4 w-4 text-muted-foreground" />
                         </Button>
                     </h2>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search emails..."
-                            className="pl-9"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+
+                    {/* Account Filter & Search */}
+                    <div className="space-y-2">
+                        <Select value={filterChannelId} onValueChange={setFilterChannelId}>
+                            <SelectTrigger className="h-8 w-full border-muted bg-muted/20">
+                                <SelectValue placeholder="All Accounts" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Accounts</SelectItem>
+                                {emailChannels.map((channel) => (
+                                    <SelectItem key={channel.id} value={channel.id}>
+                                        {channel.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        {emailChannels.length === 0 && (
+                            <div className="text-xs text-center p-2 bg-yellow-500/10 text-yellow-600 rounded-md border border-yellow-500/20">
+                                No email accounts connected.
+                                <a href="/channels" className="underline ml-1 font-medium">Connect now</a>
+                            </div>
+                        )}
+
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search emails..."
+                                className="pl-9"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -294,7 +470,7 @@ export default function EmailInboxPage() {
                                     onClick={() => setSelectedThreadId(thread.id)}
                                     className={cn(
                                         'w-full text-left p-4 hover:bg-muted/50 transition-colors',
-                                        selectedThreadId === thread.id && 'bg-blue-50/50 hover:bg-blue-50'
+                                        selectedThreadId === thread.id && 'bg-primary/5 hover:bg-primary/10'
                                     )}
                                 >
                                     <div className="flex justify-between items-start mb-1">
@@ -349,18 +525,11 @@ export default function EmailInboxPage() {
                         <div className="p-4 border-b flex items-center justify-between bg-card z-10">
                             <div className="flex items-center gap-3">
                                 <h2 className="text-xl font-semibold truncate max-w-2xl">
-                                    {threads.find(t => t.id === selectedThreadId)?.subject}
+                                    {selectedThread?.subject}
                                 </h2>
-                                <div className="flex gap-1">
-                                    {threads.find(t => t.id === selectedThreadId)?.labels.map(label => (
-                                        <Badge key={label} variant="outline" className="text-xs">
-                                            {label}
-                                        </Badge>
-                                    ))}
-                                </div>
                             </div>
                             <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" title="Reply">
+                                <Button variant="ghost" size="icon" title="Reply" onClick={() => handleCompose('reply', messages[messages.length - 1])}>
                                     <Reply className="h-4 w-4" />
                                 </Button>
                                 <Button variant="ghost" size="icon" title="Delete">
@@ -401,7 +570,7 @@ export default function EmailInboxPage() {
                                                             <span className="text-xs text-muted-foreground">&lt;{msg.sender?.email || ''}&gt;</span>
                                                         </div>
                                                         <div className="text-xs text-muted-foreground">
-                                                            {msg.direction === 'outbound' ? 'to ' + (threads.find(t => t.id === selectedThreadId)?.participants.join(', ') || 'Recipient') : 'to Me'}
+                                                            {msg.direction === 'outbound' ? 'to ' + (selectedThread?.participants.join(', ') || 'Recipient') : 'to Me'}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -439,7 +608,7 @@ export default function EmailInboxPage() {
                             )}
                         </div>
 
-                        {/* Recent Reply Box (Quick Action) */}
+                        {/* Quick Reply Box */}
                         <div className="p-4 bg-muted/10 border-t">
                             {!showCompose && (
                                 <div className="flex gap-2">
@@ -482,7 +651,7 @@ export default function EmailInboxPage() {
             {/* Compose Modal */}
             {showCompose && (
                 <div className="fixed inset-0 z-50 flex items-end justify-end p-6 pointer-events-none">
-                    <Card className="w-[600px] h-[600px] shadow-2xl flex flex-col pointer-events-auto border-t-4 border-t-blue-600">
+                    <Card className="w-[650px] h-[700px] shadow-2xl flex flex-col pointer-events-auto border-t-4 border-t-blue-600">
                         <div className="flex items-center justify-between p-3 border-b bg-muted/50">
                             <h3 className="font-semibold text-sm">
                                 {composeType === 'new' ? 'New Message' :
@@ -490,39 +659,144 @@ export default function EmailInboxPage() {
                                         composeType === 'forward' ? 'Forward' : 'Reply All'}
                             </h3>
                             <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setShowCompose(false)}>
-                                &times;
+                                <X className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-                            <div className="space-y-2">
+
+                        <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+                            {/* Channel Selector */}
+                            {emailChannels.length > 1 && (
+                                <div className="flex items-center gap-2 pb-2 border-b">
+                                    <Label className="text-xs text-muted-foreground whitespace-nowrap">From:</Label>
+                                    <Select value={selectedChannelId} onValueChange={setSelectedChannelId}>
+                                        <SelectTrigger className="h-8 border-0 shadow-none">
+                                            <SelectValue placeholder="Select account" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {emailChannels.map((channel) => (
+                                                <SelectItem key={channel.id} value={channel.id}>
+                                                    {channel.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
+                            {/* To Field */}
+                            <div className="flex items-center gap-2 border-b pb-2">
+                                <Label className="text-xs text-muted-foreground w-8">To:</Label>
                                 <Input
-                                    placeholder="To"
+                                    placeholder="recipient@example.com"
                                     value={draftTo}
                                     onChange={(e) => setDraftTo(e.target.value)}
-                                    className="border-0 border-b rounded-none px-0 focus-visible:ring-0"
+                                    className="border-0 shadow-none h-8 px-0 focus-visible:ring-0"
                                 />
-                                <div className="flex items-center justify-between border-b pb-1">
-                                    <Input
-                                        placeholder="Subject"
-                                        value={draftSubject}
-                                        onChange={(e) => setDraftSubject(e.target.value)}
-                                        className="border-0 rounded-none px-0 focus-visible:ring-0 flex-1"
-                                    />
-                                    <div className="flex gap-2 text-xs text-muted-foreground">
-                                        <button className="hover:text-foreground">Cc</button>
-                                        <button className="hover:text-foreground">Bcc</button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-xs text-muted-foreground h-6"
+                                    onClick={() => setShowCcBcc(!showCcBcc)}
+                                >
+                                    {showCcBcc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                    Cc/Bcc
+                                </Button>
+                            </div>
+
+                            {/* CC/BCC Fields */}
+                            {showCcBcc && (
+                                <>
+                                    <div className="flex items-center gap-2 border-b pb-2">
+                                        <Label className="text-xs text-muted-foreground w-8">Cc:</Label>
+                                        <Input
+                                            placeholder="cc@example.com"
+                                            value={draftCc}
+                                            onChange={(e) => setDraftCc(e.target.value)}
+                                            className="border-0 shadow-none h-8 px-0 focus-visible:ring-0"
+                                        />
                                     </div>
+                                    <div className="flex items-center gap-2 border-b pb-2">
+                                        <Label className="text-xs text-muted-foreground w-8">Bcc:</Label>
+                                        <Input
+                                            placeholder="bcc@example.com"
+                                            value={draftBcc}
+                                            onChange={(e) => setDraftBcc(e.target.value)}
+                                            className="border-0 shadow-none h-8 px-0 focus-visible:ring-0"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Subject Field */}
+                            <div className="flex items-center gap-2 border-b pb-2">
+                                <Label className="text-xs text-muted-foreground whitespace-nowrap">Subject:</Label>
+                                <Input
+                                    placeholder="Email subject"
+                                    value={draftSubject}
+                                    onChange={(e) => setDraftSubject(e.target.value)}
+                                    className="border-0 shadow-none h-8 px-0 focus-visible:ring-0"
+                                />
+                            </div>
+
+                            {/* Rich Text Toolbar */}
+                            <div className="flex items-center gap-1 p-2 bg-muted/30 rounded-md">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => applyFormat('bold')}>
+                                    <Bold className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => applyFormat('italic')}>
+                                    <Italic className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => applyFormat('underline')}>
+                                    <Underline className="h-4 w-4" />
+                                </Button>
+                                <div className="w-px h-5 bg-border mx-1" />
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => applyFormat('insertUnorderedList')}>
+                                    <List className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => applyFormat('insertOrderedList')}>
+                                    <ListOrdered className="h-4 w-4" />
+                                </Button>
+                                <div className="w-px h-5 bg-border mx-1" />
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                                    const url = prompt('Enter link URL:');
+                                    if (url) applyFormat('createLink', url);
+                                }}>
+                                    <Link2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+
+                            {/* Rich Text Editor */}
+                            <div
+                                ref={editorRef}
+                                contentEditable
+                                className="min-h-[200px] max-h-[300px] overflow-y-auto p-3 rounded-md border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                onInput={(e) => setDraftBody(e.currentTarget.innerHTML)}
+                                dangerouslySetInnerHTML={{ __html: draftBody }}
+                            />
+
+                            {/* Attachments */}
+                            {attachments.length > 0 && (
+                                <div className="flex flex-wrap gap-2 pt-2">
+                                    {attachments.map((att, index) => (
+                                        <div key={index} className="flex items-center gap-2 px-3 py-2 bg-muted rounded-md text-sm">
+                                            <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                            <span className="truncate max-w-[150px]">{att.name}</span>
+                                            <span className="text-xs text-muted-foreground">({att.size})</span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-5 w-5"
+                                                onClick={() => removeAttachment(index)}
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                            <div className="h-[300px]">
-                                <textarea
-                                    className="w-full h-full resize-none outline-none text-sm"
-                                    placeholder="Write your message..."
-                                    value={draftBody}
-                                    onChange={(e) => setDraftBody(e.target.value)}
-                                ></textarea>
-                            </div>
+                            )}
                         </div>
+
+                        {/* Footer Actions */}
                         <div className="p-3 border-t flex items-center justify-between bg-muted/10">
                             <div className="flex gap-2">
                                 <Button
@@ -533,11 +807,18 @@ export default function EmailInboxPage() {
                                     {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                     Send
                                 </Button>
-                                <Button variant="ghost" size="icon">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                    multiple
+                                    className="hidden"
+                                />
+                                <Button variant="ghost" size="icon" onClick={handleAttachmentClick} title="Attach files">
                                     <Paperclip className="h-4 w-4" />
                                 </Button>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={() => setShowCompose(false)}>
+                            <Button variant="ghost" size="icon" onClick={() => setShowCompose(false)} title="Discard">
                                 <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500" />
                             </Button>
                         </div>

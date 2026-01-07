@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { cn } from '@/lib/utils';
 import { TemplateGallery } from '@/components/templates/TemplateGallery';
+import { TemplatePreviewModal } from '@/components/templates/TemplatePreviewModal';
 import { Sparkles } from 'lucide-react';
 
 // Types
@@ -51,6 +52,8 @@ export default function TemplatesPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+    const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
     const [syncing, setSyncing] = useState(false);
 
     // Fetch templates
@@ -120,7 +123,10 @@ export default function TemplatesPage() {
                     <h1 className="text-2xl font-bold">Templates</h1>
                     <p className="text-muted-foreground">Manage your WhatsApp and Email templates</p>
                 </div>
-                <Button onClick={() => setShowCreateModal(true)}>
+                <Button onClick={() => {
+                    setModalMode('create');
+                    setShowCreateModal(true);
+                }}>
                     <Plus className="mr-2 h-4 w-4" />
                     Create Template
                 </Button>
@@ -226,7 +232,10 @@ export default function TemplatesPage() {
                                         <RefreshCw className="mr-2 h-4 w-4" />
                                         Sync from Meta
                                     </Button>
-                                    <Button onClick={() => setShowCreateModal(true)}>
+                                    <Button onClick={() => {
+                                        setModalMode('create');
+                                        setShowCreateModal(true);
+                                    }}>
                                         <Plus className="mr-2 h-4 w-4" />
                                         Create Template
                                     </Button>
@@ -240,7 +249,15 @@ export default function TemplatesPage() {
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredEmailTemplates.length > 0 ? (
                         filteredEmailTemplates.map((template) => (
-                            <EmailTemplateCard key={template.id} template={template} />
+                            <EmailTemplateCard
+                                key={template.id}
+                                template={template}
+                                onEdit={(t) => {
+                                    setSelectedTemplate(t);
+                                    setModalMode('edit');
+                                    setShowCreateModal(true);
+                                }}
+                            />
                         ))
                     ) : (
                         <EmptyState
@@ -248,7 +265,10 @@ export default function TemplatesPage() {
                             title="No Email Templates"
                             description="Create your first email template to use in campaigns"
                             action={
-                                <Button onClick={() => setShowCreateModal(true)}>
+                                <Button onClick={() => {
+                                    setModalMode('create');
+                                    setShowCreateModal(true);
+                                }}>
                                     <Plus className="mr-2 h-4 w-4" />
                                     Create Template
                                 </Button>
@@ -261,9 +281,9 @@ export default function TemplatesPage() {
                 <TemplateGallery
                     type="whatsapp"
                     onSelect={(template) => {
-                        // User selected an admin WhatsApp template
-                        console.log('Selected WhatsApp template:', template);
-                        // Could open a modal to let user submit this template to Meta
+                        setSelectedTemplate(template);
+                        setModalMode('create');
+                        setShowCreateModal(true);
                     }}
                 />
             ) : (
@@ -271,22 +291,29 @@ export default function TemplatesPage() {
                 <TemplateGallery
                     type="email"
                     onSelect={(template) => {
-                        // User selected an admin email template
-                        console.log('Selected Email template:', template);
-                        // Could open a modal to customize and use this template
+                        setSelectedTemplate(template);
+                        setModalMode('create');
+                        setShowCreateModal(true);
                     }}
                 />
             )}
 
             {/* Create Template Modal */}
-            {showCreateModal && (activeTab === 'whatsapp' || activeTab === 'email') && (
+            {/* Create Template Modal */}
+            {showCreateModal && (
                 <CreateTemplateModal
-                    type={activeTab}
-                    onClose={() => setShowCreateModal(false)}
+                    type={activeTab.includes('email') ? 'email' : 'whatsapp'}
+                    mode={modalMode}
+                    initialData={selectedTemplate}
+                    onClose={() => {
+                        setShowCreateModal(false);
+                        setSelectedTemplate(null);
+                    }}
                     onCreated={() => {
                         setShowCreateModal(false);
-                        // Refetch templates
-                        if (activeTab === 'whatsapp') {
+                        setSelectedTemplate(null);
+                        // Refresh based on type
+                        if (activeTab.includes('whatsapp')) {
                             handleSyncTemplates();
                         } else {
                             fetch('/api/templates/email')
@@ -359,7 +386,7 @@ function WhatsAppTemplateCard({ template }: { template: WhatsAppTemplate }) {
 }
 
 // Email Template Card
-function EmailTemplateCard({ template }: { template: EmailTemplate }) {
+function EmailTemplateCard({ template, onEdit }: { template: EmailTemplate; onEdit: (t: EmailTemplate) => void }) {
     const [showPreview, setShowPreview] = useState(false);
 
     return (
@@ -385,15 +412,13 @@ function EmailTemplateCard({ template }: { template: EmailTemplate }) {
                         <p className="text-sm font-medium">Subject:</p>
                         <p className="text-sm text-muted-foreground truncate">{template.subject}</p>
                     </div>
-                    <div className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                        {template.body}
-                    </div>
+                    <div className="text-sm text-muted-foreground line-clamp-2 mb-4" dangerouslySetInnerHTML={{ __html: template.body }} />
                     <div className="flex gap-2">
                         <Button size="sm" variant="outline" onClick={() => setShowPreview(true)}>
                             <Eye className="mr-1 h-3 w-3" />
                             Preview
                         </Button>
-                        <Button size="sm" variant="ghost">
+                        <Button size="sm" variant="ghost" onClick={() => onEdit(template)}>
                             <Edit className="mr-1 h-3 w-3" />
                             Edit
                         </Button>
@@ -459,116 +484,21 @@ function StatusBadge({ status }: { status: string }) {
     );
 }
 
-// Template Preview Modal
-function TemplatePreviewModal({
-    type,
-    template,
-    onClose,
-}: {
-    type: 'whatsapp' | 'email';
-    template: any;
-    onClose: () => void;
-}) {
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <Card className="w-full max-w-lg">
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>Template Preview</CardTitle>
-                        <Button size="icon" variant="ghost" onClick={onClose}>×</Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {type === 'whatsapp' ? (
-                        /* WhatsApp Preview */
-                        <div className="bg-[#075E54] rounded-lg overflow-hidden">
-                            <div className="bg-[#075E54] px-4 py-3 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold">
-                                    B
-                                </div>
-                                <div>
-                                    <p className="text-white text-sm font-medium">Your Business</p>
-                                    <p className="text-white/70 text-xs">Business Account</p>
-                                </div>
-                            </div>
-                            <div className="bg-[#ECE5DD] p-4 min-h-[200px]">
-                                <div className="bg-white rounded-lg p-3 max-w-[90%] shadow-sm">
-                                    {/* Header */}
-                                    {template.components?.find((c: any) => c.type === 'HEADER') && (
-                                        <p className="font-semibold text-sm mb-1">
-                                            {template.components.find((c: any) => c.type === 'HEADER').text}
-                                        </p>
-                                    )}
-                                    {/* Body */}
-                                    <p className="text-sm text-gray-800 whitespace-pre-wrap">
-                                        {template.components?.find((c: any) => c.type === 'BODY')?.text || 'Template content'}
-                                    </p>
-                                    {/* Footer */}
-                                    {template.components?.find((c: any) => c.type === 'FOOTER') && (
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            {template.components.find((c: any) => c.type === 'FOOTER').text}
-                                        </p>
-                                    )}
-                                    <p className="text-right text-xs text-gray-500 mt-1">
-                                        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ✓✓
-                                    </p>
-                                </div>
-                                {/* Buttons */}
-                                {template.components?.find((c: any) => c.type === 'BUTTONS') && (
-                                    <div className="mt-2 space-y-1">
-                                        {template.components.find((c: any) => c.type === 'BUTTONS').buttons?.map((btn: any, i: number) => (
-                                            <button key={i} className="w-full bg-white rounded-lg py-2 text-sm text-blue-500 shadow-sm">
-                                                {btn.text}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        /* Email Preview */
-                        <div className="border rounded-lg overflow-hidden">
-                            <div className="bg-gradient-to-r from-gray-100 to-gray-50 px-4 py-3 border-b">
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <Mail className="h-4 w-4" />
-                                    <span>Email Preview</span>
-                                </div>
-                            </div>
-                            <div className="p-4">
-                                <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <span className="text-primary font-bold">Y</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm">Your Business</p>
-                                        <p className="text-xs text-muted-foreground">to: customer@example.com</p>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">
-                                        {new Date().toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <h3 className="font-semibold text-lg mb-3">{template.subject}</h3>
-                                <div className="text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 p-4 rounded">
-                                    {template.body}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
+
 
 // Create Template Modal
 function CreateTemplateModal({
     type,
     onClose,
     onCreated,
+    initialData,
+    mode = 'create',
 }: {
     type: 'whatsapp' | 'email';
     onClose: () => void;
     onCreated: () => void;
+    initialData?: any;
+    mode?: 'create' | 'edit';
 }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -586,6 +516,27 @@ function CreateTemplateModal({
     const [emailBody, setEmailBody] = useState('');
     const [emailCategory, setEmailCategory] = useState('marketing');
 
+    // Populate data if initialData is provided
+    useEffect(() => {
+        if (initialData) {
+            if (type === 'whatsapp') {
+                // If editing, keep name. If using template (copy), append _copy
+                const isEdit = mode === 'edit';
+                setWaName(initialData.name ? (isEdit ? initialData.name : `${initialData.name}_copy`) : '');
+                setWaCategory(initialData.category || 'MARKETING');
+                setWaLanguage(initialData.language || 'en_US');
+                setWaBody(initialData.bodyText || initialData.components?.find((c: any) => c.type === 'BODY')?.text || '');
+                setWaFooter(initialData.footerText || initialData.components?.find((c: any) => c.type === 'FOOTER')?.text || '');
+            } else {
+                const isEdit = mode === 'edit';
+                setEmailName(initialData.name ? (isEdit ? initialData.name : `${initialData.name} Copy`) : '');
+                setEmailSubject(initialData.subject || '');
+                setEmailBody(initialData.htmlContent || initialData.textContent || initialData.body || '');
+                setEmailCategory(initialData.category || 'marketing');
+            }
+        }
+    }, [initialData, type, mode]);
+
     const handleSubmit = async () => {
         setLoading(true);
         setError('');
@@ -597,6 +548,11 @@ function CreateTemplateModal({
                 if (!nameRegex.test(waName)) {
                     throw new Error('Template name must start with a letter and contain only lowercase letters, numbers, and underscores');
                 }
+
+                // If editing, usually WhatsApp templates are not directly editable via API in the same way, 
+                // but for now we'll assume we are creating a new one or this is just a placeholder logic for verified templates.
+                // Meta templates often need new submission. 
+                // However, for Email, we definitely support edit.
 
                 const response = await fetch('/api/templates/whatsapp', {
                     method: 'POST',
@@ -617,8 +573,15 @@ function CreateTemplateModal({
                     throw new Error(data.message || 'Failed to create template');
                 }
             } else {
-                const response = await fetch('/api/templates/email', {
-                    method: 'POST',
+                // Email Logic
+                const url = mode === 'edit' && initialData?.id
+                    ? `/api/templates/email/${initialData.id}`
+                    : '/api/templates/email';
+
+                const method = mode === 'edit' && initialData?.id ? 'PATCH' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: emailName,
@@ -630,7 +593,7 @@ function CreateTemplateModal({
 
                 if (!response.ok) {
                     const data = await response.json();
-                    throw new Error(data.message || 'Failed to create template');
+                    throw new Error(data.message || `Failed to ${mode} template`);
                 }
             }
 
@@ -649,12 +612,14 @@ function CreateTemplateModal({
                     <div className="flex items-center justify-between">
                         <div>
                             <CardTitle>
-                                Create {type === 'whatsapp' ? 'WhatsApp' : 'Email'} Template
+                                {type === 'whatsapp'
+                                    ? (mode === 'edit' ? 'Edit WhatsApp Template' : 'Create WhatsApp Template')
+                                    : (mode === 'edit' ? 'Edit Email Template' : 'Create Email Template')}
                             </CardTitle>
                             <CardDescription>
                                 {type === 'whatsapp'
                                     ? 'Templates must be approved by Meta before use'
-                                    : 'Create reusable email templates for campaigns'}
+                                    : (mode === 'edit' ? 'Update your email template details' : 'Create reusable email templates for campaigns')}
                             </CardDescription>
                         </div>
                         <Button size="icon" variant="ghost" onClick={onClose}>×</Button>
@@ -811,6 +776,7 @@ function CreateTemplateModal({
                                         onChange={setEmailBody}
                                         placeholder="Hello {{firstName}},  Thank you for your order..."
                                         height="350px"
+                                        defaultView={emailBody.includes('<html') || emailBody.includes('<table') ? 'source' : 'visual'}
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         Use {'{{firstName}}'}, {'{{orderNumber}}'} for variables. Full HTML formatting supported.
@@ -822,34 +788,43 @@ function CreateTemplateModal({
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Preview</label>
                                 <div className="border rounded-lg overflow-hidden bg-white">
-                                    <div className="bg-gradient-to-r from-gray-100 to-gray-50 px-4 py-3 border-b">
-                                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                                            <Mail className="h-4 w-4" />
-                                            <span>Inbox</span>
+                                    <div className="border rounded-lg overflow-hidden bg-white">
+                                        <div className="bg-gradient-to-r from-gray-100 to-gray-50 px-4 py-3 border-b">
+                                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                <Mail className="h-4 w-4" />
+                                                <span>Inbox</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="p-4">
-                                        {emailSubject || emailBody ? (
-                                            <div>
-                                                <div className="flex items-center gap-3 mb-3 pb-3 border-b">
-                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                        <span className="text-primary font-bold">Y</span>
+                                        <div className="p-4">
+                                            {emailSubject || emailBody ? (
+                                                <div>
+                                                    <div className="flex items-center gap-3 mb-3 pb-3 border-b">
+                                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <span className="text-primary-foreground font-bold">Y</span>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="font-medium text-sm">Your Business</p>
+                                                            <p className="text-xs text-muted-foreground">to: customer@example.com</p>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <p className="font-medium text-sm">Your Business</p>
-                                                        <p className="text-xs text-muted-foreground">to: customer@example.com</p>
+                                                    <h4 className="font-semibold mb-2">
+                                                        {emailSubject || 'No subject'}
+                                                    </h4>
+                                                    <div className="bg-gray-50 rounded overflow-hidden h-[400px]">
+                                                        <iframe
+                                                            srcDoc={emailBody || 'No content yet...'}
+                                                            className="w-full h-full border-0"
+                                                            title="Email Preview"
+                                                            sandbox="allow-same-origin"
+                                                        />
                                                     </div>
                                                 </div>
-                                                <h4 className="font-semibold mb-2">
-                                                    {emailSubject || 'No subject'}
-                                                </h4>
-                                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded min-h-[100px]" dangerouslySetInnerHTML={{ __html: emailBody || 'No content yet...' }} />
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center justify-center h-[200px] text-gray-500 text-sm">
-                                                Enter subject and body to preview
-                                            </div>
-                                        )}
+                                            ) : (
+                                                <div className="flex items-center justify-center h-[200px] text-gray-500 text-sm">
+                                                    Enter subject and body to preview
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -872,8 +847,12 @@ function CreateTemplateModal({
                                 </>
                             ) : (
                                 <>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Create Template
+                                    {mode === 'edit' ? (
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                    ) : (
+                                        <Plus className="mr-2 h-4 w-4" />
+                                    )}
+                                    {mode === 'edit' ? 'Save Changes' : 'Create Template'}
                                 </>
                             )}
                         </Button>

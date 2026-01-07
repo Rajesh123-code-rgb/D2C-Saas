@@ -17,6 +17,18 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { templateLibrary } from '@/lib/api';
 
+import { TemplatePreviewModal } from '@/components/templates/TemplatePreviewModal';
+import {
+    MoreHorizontal,
+    Eye,
+} from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
 interface TemplateGalleryProps {
     type: 'automation' | 'whatsapp' | 'email';
     onSelect?: (template: any) => void;
@@ -52,6 +64,7 @@ export function TemplateGallery({ type, onSelect, selectedId }: TemplateGalleryP
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [previewTemplate, setPreviewTemplate] = useState<any>(null);
 
     const config = typeConfig[type];
     const Icon = config.icon;
@@ -159,7 +172,7 @@ export function TemplateGallery({ type, onSelect, selectedId }: TemplateGalleryP
             </div>
 
             {/* Templates Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filteredTemplates.map((template) => (
                     <TemplateCard
                         key={template.id}
@@ -167,6 +180,7 @@ export function TemplateGallery({ type, onSelect, selectedId }: TemplateGalleryP
                         template={template}
                         selected={selectedId === template.id}
                         onSelect={() => onSelect?.(template)}
+                        onPreview={() => setPreviewTemplate(template)}
                     />
                 ))}
             </div>
@@ -175,6 +189,15 @@ export function TemplateGallery({ type, onSelect, selectedId }: TemplateGalleryP
                 <div className="text-center py-8 text-muted-foreground">
                     <p>No templates match your search</p>
                 </div>
+            )}
+
+            {/* Preview Modal */}
+            {previewTemplate && (
+                <TemplatePreviewModal
+                    type={type === 'automation' ? 'email' : type as 'email' | 'whatsapp'} // Automation uses email preview for now or we disable preview
+                    template={previewTemplate}
+                    onClose={() => setPreviewTemplate(null)}
+                />
             )}
         </div>
     );
@@ -185,9 +208,10 @@ interface TemplateCardProps {
     template: any;
     selected?: boolean;
     onSelect?: () => void;
+    onPreview?: () => void;
 }
 
-function TemplateCard({ type, template, selected, onSelect }: TemplateCardProps) {
+function TemplateCard({ type, template, selected, onSelect, onPreview }: TemplateCardProps) {
     const getCategoryColor = (category: string) => {
         const colors: Record<string, string> = {
             welcome: 'bg-green-100 text-green-700',
@@ -205,69 +229,103 @@ function TemplateCard({ type, template, selected, onSelect }: TemplateCardProps)
         return colors[category] || 'bg-gray-100 text-gray-700';
     };
 
-    return (
-        <Card
-            className={cn(
-                'cursor-pointer transition-all hover:shadow-md',
-                selected && 'ring-2 ring-primary'
-            )}
-            onClick={onSelect}
-        >
-            <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className={cn(
-                            'p-2 rounded-lg',
-                            type === 'automation' && 'bg-purple-100',
-                            type === 'whatsapp' && 'bg-green-100',
-                            type === 'email' && 'bg-blue-100'
-                        )}>
-                            {type === 'automation' && <Zap className="h-4 w-4 text-purple-600" />}
-                            {type === 'whatsapp' && <MessageSquare className="h-4 w-4 text-green-600" />}
-                            {type === 'email' && <Mail className="h-4 w-4 text-blue-600" />}
-                        </div>
-                        <div>
-                            <CardTitle className="text-base">
-                                {template.displayName || template.name}
-                            </CardTitle>
-                            <CardDescription className="text-xs">
-                                {template.usageCount || 0} uses
-                            </CardDescription>
-                        </div>
-                    </div>
-                    <Badge className={getCategoryColor(template.category)}>
-                        {template.category}
-                    </Badge>
+    // Render HTML Thumbnail for Email
+    const renderThumbnail = () => {
+        if (type === 'email' && (template.htmlContent || template.body)) {
+            return (
+                <div className="w-full h-full relative overflow-hidden bg-white group-hover:bg-gray-50 transition-colors">
+                    <div
+                        className="absolute top-0 left-0 origin-top-left pointer-events-none flex items-start justify-center"
+                        style={{
+                            width: '250%',
+                            height: '250%',
+                            transform: 'scale(0.4)',
+                        }}
+                        dangerouslySetInnerHTML={{ __html: template.htmlContent || template.body }}
+                    />
+                    {/* Overlay to prevent interaction */}
+                    <div className="absolute inset-0 bg-transparent" />
                 </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                {/* Type-specific preview */}
-                {type === 'automation' && (
-                    <div className="text-sm text-muted-foreground line-clamp-2">
-                        {template.description || `${template.nodes?.length || 0} step workflow`}
+            );
+        } else if (type === 'whatsapp') {
+            return (
+                <div className="h-full bg-[#ECE5DD] p-4 text-[10px] overflow-hidden relative">
+                    <div className="bg-white rounded p-2 shadow-sm max-w-[90%]">
+                        <p className="line-clamp-6 text-gray-800 whitespace-pre-wrap">
+                            {template.bodyText || template.components?.find((c: any) => c.type === 'BODY')?.text || 'No content'}
+                        </p>
                     </div>
-                )}
+                </div>
+            )
+        }
 
-                {type === 'whatsapp' && (
-                    <div className="p-3 rounded-lg bg-muted/50 text-sm line-clamp-2">
-                        {template.bodyText || 'No preview'}
-                    </div>
+        // Fallback for automation or empty email
+        return (
+            <div className={cn(
+                'w-full h-full flex items-center justify-center',
+                type === 'automation' ? 'bg-purple-50' : 'bg-gray-50'
+            )}>
+                {type === 'automation' ? (
+                    <Zap className="h-12 w-12 text-purple-200" />
+                ) : (
+                    <Mail className="h-12 w-12 text-gray-200" />
                 )}
+            </div>
+        );
+    };
 
-                {type === 'email' && (
-                    <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Subject:</p>
-                        <p className="text-sm font-medium truncate">{template.subject}</p>
-                    </div>
-                )}
+    return (
+        <Card className="group overflow-hidden border transition-all hover:shadow-lg hover:border-primary/20">
+            {/* Thumbnail Area */}
+            <div className="aspect-[3/4] relative border-b bg-gray-50">
+                {renderThumbnail()}
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                    <Button size="sm" className="flex-1" onClick={onSelect}>
-                        <Copy className="h-3 w-3 mr-1" />
+                {/* Hover Actions */}
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-center gap-2 pt-12 items-end">
+                    <Button size="sm" variant="secondary" className="shadow-lg font-medium" onClick={onPreview}>
+                        Preview
+                    </Button>
+                    <Button size="sm" className="shadow-lg font-medium" onClick={onSelect}>
                         Use Template
                     </Button>
                 </div>
+            </div>
+
+            {/* Content Area */}
+            <CardContent className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-base line-clamp-1" title={template.displayName || template.name}>
+                        {template.displayName || template.name}
+                    </h3>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-6 w-6 p-0 -mr-2">
+                                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={onPreview}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={onSelect}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Use Template
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="capitalize">{template.category}</span>
+                </div>
+
+                {/* Description/Subject if available */}
+                {type === 'email' && (
+                    <p className="text-xs text-muted-foreground mt-2 line-clamp-1 truncate">
+                        {template.subject}
+                    </p>
+                )}
             </CardContent>
         </Card>
     );

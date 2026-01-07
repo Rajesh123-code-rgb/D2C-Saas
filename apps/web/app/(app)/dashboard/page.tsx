@@ -195,7 +195,7 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                                <Rocket className="h-6 w-6 text-primary" />
+                                <Rocket className="h-6 w-6 text-primary-foreground" />
                             </div>
                             <div>
                                 <h3 className="font-semibold text-lg">Complete Your Setup</h3>
@@ -241,47 +241,55 @@ export default function DashboardPage() {
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <WalletOverview />
-                <Card>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Conversations</CardTitle>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <MessageSquare className="h-4 w-4 text-violet-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.conversations?.total || 0}</div>
+                        <div className="text-2xl font-bold text-violet-700">{metrics?.conversations?.total || 0}</div>
                         {metrics?.conversations?.change !== undefined && formatChange(metrics.conversations.change)}
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-500/10 via-transparent to-transparent border-blue-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <Users className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.contacts?.total || 0}</div>
+                        <div className="text-2xl font-bold text-blue-700">{metrics?.contacts?.total || 0}</div>
                         {metrics?.contacts?.change !== undefined && formatChange(metrics.contacts.change)}
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Revenue This Month</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <DollarSign className="h-4 w-4 text-emerald-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(metrics?.revenue?.thisMonth || 0)}</div>
+                        <div className="text-2xl font-bold text-emerald-700">{formatCurrency(metrics?.revenue?.thisMonth || 0)}</div>
                         {metrics?.revenue?.change !== undefined && formatChange(metrics.revenue.change)}
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-transparent to-transparent border-orange-200/50 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Orders This Month</CardTitle>
-                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <ShoppingCart className="h-4 w-4 text-orange-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.orders?.thisMonth || 0}</div>
-                        <p className="text-xs text-muted-foreground">
+                        <div className="text-2xl font-bold text-orange-700">{metrics?.orders?.thisMonth || 0}</div>
+                        <p className="text-xs text-muted-foreground mt-2">
                             {metrics?.orders?.pending || 0} pending, {metrics?.orders?.completed || 0} completed
                         </p>
                     </CardContent>
@@ -290,10 +298,12 @@ export default function DashboardPage() {
 
             {/* Secondary Stats */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                <Card className="bg-gradient-to-br from-orange-500/5 via-transparent to-transparent border-orange-200/30 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Open Conversations</CardTitle>
-                        <Activity className="h-4 w-4 text-orange-500" />
+                        <div className="h-8 w-8 rounded-full bg-orange-500/10 flex items-center justify-center">
+                            <Activity className="h-4 w-4 text-orange-500" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-orange-600">{metrics?.conversations?.open || 0}</div>
@@ -312,32 +322,38 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-green-500/5 via-transparent to-transparent border-green-200/30 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Resolution Rate</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.resolutionRate || 0}%</div>
+                        <div className="text-2xl font-bold text-green-700">{metrics?.resolutionRate || 0}%</div>
                         <p className="text-xs text-muted-foreground">Conversations resolved</p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent border-emerald-200/30 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                        <DollarSign className="h-4 w-4 text-green-500" />
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <DollarSign className="h-4 w-4 text-emerald-500" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(metrics?.revenue?.total || 0)}</div>
+                        <div className="text-2xl font-bold text-emerald-700">{formatCurrency(metrics?.revenue?.total || 0)}</div>
                         <p className="text-xs text-muted-foreground">All time revenue</p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-500/5 via-transparent to-transparent border-blue-200/30 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Email Open Rate</CardTitle>
-                        <Activity className="h-4 w-4 text-blue-500" />
+                        <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <Activity className="h-4 w-4 text-blue-500" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-blue-600">{metrics?.emailOpenRate || 0}%</div>

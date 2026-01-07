@@ -17,6 +17,10 @@ import {
     RefreshCw,
     Loader2,
     Mail,
+    Target,
+    Beaker,
+    ImageIcon,
+    Phone,
 } from 'lucide-react';
 import { CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -31,6 +35,17 @@ const mockStats: DashboardStats = {
     messages: { today: 45230, month: 1234567 },
     emails: { today: 12450, month: 345000 },
     conversations: { marketing: 45000, utility: 78000, service: 23000 },
+    campaigns: {
+        total: 234,
+        active: 45,
+        abTestCampaigns: 12,
+        emailCampaigns: 89,
+        whatsappCampaigns: 145,
+    },
+    channelStats: {
+        whatsapp: { messages: 892450, mediaUploads: 15240, conversations: 34560 },
+        email: { sent: 456780, opened: 234567, clicked: 45678, openRate: 51.3 },
+    },
 };
 
 const mockAlerts: Alert[] = [
@@ -249,6 +264,141 @@ export default function AdminDashboardPage() {
                     </CardContent>
                 </GlassCard>
             </div>
+
+            {/* Campaign Metrics */}
+            {stats.campaigns && (
+                <>
+                    <h2 className="text-lg font-semibold text-white/90 px-1">Campaign Metrics</h2>
+                    <div className="grid gap-6 md:grid-cols-4">
+                        <GlassCard className="glass-card-hover group">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium text-slate-400">
+                                    Active Campaigns
+                                </CardTitle>
+                                <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+                                    <Target className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-white mb-1">{stats.campaigns.active}</div>
+                                <p className="text-xs text-slate-400">{stats.campaigns.total} total campaigns</p>
+                            </CardContent>
+                        </GlassCard>
+
+                        <GlassCard className="glass-card-hover group">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium text-slate-400">
+                                    A/B Test Campaigns
+                                </CardTitle>
+                                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400">
+                                    <Beaker className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-1">
+                                    {stats.campaigns.abTestCampaigns}
+                                </div>
+                                <p className="text-xs text-slate-400">Running A/B tests</p>
+                            </CardContent>
+                        </GlassCard>
+
+                        <GlassCard className="glass-card-hover group">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium text-slate-400">
+                                    WhatsApp Campaigns
+                                </CardTitle>
+                                <div className="p-2 rounded-lg bg-green-500/10 text-green-400">
+                                    <Phone className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-white mb-1">{stats.campaigns.whatsappCampaigns}</div>
+                                <p className="text-xs text-slate-400">Template-based</p>
+                            </CardContent>
+                        </GlassCard>
+
+                        <GlassCard className="glass-card-hover group">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium text-slate-400">
+                                    Email Campaigns
+                                </CardTitle>
+                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                                    <Mail className="h-4 w-4" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-white mb-1">{stats.campaigns.emailCampaigns}</div>
+                                <p className="text-xs text-slate-400">Direct send</p>
+                            </CardContent>
+                        </GlassCard>
+                    </div>
+                </>
+            )}
+
+            {/* Channel Comparison */}
+            {stats.channelStats && (
+                <>
+                    <h2 className="text-lg font-semibold text-white/90 px-1">Channel Performance</h2>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <GlassCard>
+                            <CardHeader>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <div className="p-1.5 rounded-md bg-green-500/20 text-green-400">
+                                        <Phone className="h-5 w-5" />
+                                    </div>
+                                    WhatsApp Channel
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-400">Total Messages</span>
+                                        <span className="text-white font-semibold">{formatNumber(stats.channelStats.whatsapp.messages)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-400 flex items-center gap-2">
+                                            <ImageIcon className="h-4 w-4" />
+                                            Media Uploads
+                                        </span>
+                                        <span className="text-white font-semibold">{formatNumber(stats.channelStats.whatsapp.mediaUploads)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-400">Active Conversations</span>
+                                        <span className="text-white font-semibold">{formatNumber(stats.channelStats.whatsapp.conversations)}</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </GlassCard>
+
+                        <GlassCard>
+                            <CardHeader>
+                                <CardTitle className="text-white flex items-center gap-2">
+                                    <div className="p-1.5 rounded-md bg-blue-500/20 text-blue-400">
+                                        <Mail className="h-5 w-5" />
+                                    </div>
+                                    Email Channel
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-400">Emails Sent</span>
+                                        <span className="text-white font-semibold">{formatNumber(stats.channelStats.email.sent)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-400">Open Rate</span>
+                                        <span className="text-green-400 font-semibold">{stats.channelStats.email.openRate}%</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-400">Clicked</span>
+                                        <span className="text-white font-semibold">{formatNumber(stats.channelStats.email.clicked)}</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </GlassCard>
+                    </div>
+                </>
+            )}
 
             {/* Conversation Categories */}
             <h2 className="text-lg font-semibold text-white/90 px-1">Conversation Metrics</h2>

@@ -29,8 +29,8 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'WhatsApp', href: '/inbox', icon: MessageSquare }, // Was Inbox
-    { name: 'Email', href: '/email/inbox', icon: Inbox }, // New Email Inbox
+    { name: 'WhatsApp Chat', href: '/inbox', icon: MessageSquare },
+    { name: 'Email Inbox', href: '/email/inbox', icon: Inbox },
     { name: 'Contacts', href: '/contacts', icon: Users },
     { name: 'Segments', href: '/segments', icon: Target },
     { name: 'Orders', href: '/orders', icon: ShoppingBag },
@@ -156,7 +156,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 {/* User */}
                 <div className="border-t p-4">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary-foreground font-semibold">
                             {user?.firstName?.[0]}{user?.lastName?.[0]}
                         </div>
                         <div className="flex-1 min-w-0">

@@ -54,10 +54,10 @@ const channelTypes = [
         name: 'WhatsApp Business',
         description: 'Connect multiple WhatsApp Business numbers to send and receive messages',
         icon: MessageCircle,
-        color: 'text-green-600',
-        bgColor: 'bg-green-50',
-        borderColor: 'border-green-200',
-        gradient: 'from-green-500 to-green-600',
+        color: 'text-primary-foreground',
+        bgColor: 'bg-primary/10',
+        borderColor: 'border-primary/20',
+        gradient: 'from-primary to-primary/80',
         buttonText: 'Add WhatsApp Number',
     },
     {
@@ -65,10 +65,10 @@ const channelTypes = [
         name: 'Instagram Direct',
         description: 'Connect Instagram accounts to manage direct messages',
         icon: Instagram,
-        color: 'text-pink-600',
-        bgColor: 'bg-pink-50',
-        borderColor: 'border-pink-200',
-        gradient: 'from-pink-500 to-purple-600',
+        color: 'text-primary-foreground',
+        bgColor: 'bg-primary/10',
+        borderColor: 'border-primary/20',
+        gradient: 'from-primary to-primary/80',
         buttonText: 'Add Instagram Account',
         comingSoon: true,
     },
@@ -77,10 +77,10 @@ const channelTypes = [
         name: 'Email',
         description: 'Connect multiple email accounts via SMTP/IMAP or OAuth',
         icon: Mail,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-50',
-        borderColor: 'border-blue-200',
-        gradient: 'from-blue-500 to-blue-600',
+        color: 'text-primary-foreground',
+        bgColor: 'bg-primary/10',
+        borderColor: 'border-primary/20',
+        gradient: 'from-primary to-primary/80',
         buttonText: 'Add Email Account',
     },
 ];
@@ -286,64 +286,58 @@ export default function ChannelsPage() {
 
             {/* Stats Overview */}
             <div className="grid gap-4 md:grid-cols-4">
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-full bg-blue-500/10">
-                                <Wifi className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-blue-700">
-                                    {channels.length}
-                                </p>
-                                <p className="text-sm text-blue-600">Total Channels</p>
-                            </div>
+                <Card className="bg-gradient-to-br from-violet-500/10 via-transparent to-transparent border-violet-200/50 overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <p className="text-sm font-medium">Total Channels</p>
+                        <div className="h-8 w-8 rounded-full bg-violet-500/20 flex items-center justify-center">
+                            <Wifi className="h-4 w-4 text-violet-600" />
                         </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-violet-700">{channels.length}</div>
+                        <p className="text-xs text-muted-foreground">All communication channels</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-green-200">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-full bg-green-500/10">
-                                <CheckCircle2 className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-green-700">
-                                    {channels.filter(c => c.status === 'connected').length}
-                                </p>
-                                <p className="text-sm text-green-600">Connected</p>
-                            </div>
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-200/50 overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <p className="text-sm font-medium">Connected</p>
+                        <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                         </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-emerald-700">
+                            {channels.filter(c => c.status === 'connected').length}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Active connections</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100/50 border-yellow-200">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-full bg-yellow-500/10">
-                                <Clock className="h-6 w-6 text-yellow-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-yellow-700">
-                                    {channels.filter(c => c.status === 'pending').length}
-                                </p>
-                                <p className="text-sm text-yellow-600">Pending</p>
-                            </div>
+                <Card className="bg-gradient-to-br from-orange-500/10 via-transparent to-transparent border-orange-200/50 overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <p className="text-sm font-medium">Pending</p>
+                        <div className="h-8 w-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <Clock className="h-4 w-4 text-orange-600" />
                         </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-orange-700">
+                            {channels.filter(c => c.status === 'pending').length}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Awaiting setup</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-gradient-to-br from-red-50 to-red-100/50 border-red-200">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-full bg-red-500/10">
-                                <AlertCircle className="h-6 w-6 text-red-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-red-700">
-                                    {channels.filter(c => c.status === 'error').length}
-                                </p>
-                                <p className="text-sm text-red-600">Errors</p>
-                            </div>
+                <Card className="bg-gradient-to-br from-red-500/10 via-transparent to-transparent border-red-200/50 overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <p className="text-sm font-medium">Errors</p>
+                        <div className="h-8 w-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                            <AlertCircle className="h-4 w-4 text-red-600" />
                         </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-red-700">
+                            {channels.filter(c => c.status === 'error').length}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Need attention</p>
                     </CardContent>
                 </Card>
             </div>
@@ -387,7 +381,7 @@ export default function ChannelsPage() {
                                         ) : (
                                             <Button
                                                 onClick={() => handleConnect(channelType.type)}
-                                                className={cn('bg-gradient-to-r text-white hover:opacity-90', channelType.gradient)}
+                                                className={cn('bg-gradient-to-r text-primary-foreground hover:opacity-90 font-medium', channelType.gradient)}
                                             >
                                                 <Plus className="mr-2 h-4 w-4" />
                                                 {channelType.buttonText}

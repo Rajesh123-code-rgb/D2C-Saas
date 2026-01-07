@@ -2,13 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         logger: ['error', 'warn', 'log', 'debug', 'verbose'],
     });
 
@@ -18,6 +20,11 @@ async function bootstrap() {
     app.use(helmet());
     app.use(compression());
     app.use(cookieParser()); // Parse cookies
+
+    // Serve static files for uploads
+    app.useStaticAssets(join(process.cwd(), 'uploads'), {
+        prefix: '/uploads/',
+    });
 
     // CORS - Allow multiple origins for development
     const allowedOrigins = (configService.get('CORS_ORIGIN') || 'http://localhost:3000')

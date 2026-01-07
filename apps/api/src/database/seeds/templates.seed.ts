@@ -91,6 +91,71 @@ export const DEFAULT_AUTOMATION_TEMPLATES: any[] = [
             { id: 'wait_1', type: 'delay', name: 'Wait 3 Days', config: { duration: 3, unit: 'days' } },
             { id: 'action_1', type: 'action', name: 'Request Review', config: { type: 'send_whatsapp_template' } }
         ]
+    },
+    // Email Templates
+    {
+        name: 'welcome_email_sequence',
+        description: 'Send a welcome email to new subscribers',
+        category: 'Engagement',
+        triggerType: 'contact_created',
+        isActive: true,
+        allowedPlans: ['starter', 'pro', 'enterprise'],
+        nodes: [
+            { id: 'trigger', type: 'trigger', name: 'Contact Created', config: { type: 'contact_created' } },
+            {
+                id: 'action_1',
+                type: 'action',
+                name: 'Send Welcome Email',
+                config: {
+                    type: 'send_email',
+                    subject: 'Welcome to our community! 👋',
+                    message: '<p>Hi {{contact.firstName}},</p><p>Thank you for joining us! We are excited to have you on board.</p>'
+                }
+            }
+        ]
+    },
+    {
+        name: 'order_confirmation_email',
+        description: 'Send detailed order receipt via email',
+        category: 'Orders',
+        triggerType: 'order_created',
+        isActive: true,
+        allowedPlans: ['starter', 'pro', 'enterprise'],
+        nodes: [
+            { id: 'trigger', type: 'trigger', name: 'Order Created', config: { type: 'order_created' } },
+            {
+                id: 'action_1',
+                type: 'action',
+                name: 'Send Order Email',
+                config: {
+                    type: 'send_email',
+                    subject: 'Order Confirmation #{{order.id}}',
+                    message: '<p>Hi {{contact.firstName}},</p><p>Thanks for your order! We have received it and are processing it now.</p>'
+                }
+            }
+        ]
+    },
+    {
+        name: 'abandoned_cart_email_recovery',
+        description: 'Recover lost sales with an email reminder',
+        category: 'Cart Recovery',
+        triggerType: 'cart_abandoned',
+        isActive: true,
+        allowedPlans: ['starter', 'pro', 'enterprise'],
+        nodes: [
+            { id: 'trigger', type: 'trigger', name: 'Cart Abandoned', config: { type: 'cart_abandoned' } },
+            { id: 'wait_1', type: 'delay', name: 'Wait 1h', config: { duration: 1, unit: 'hours' } },
+            {
+                id: 'action_1',
+                type: 'action',
+                name: 'Send Recovery Email',
+                config: {
+                    type: 'send_email',
+                    subject: 'You left something behind! 👀',
+                    message: '<p>Hi {{contact.firstName}},</p><p>We noticed you left some items in your cart. Come back and complete your purchase!</p>'
+                }
+            }
+        ]
     }
 ];
 

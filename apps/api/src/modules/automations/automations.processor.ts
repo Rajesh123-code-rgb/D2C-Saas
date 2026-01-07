@@ -17,6 +17,9 @@ import { AutomationLog, ExecutionStatus, ExecutedAction } from './automation-log
 import { Contact } from '../contacts/contact.entity';
 import { WhatsAppService } from '../channels/whatsapp/whatsapp.service';
 import { ContactsService } from '../contacts/contacts.service';
+import { EmailService } from '../channels/email/email.service';
+import { ChannelsService } from '../channels/channels.service';
+import { ChannelType } from '../channels/channel.entity';
 
 interface ExecuteAutomationJob {
     logId: string;
@@ -41,7 +44,9 @@ export class AutomationsProcessor extends WorkerHost {
         @InjectQueue('automations')
         private readonly automationQueue: Queue,
         private readonly whatsappService: WhatsAppService,
+        private readonly emailService: EmailService,
         private readonly contactsService: ContactsService,
+        private readonly channelsService: ChannelsService,
     ) {
         super();
     }
@@ -207,6 +212,9 @@ export class AutomationsProcessor extends WorkerHost {
                 case ActionType.SEND_WHATSAPP_MESSAGE:
                     return await this.executeSendWhatsAppMessage(action, tenantId, contact, eventData);
 
+                case ActionType.SEND_EMAIL:
+                    return await this.executeSendEmail(action, tenantId, contact, eventData);
+
                 case ActionType.ADD_TAG:
                     return await this.executeAddTag(action, tenantId, contact);
 
@@ -250,10 +258,16 @@ export class AutomationsProcessor extends WorkerHost {
         }
 
         try {
-            // Get the default WhatsApp channel for tenant
-            // For now, use the first available channel
+            // Find WhatsApp channel
+            const channels = await this.channelsService.findAll(tenantId);
+            const channel = channels.find(c => c.channelType === ChannelType.WHATSAPP);
+
+            if (!channel) {
+                return { success: false, error: 'No WhatsApp channel connected' };
+            }
+
             const result = await this.whatsappService.sendTemplateMessage(
-                tenantId, // Using tenantId as channelId placeholder
+                channel.id,
                 contact.phone,
                 action.templateId || '',
                 'en',
@@ -280,10 +294,92 @@ export class AutomationsProcessor extends WorkerHost {
         const message = this.interpolateMessage(action.message || '', contact, eventData);
 
         try {
+            // Find WhatsApp channel
+            const channels = await this.channelsService.findAll(tenantId);
+            const channel = channels.find(c => c.channelType === ChannelType.WHATSAPP);
+
+            if (!channel) {
+                return { success: false, error: 'No WhatsApp channel connected' };
+            }
+
             const result = await this.whatsappService.sendTextMessage(
-                tenantId,
+                channel.id,
                 contact.phone,
                 message,
+            );
+
+            return { success: true, data: result };
+        } catch (error) {
+            const err = error as Error;
+            return { success: false, error: err.message };
+        }
+    }
+
+    private async executeSendEmail(
+        action: ActionConfig,
+        tenantId: string,
+        contact: Contact | null,
+        eventData: Record<string, any>,
+    ): Promise<{ success: boolean; data?: any; error?: string }> {
+        if (!contact?.email) {
+            return { success: false, error: 'Contact has no email address' };
+        }
+
+        try {
+            // Get default channel for tenant
+            // Since we don't have direct access to channel repo, we'll try to use a pragmatic approach
+            // Use a specific channelId if provided in action, or find one via emailService helper
+
+            // Find Email channel
+            const channels = await this.channelsService.findAll(tenantId);
+            const channel = channels.find(c => c.channelType === ChannelType.EMAIL);
+
+            if (!channel) {
+                return { success: false, error: 'No Email channel connected' };
+            }
+
+            if (action.templateId) {
+                // Derive first/last name
+                const nameParts = (contact.name || '').split(' ');
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.slice(1).join(' ') || '';
+
+                // Use template-based sending
+                const variables: Record<string, string> = {
+                    name: contact.name || '',
+                    firstName,
+                    lastName,
+                    email: contact.email || '',
+                    phone: contact.phone || '',
+                    companyName: 'OmniChannel',
+                    ...eventData,
+                };
+
+                // Flatten contact object for variables
+                if (contact.metadata) {
+                    Object.entries(contact.metadata).forEach(([key, value]) => {
+                        if (typeof value === 'string') variables[key] = value;
+                    });
+                }
+
+                const result = await this.emailService.sendTemplateEmail(
+                    channel.id,
+                    contact.email,
+                    action.templateId,
+                    variables
+                );
+                return { success: true, data: result };
+            }
+
+            // Fallback to custom message sending
+            const result = await this.emailService.sendEmail(
+                channel.id,
+                {
+                    to: contact.email,
+                    subject: action.subject || 'Notification',
+                    text: this.interpolateMessage(action.message || '', contact, eventData),
+                    html: this.interpolateMessage(action.message || '', contact, eventData),
+                }
             );
 
             return { success: true, data: result };
