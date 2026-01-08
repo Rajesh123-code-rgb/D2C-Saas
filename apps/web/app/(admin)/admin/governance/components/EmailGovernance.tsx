@@ -117,7 +117,7 @@ export function EmailGovernance() {
     if (loading) {
         return (
             <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
             </div>
         );
     }
@@ -127,7 +127,7 @@ export function EmailGovernance() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-white">Email Governance</h2>
-                    <p className="text-slate-400 mt-1">
+                    <p className="text-neutral-400 mt-1">
                         Configure global email policies, limits, and restrictions.
                     </p>
                 </div>
@@ -136,7 +136,7 @@ export function EmailGovernance() {
                         variant="outline"
                         onClick={fetchPolicy}
                         disabled={loading || saving}
-                        className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
+                        className="bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white"
                     >
                         <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -144,7 +144,7 @@ export function EmailGovernance() {
                     <Button
                         onClick={handleSave}
                         disabled={saving}
-                        className="min-w-[140px] bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20"
+                        className="min-w-[140px] bg-neutral-700 hover:bg-neutral-600 shadow-lg shadow-black/30"
                     >
                         {saving ? (
                             <>
@@ -171,18 +171,18 @@ export function EmailGovernance() {
                 <GlassCard>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-white">
-                            <Shield className="h-5 w-5 text-blue-400" />
+                            <Shield className="h-5 w-5 text-white" />
                             Content Safety
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Configure prohibited content and safety checks.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <Label className="text-slate-200">Prohibited Keywords</Label>
-                                <span className="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+                                <Label className="text-neutral-200">Prohibited Keywords</Label>
+                                <span className="text-xs text-white bg-neutral-800 px-2 py-0.5 rounded-full border border-neutral-700">
                                     Emails containing these words will be flagged
                                 </span>
                             </div>
@@ -192,7 +192,7 @@ export function EmailGovernance() {
                                     onChange={(e) => setKeywordInput(e.target.value)}
                                     placeholder="Add keyword (e.g., lottery)"
                                     onKeyDown={(e) => e.key === 'Enter' && handleAddKeyword()}
-                                    className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                    className="bg-white/5 border-white/10 text-white focus:border-white"
                                 />
                                 <Button onClick={handleAddKeyword} size="icon" className="bg-white/5 hover:bg-white/10 border border-white/10">
                                     <Plus className="h-4 w-4" />
@@ -200,10 +200,10 @@ export function EmailGovernance() {
                             </div>
                             <div className="flex flex-wrap gap-2 p-4 rounded-xl bg-black/20 border border-white/5 min-h-[60px]">
                                 {policy.prohibitedKeywords.length === 0 && (
-                                    <p className="text-sm text-slate-500 italic">No prohibited keywords configured</p>
+                                    <p className="text-sm text-neutral-500 italic">No prohibited keywords configured</p>
                                 )}
                                 {policy.prohibitedKeywords.map((keyword) => (
-                                    <Badge key={keyword} variant="secondary" className="pl-3 pr-1 py-1 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20">
+                                    <Badge key={keyword} variant="secondary" className="pl-3 pr-1 py-1 bg-neutral-800 text-neutral-400 border border-neutral-600/20 hover:bg-red-500/20">
                                         {keyword}
                                         <button
                                             onClick={() => handleRemoveKeyword(keyword)}
@@ -219,10 +219,10 @@ export function EmailGovernance() {
                         <div className="flex items-center justify-between border-t border-white/10 pt-6">
                             <div className="space-y-0.5">
                                 <Label className="flex items-center gap-2 text-white">
-                                    <Globe className="h-4 w-4 text-indigo-400" />
+                                    <Globe className="h-4 w-4 text-white" />
                                     Domain Verification
                                 </Label>
-                                <p className="text-sm text-slate-400">
+                                <p className="text-sm text-neutral-400">
                                     Require senders to verify their domains before sending
                                 </p>
                             </div>
@@ -238,18 +238,18 @@ export function EmailGovernance() {
                 <GlassCard>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-white">
-                            <FileCode className="h-5 w-5 text-purple-400" />
+                            <FileCode className="h-5 w-5 text-white" />
                             Technical Limits
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Set attachment and size restrictions.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <Label className="text-slate-200">Max Attachment Size (Bytes)</Label>
-                                <p className="text-xs text-indigo-400 font-mono">
+                                <Label className="text-neutral-200">Max Attachment Size (Bytes)</Label>
+                                <p className="text-xs text-white font-mono">
                                     {(policy.maxAttachmentSize / (1024 * 1024)).toFixed(2)} MB
                                 </p>
                             </div>
@@ -257,19 +257,19 @@ export function EmailGovernance() {
                                 type="number"
                                 value={policy.maxAttachmentSize}
                                 onChange={(e) => setPolicy(prev => ({ ...prev, maxAttachmentSize: parseInt(e.target.value) }))}
-                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                className="bg-white/5 border-white/10 text-white focus:border-white"
                             />
                         </div>
 
                         <div className="space-y-3">
-                            <Label className="text-slate-200">Allowed Attachment Types</Label>
+                            <Label className="text-neutral-200">Allowed Attachment Types</Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={fileTypeInput}
                                     onChange={(e) => setFileTypeInput(e.target.value)}
                                     placeholder="Add MIME type (e.g., application/pdf)"
                                     onKeyDown={(e) => e.key === 'Enter' && handleAddFileType()}
-                                    className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                    className="bg-white/5 border-white/10 text-white focus:border-white"
                                 />
                                 <Button onClick={handleAddFileType} size="icon" className="bg-white/5 hover:bg-white/10 border border-white/10">
                                     <Plus className="h-4 w-4" />
@@ -277,7 +277,7 @@ export function EmailGovernance() {
                             </div>
                             <div className="flex flex-wrap gap-2 p-4 rounded-xl bg-black/20 border border-white/5 min-h-[60px]">
                                 {policy.allowedAttachmentTypes.map((type) => (
-                                    <Badge key={type} variant="outline" className="pl-3 pr-1 py-1 border-white/10 text-slate-300 hover:bg-white/5">
+                                    <Badge key={type} variant="outline" className="pl-3 pr-1 py-1 border-white/10 text-neutral-300 hover:bg-white/5">
                                         {type}
                                         <button
                                             onClick={() => handleRemoveFileType(type)}
@@ -296,10 +296,10 @@ export function EmailGovernance() {
                 <GlassCard>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-white">
-                            <Mail className="h-5 w-5 text-green-400" />
+                            <Mail className="h-5 w-5 text-neutral-300" />
                             Daily Sending Limits
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Set maximum daily emails per plan.
                         </CardDescription>
                     </CardHeader>
@@ -307,7 +307,7 @@ export function EmailGovernance() {
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                             {Object.entries(policy.maxDailyEmails).map(([plan, limit]) => (
                                 <div key={plan} className="space-y-2">
-                                    <Label className="capitalize text-slate-300">{plan}</Label>
+                                    <Label className="capitalize text-neutral-300">{plan}</Label>
                                     <Input
                                         type="number"
                                         value={limit}
@@ -318,7 +318,7 @@ export function EmailGovernance() {
                                                 [plan]: parseInt(e.target.value)
                                             }
                                         }))}
-                                        className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                        className="bg-white/5 border-white/10 text-white focus:border-white"
                                     />
                                 </div>
                             ))}

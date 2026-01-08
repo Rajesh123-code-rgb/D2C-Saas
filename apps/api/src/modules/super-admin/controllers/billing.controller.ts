@@ -46,6 +46,17 @@ export class BillingAdminController {
 
     // ==================== WALLET MANAGEMENT ====================
 
+    @Get('wallets')
+    @ApiOperation({ summary: 'Get all wallets' })
+    @ApiResponse({ status: 200, description: 'Paginated wallet list' })
+    async getWallets(
+        @Query('page') page: number = 1,
+        @Query('limit') limit: number = 20,
+        @Query('search') search: string = '',
+    ) {
+        return this.walletService.getWallets({ page, limit, search });
+    }
+
     @Get('wallets/:tenantId')
     @ApiOperation({ summary: 'Get wallet for a tenant' })
     @ApiResponse({ status: 200, description: 'Wallet details' })

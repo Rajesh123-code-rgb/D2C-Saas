@@ -59,6 +59,10 @@ export class AdminAuditLogsController {
             queryBuilder.andWhere('log.createdAt <= :endDate', { endDate: new Date(endDate) });
         }
 
+        if (filter.tenantId) {
+            queryBuilder.andWhere('log.targetTenantId = :tenantId', { tenantId: filter.tenantId });
+        }
+
         queryBuilder.orderBy('log.createdAt', 'DESC');
         queryBuilder.skip((page - 1) * limit).take(limit);
 

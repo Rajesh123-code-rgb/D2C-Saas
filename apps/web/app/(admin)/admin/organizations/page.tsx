@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Building2,
     Search,
@@ -39,73 +40,20 @@ import {
 import { cn } from '@/lib/utils';
 import { organizationsApi, Organization } from '@/lib/admin/api';
 
-// Fallback mock data
-const mockOrganizations: Organization[] = [
-    {
-        id: '1',
-        name: 'ABC Corporation',
-        slug: 'abc-corp',
-        status: 'active',
-        subscriptionTier: 'pro',
-        usersCount: 12,
-        channelsCount: 3,
-        creditsBalance: 4500,
-        messagesThisMonth: 12500,
-        createdAt: '2024-06-15',
-        lastActiveAt: '2024-12-27T10:30:00',
-    },
-    {
-        id: '2',
-        name: 'XYZ Ltd',
-        slug: 'xyz-ltd',
-        status: 'active',
-        subscriptionTier: 'enterprise',
-        usersCount: 35,
-        channelsCount: 5,
-        creditsBalance: 45000,
-        messagesThisMonth: 89000,
-        createdAt: '2024-03-10',
-        lastActiveAt: '2024-12-27T11:00:00',
-    },
-    {
-        id: '3',
-        name: 'TechStart Inc',
-        slug: 'techstart',
-        status: 'trial',
-        subscriptionTier: 'starter',
-        usersCount: 3,
-        channelsCount: 1,
-        creditsBalance: 500,
-        messagesThisMonth: 250,
-        createdAt: '2024-12-15',
-        lastActiveAt: '2024-12-27T09:00:00',
-    },
-    {
-        id: '4',
-        name: 'Demo Company',
-        slug: 'demo-company',
-        status: 'suspended',
-        subscriptionTier: 'starter',
-        usersCount: 5,
-        channelsCount: 2,
-        creditsBalance: 0,
-        messagesThisMonth: 0,
-        createdAt: '2024-01-01',
-        lastActiveAt: '2024-12-01T15:00:00',
-    },
-];
-
 export default function OrganizationsPage() {
-    const [organizations, setOrganizations] = useState<Organization[]>(mockOrganizations);
+    const router = useRouter();
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [tierFilter, setTierFilter] = useState('all');
     const [page] = useState(1);
-    const [stats, setStats] = useState({ total: 156, active: 142, trial: 23, suspended: 5 });
+    const [stats, setStats] = useState({ total: 0, active: 0, trial: 0, suspended: 0 });
 
     const fetchOrganizations = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
             const params: Record<string, any> = { page, limit: 10 };
             if (searchQuery) params.search = searchQuery;
@@ -119,21 +67,14 @@ export default function OrganizationsPage() {
             const trialCount = response.data.filter(o => o.status === 'trial').length;
             const suspendedCount = response.data.filter(o => o.status === 'suspended').length;
             setStats({
-                total: response.total || mockOrganizations.length,
+                total: response.total || response.data.length,
                 active: activeCount,
                 trial: trialCount,
                 suspended: suspendedCount,
             });
         } catch (err: any) {
-            console.warn('Could not fetch organizations, using mock data:', err.message);
-            const filtered = mockOrganizations.filter((org) => {
-                const matchesSearch = org.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    org.slug.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesStatus = statusFilter === 'all' || org.status === statusFilter;
-                const matchesTier = tierFilter === 'all' || org.subscriptionTier === tierFilter;
-                return matchesSearch && matchesStatus && matchesTier;
-            });
-            setOrganizations(filtered);
+            console.error('Failed to fetch organizations:', err.message);
+            setError('Failed to load organizations');
         } finally {
             setLoading(false);
         }
@@ -157,15 +98,24 @@ export default function OrganizationsPage() {
     };
 
     const handleReactivate = async (org: Organization) => {
+        if (!confirm('Are you sure you want to reactivate this organization?')) return;
+
         try {
             await organizationsApi.reactivate(org.id);
-            setOrganizations(prev =>
-                prev.map(o => o.id === org.id ? { ...o, status: 'active' as const } : o)
-            );
+            fetchOrganizations();
         } catch (err: any) {
-            setOrganizations(prev =>
-                prev.map(o => o.id === org.id ? { ...o, status: 'active' as const } : o)
-            );
+            setError('Failed to reactivate organization');
+        }
+    };
+
+    const handleLoginAsTenant = async (orgId: string) => {
+        try {
+            const { accessToken } = await organizationsApi.impersonate(orgId);
+            // Open new window with token in query param
+            window.open(`/?token=${accessToken}`, '_blank');
+        } catch (err: any) {
+            console.error('Failed to impersonate:', err.message);
+            setError('Failed to login as tenant: ' + err.message);
         }
     };
 
@@ -175,10 +125,10 @@ export default function OrganizationsPage() {
 
     const getStatusBadge = (status: string) => {
         const styles: Record<string, string> = {
-            active: 'bg-green-500/10 text-green-400',
-            trial: 'bg-blue-500/10 text-blue-400',
-            suspended: 'bg-red-500/10 text-red-400',
-            cancelled: 'bg-slate-500/10 text-slate-400',
+            active: 'bg-neutral-800 text-neutral-300',
+            trial: 'bg-neutral-800 text-white',
+            suspended: 'bg-neutral-800 text-neutral-400',
+            cancelled: 'bg-neutral-500/10 text-neutral-400',
         };
         const icons: Record<string, React.ReactNode> = {
             active: <CheckCircle className="h-3 w-3" />,
@@ -195,10 +145,10 @@ export default function OrganizationsPage() {
 
     const getTierBadge = (tier: string) => {
         const styles: Record<string, string> = {
-            free: 'bg-slate-500/10 text-slate-400',
-            starter: 'bg-blue-500/10 text-blue-400',
-            pro: 'bg-purple-500/10 text-purple-400',
-            enterprise: 'bg-amber-500/10 text-amber-400',
+            free: 'bg-neutral-500/10 text-neutral-400',
+            starter: 'bg-neutral-800 text-white',
+            pro: 'bg-neutral-800 text-white',
+            enterprise: 'bg-neutral-800 text-white',
         };
         return (
             <Badge className={cn('capitalize border-0 font-medium', styles[tier] || styles.free)}>
@@ -213,11 +163,11 @@ export default function OrganizationsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Organizations</h1>
-                    <p className="text-slate-400 mt-2 text-lg">Manage all tenant organizations on the platform</p>
+                    <p className="text-neutral-400 mt-2 text-lg">Manage all tenant organizations on the platform</p>
                 </div>
                 <Button
                     variant="outline"
-                    className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white backdrop-blur-md"
+                    className="bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white backdrop-blur-md"
                     onClick={fetchOrganizations}
                     disabled={loading}
                 >
@@ -230,57 +180,63 @@ export default function OrganizationsPage() {
                 </Button>
             </div>
 
+            {error && (
+                <div className="p-4 bg-neutral-800 border border-neutral-600/20 rounded-xl text-neutral-300 text-sm backdrop-blur-md">
+                    {error}
+                </div>
+            )}
+
             {/* Stats */}
             <div className="grid gap-6 md:grid-cols-4">
                 <GlassCard className="glass-card-hover group">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+                            <div className="p-3 rounded-xl bg-neutral-800 text-white group-hover:bg-neutral-700 transition-colors">
                                 <Building2 className="h-6 w-6" />
                             </div>
-                            <Badge className="bg-indigo-500/10 text-indigo-400 border-0">Total</Badge>
+                            <Badge className="bg-neutral-800 text-white border-0">Total</Badge>
                         </div>
                         <p className="text-3xl font-bold text-white">{stats.total}</p>
-                        <p className="text-sm text-slate-400 mt-1">Total Organizations</p>
+                        <p className="text-sm text-neutral-400 mt-1">Total Organizations</p>
                     </CardContent>
                 </GlassCard>
 
                 <GlassCard className="glass-card-hover group">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 rounded-xl bg-green-500/10 text-green-400 group-hover:bg-green-500/20 transition-colors">
+                            <div className="p-3 rounded-xl bg-neutral-800 text-neutral-300 group-hover:bg-neutral-700 transition-colors">
                                 <CheckCircle className="h-6 w-6" />
                             </div>
-                            <Badge className="bg-green-500/10 text-green-400 border-0">Active</Badge>
+                            <Badge className="bg-neutral-800 text-neutral-300 border-0">Active</Badge>
                         </div>
                         <p className="text-3xl font-bold text-white">{stats.active}</p>
-                        <p className="text-sm text-slate-400 mt-1">Active Accounts</p>
+                        <p className="text-sm text-neutral-400 mt-1">Active Accounts</p>
                     </CardContent>
                 </GlassCard>
 
                 <GlassCard className="glass-card-hover group">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
+                            <div className="p-3 rounded-xl bg-neutral-800 text-white group-hover:bg-neutral-700 transition-colors">
                                 <Clock className="h-6 w-6" />
                             </div>
-                            <Badge className="bg-blue-500/10 text-blue-400 border-0">Trial</Badge>
+                            <Badge className="bg-neutral-800 text-white border-0">Trial</Badge>
                         </div>
                         <p className="text-3xl font-bold text-white">{stats.trial}</p>
-                        <p className="text-sm text-slate-400 mt-1">In Trial Period</p>
+                        <p className="text-sm text-neutral-400 mt-1">In Trial Period</p>
                     </CardContent>
                 </GlassCard>
 
                 <GlassCard className="glass-card-hover group">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 rounded-xl bg-red-500/10 text-red-400 group-hover:bg-red-500/20 transition-colors">
+                            <div className="p-3 rounded-xl bg-neutral-800 text-neutral-400 group-hover:bg-red-500/20 transition-colors">
                                 <Ban className="h-6 w-6" />
                             </div>
-                            <Badge className="bg-red-500/10 text-red-400 border-0">Blocked</Badge>
+                            <Badge className="bg-neutral-800 text-neutral-400 border-0">Blocked</Badge>
                         </div>
                         <p className="text-3xl font-bold text-white">{stats.suspended}</p>
-                        <p className="text-sm text-slate-400 mt-1">Suspended</p>
+                        <p className="text-sm text-neutral-400 mt-1">Suspended</p>
                     </CardContent>
                 </GlassCard>
             </div>
@@ -290,20 +246,20 @@ export default function OrganizationsPage() {
                 <CardHeader className="border-b border-white/5 pb-4">
                     <div className="flex items-center gap-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                             <Input
                                 placeholder="Search organizations by name or slug..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500"
+                                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white"
                             />
                         </div>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                             <SelectTrigger className="w-40 bg-white/5 border-white/10 text-white">
-                                <Filter className="h-4 w-4 mr-2 text-slate-400" />
+                                <Filter className="h-4 w-4 mr-2 text-neutral-400" />
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
-                            <SelectContent className="bg-[#0B0C15] border-white/10 text-white">
+                            <SelectContent className="bg-black border-white/10 text-white">
                                 <SelectItem value="all">All Status</SelectItem>
                                 <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="trial">Trial</SelectItem>
@@ -312,10 +268,10 @@ export default function OrganizationsPage() {
                         </Select>
                         <Select value={tierFilter} onValueChange={setTierFilter}>
                             <SelectTrigger className="w-40 bg-white/5 border-white/10 text-white">
-                                <CreditCard className="h-4 w-4 mr-2 text-slate-400" />
+                                <CreditCard className="h-4 w-4 mr-2 text-neutral-400" />
                                 <SelectValue placeholder="Plan" />
                             </SelectTrigger>
-                            <SelectContent className="bg-[#0B0C15] border-white/10 text-white">
+                            <SelectContent className="bg-black border-white/10 text-white">
                                 <SelectItem value="all">All Plans</SelectItem>
                                 <SelectItem value="free">Free</SelectItem>
                                 <SelectItem value="starter">Starter</SelectItem>
@@ -329,7 +285,7 @@ export default function OrganizationsPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-white/5 bg-white/[0.02]">
+                                <tr className="text-left text-xs text-neutral-400 uppercase tracking-wider border-b border-white/5 bg-white/[0.02]">
                                     <th className="px-6 py-4 font-medium">Organization</th>
                                     <th className="px-6 py-4 font-medium">Status</th>
                                     <th className="px-6 py-4 font-medium">Plan</th>
@@ -343,15 +299,15 @@ export default function OrganizationsPage() {
                             <tbody className="divide-y divide-white/5">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={8} className="px-6 py-8 text-center text-slate-400">
-                                            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-indigo-500" />
+                                        <td colSpan={8} className="px-6 py-8 text-center text-neutral-400">
+                                            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-white" />
                                             Loading organizations...
                                         </td>
                                     </tr>
                                 ) : organizations.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-6 py-12 text-center text-slate-400">
-                                            <Building2 className="h-10 w-10 mx-auto mb-3 text-slate-600" />
+                                        <td colSpan={8} className="px-6 py-12 text-center text-neutral-400">
+                                            <Building2 className="h-10 w-10 mx-auto mb-3 text-neutral-600" />
                                             <p>No organizations found matching your criteria</p>
                                         </td>
                                     </tr>
@@ -360,12 +316,12 @@ export default function OrganizationsPage() {
                                         <tr key={org.id} className="hover:bg-white/5 transition-colors text-sm">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
+                                                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-neutral-700 to-neutral-800 flex items-center justify-center text-white font-bold shadow-lg shadow-black/30">
                                                         {org.name.charAt(0)}
                                                     </div>
                                                     <div>
                                                         <p className="font-medium text-white">{org.name}</p>
-                                                        <p className="text-xs text-slate-400">/{org.slug}</p>
+                                                        <p className="text-xs text-neutral-400">/{org.slug}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -376,54 +332,66 @@ export default function OrganizationsPage() {
                                                 {getTierBadge(org.subscriptionTier)}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-1 text-slate-300">
-                                                    <Users className="h-4 w-4 text-slate-400" />
+                                                <div className="flex items-center gap-1 text-neutral-300">
+                                                    <Users className="h-4 w-4 text-neutral-400" />
                                                     {org.usersCount}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={cn(
                                                     'font-medium',
-                                                    org.creditsBalance > 1000 ? 'text-green-400' :
-                                                        org.creditsBalance > 100 ? 'text-yellow-400' : 'text-red-400'
+                                                    org.creditsBalance > 1000 ? 'text-neutral-300' :
+                                                        org.creditsBalance > 100 ? 'text-neutral-400' : 'text-neutral-400'
                                                 )}>
                                                     {formatNumber(org.creditsBalance)}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-300">
+                                            <td className="px-6 py-4 text-neutral-300">
                                                 {formatNumber(org.messagesThisMonth)}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-400">
+                                            <td className="px-6 py-4 text-neutral-400">
                                                 {new Date(org.lastActiveAt).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white hover:bg-white/10">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-white/10">
                                                             <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="bg-[#0B0C15] border-white/10 text-white shadow-xl shadow-black/50">
-                                                        <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">
+                                                    <DropdownMenuContent align="end" className="bg-black border-white/10 text-white shadow-xl shadow-black/50">
+                                                        <DropdownMenuItem
+                                                            className="hover:bg-white/5 cursor-pointer"
+                                                            onClick={() => router.push(`/admin/organizations/${org.id}`)}
+                                                        >
                                                             <Eye className="h-4 w-4 mr-2" />
                                                             View Details
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">
+                                                        <DropdownMenuItem
+                                                            className="hover:bg-white/5 cursor-pointer"
+                                                            onClick={() => handleLoginAsTenant(org.id)}
+                                                        >
                                                             <ExternalLink className="h-4 w-4 mr-2" />
                                                             Login as Tenant
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">
+                                                        <DropdownMenuItem
+                                                            className="hover:bg-white/5 cursor-pointer"
+                                                            onClick={() => router.push(`/admin/billing?tenant=${org.id}`)}
+                                                        >
                                                             <CreditCard className="h-4 w-4 mr-2" />
                                                             Manage Credits
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">
+                                                        <DropdownMenuItem
+                                                            className="hover:bg-white/5 cursor-pointer"
+                                                            onClick={() => router.push(`/admin/audit-logs?tenant=${org.id}`)}
+                                                        >
                                                             <Activity className="h-4 w-4 mr-2" />
                                                             View Activity
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator className="bg-white/10" />
                                                         {org.status !== 'suspended' ? (
                                                             <DropdownMenuItem
-                                                                className="text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                                                className="text-neutral-400 hover:bg-neutral-800 cursor-pointer"
                                                                 onClick={() => handleSuspend(org)}
                                                             >
                                                                 <Ban className="h-4 w-4 mr-2" />
@@ -431,7 +399,7 @@ export default function OrganizationsPage() {
                                                             </DropdownMenuItem>
                                                         ) : (
                                                             <DropdownMenuItem
-                                                                className="text-green-400 hover:bg-green-500/10 cursor-pointer"
+                                                                className="text-neutral-300 hover:bg-neutral-800 cursor-pointer"
                                                                 onClick={() => handleReactivate(org)}
                                                             >
                                                                 <CheckCircle className="h-4 w-4 mr-2" />

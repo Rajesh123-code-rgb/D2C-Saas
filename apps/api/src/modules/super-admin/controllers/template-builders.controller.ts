@@ -112,8 +112,13 @@ export class TemplateBuildersController {
 
     @Delete('whatsapp/:id')
     async deleteWhatsAppTemplate(@Param('id') id: string) {
-        await this.service.deleteWhatsAppTemplate(id);
-        return { success: true, message: 'Template deleted successfully' };
+        try {
+            await this.service.deleteWhatsAppTemplate(id);
+            return { success: true, message: 'Template deleted successfully' };
+        } catch (error) {
+            console.error('Error deleting WhatsApp template:', error);
+            throw error;
+        }
     }
 
     // ==================== EMAIL TEMPLATES ====================

@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
     MessageSquare,
     Instagram,
@@ -16,6 +20,26 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const token = searchParams.get('token');
+        if (token) {
+            // Validate token format (basic check)
+            if (token.split('.').length === 3) {
+                // Store token in localStorage
+                localStorage.setItem('accessToken', token);
+
+                // Set cookie for middleware/server components
+                document.cookie = `token=${token}; path=/; max-age=3600; SameSite=Strict`;
+
+                // Redirect to dashboard
+                router.push('/dashboard');
+            }
+        }
+    }, [searchParams, router]);
+
     return (
         <div className="flex min-h-screen flex-col font-sans">
             {/* Header */}

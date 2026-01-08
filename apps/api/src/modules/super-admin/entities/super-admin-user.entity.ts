@@ -25,6 +25,7 @@ export interface SuperAdminPermissions {
     canManageOrganizations: boolean;
     canSuspendOrganizations: boolean;
     canDeleteOrganizations: boolean;
+    canImpersonate: boolean;
 
     // User management
     canManageAdminUsers: boolean;
@@ -63,6 +64,7 @@ export const DEFAULT_PERMISSIONS: Record<SuperAdminRole, SuperAdminPermissions> 
         canManageOrganizations: true,
         canSuspendOrganizations: true,
         canDeleteOrganizations: true,
+        canImpersonate: true,
         canManageAdminUsers: true,
         canManageTenantUsers: true,
         canManageFeatureFlags: true,
@@ -84,6 +86,7 @@ export const DEFAULT_PERMISSIONS: Record<SuperAdminRole, SuperAdminPermissions> 
         canManageOrganizations: true,
         canSuspendOrganizations: false,
         canDeleteOrganizations: false,
+        canImpersonate: true,
         canManageAdminUsers: false,
         canManageTenantUsers: true,
         canManageFeatureFlags: false,
@@ -105,6 +108,7 @@ export const DEFAULT_PERMISSIONS: Record<SuperAdminRole, SuperAdminPermissions> 
         canManageOrganizations: false,
         canSuspendOrganizations: false,
         canDeleteOrganizations: false,
+        canImpersonate: false,
         canManageAdminUsers: false,
         canManageTenantUsers: false,
         canManageFeatureFlags: false,

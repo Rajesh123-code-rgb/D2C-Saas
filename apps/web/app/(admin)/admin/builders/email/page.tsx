@@ -366,11 +366,11 @@ export default function EmailBuilderPage() {
 
     const getCategoryColor = (category: string) => {
         switch (category) {
-            case 'newsletter': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
-            case 'promotional': return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
-            case 'transactional': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-            case 'notification': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-            default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
+            case 'newsletter': return 'text-white bg-neutral-800 border-blue-500/20';
+            case 'promotional': return 'text-white bg-neutral-800 border-neutral-700';
+            case 'transactional': return 'text-neutral-300 bg-neutral-800 border-neutral-700';
+            case 'notification': return 'text-white bg-neutral-800 border-neutral-700';
+            default: return 'text-neutral-400 bg-neutral-500/10 border-neutral-500/20';
         }
     };
 
@@ -378,17 +378,17 @@ export default function EmailBuilderPage() {
 
     const EmailPreview = ({ template, mode }: { template: EmailTemplate, mode: 'desktop' | 'mobile' }) => (
         <div className={cn(
-            "bg-white rounded-xl shadow-2xl overflow-hidden transition-all mx-auto border-4 border-slate-900",
+            "bg-white rounded-xl shadow-2xl overflow-hidden transition-all mx-auto border-4 border-neutral-900",
             mode === 'desktop' ? 'w-full max-w-3xl' : 'w-[320px]'
         )}>
-            <div className="bg-slate-100 px-4 py-3 border-b flex items-center justify-between">
+            <div className="bg-neutral-100 px-4 py-3 border-b flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-neutral-500" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-neutral-400" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-neutral-400" />
                 </div>
                 <div className="text-center flex-1 mx-4">
-                    <p className="font-semibold text-xs text-slate-700 truncate max-w-[200px] mx-auto opacity-70">
+                    <p className="font-semibold text-xs text-neutral-700 truncate max-w-[200px] mx-auto opacity-70">
                         {template.subject || 'Subject line'}
                     </p>
                 </div>
@@ -410,12 +410,12 @@ export default function EmailBuilderPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white tracking-tight">Email Templates</h1>
-                    <p className="text-slate-400 mt-1">Design and manage HTML email templates for your users</p>
+                    <p className="text-neutral-400 mt-1">Design and manage HTML email templates for your users</p>
                 </div>
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
-                        className="border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 hover:text-white"
+                        className="border-neutral-700 bg-neutral-800/50 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                         onClick={seedDefaults}
                         disabled={loading}
                     >
@@ -424,14 +424,14 @@ export default function EmailBuilderPage() {
                     </Button>
                     <Button
                         variant="outline"
-                        className="border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 hover:text-white"
+                        className="border-neutral-700 bg-neutral-800/50 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                         disabled={loading}
                         onClick={fetchTemplates}
                     >
                         <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
                         Refresh
                     </Button>
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20" onClick={handleCreateNew}>
+                    <Button className="bg-neutral-700 hover:bg-blue-700 text-white shadow-lg shadow-black/20" onClick={handleCreateNew}>
                         <Plus className="h-4 w-4 mr-2" />
                         Create Template
                     </Button>
@@ -441,24 +441,24 @@ export default function EmailBuilderPage() {
             <GlassCard className="p-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
                         <Input
                             placeholder="Search templates..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600 focus:border-blue-500/50 focus:ring-blue-500/20"
+                            className="pl-10 bg-neutral-900/50 border-neutral-700 text-white placeholder:text-neutral-600 focus:border-blue-500/50 focus:ring-blue-500/20"
                         />
                     </div>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-full sm:w-56 bg-slate-900/50 border-slate-700 text-white focus:border-blue-500/50 focus:ring-blue-500/20">
+                        <SelectTrigger className="w-full sm:w-56 bg-neutral-900/50 border-neutral-700 text-white focus:border-blue-500/50 focus:ring-blue-500/20">
                             <div className="flex items-center gap-2">
-                                <Filter className="h-4 w-4 text-blue-400" />
+                                <Filter className="h-4 w-4 text-white" />
                                 <span className="capitalize">
                                     {categoryFilter === 'all' ? 'All Categories' : categoryOptions.find(c => c.value === categoryFilter)?.label || categoryFilter}
                                 </span>
                             </div>
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-900 border-slate-700">
+                        <SelectContent className="bg-neutral-900 border-neutral-700">
                             <SelectItem value="all" className="text-white">All Categories</SelectItem>
                             {categoryOptions.map(cat => (
                                 <SelectItem key={cat.value} value={cat.value} className="text-white">
@@ -473,35 +473,35 @@ export default function EmailBuilderPage() {
             <div className="grid gap-4 md:grid-cols-4">
                 <GlassCard className="p-4 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Mail className="h-12 w-12 text-blue-500" />
+                        <Mail className="h-12 w-12 text-neutral-400" />
                     </div>
-                    <p className="text-sm font-medium text-slate-400">Total Templates</p>
+                    <p className="text-sm font-medium text-neutral-400">Total Templates</p>
                     <p className="text-2xl font-bold text-white mt-1">{templates.length}</p>
                 </GlassCard>
                 <GlassCard className="p-4 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Check className="h-12 w-12 text-emerald-500" />
+                        <Check className="h-12 w-12 text-neutral-400" />
                     </div>
-                    <p className="text-sm font-medium text-slate-400">Active</p>
-                    <p className="text-2xl font-bold text-emerald-400 mt-1">
+                    <p className="text-sm font-medium text-neutral-400">Active</p>
+                    <p className="text-2xl font-bold text-neutral-300 mt-1">
                         {templates.filter(t => t.status === 'active').length}
                     </p>
                 </GlassCard>
                 <GlassCard className="p-4 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Eye className="h-12 w-12 text-purple-500" />
+                        <Eye className="h-12 w-12 text-neutral-400" />
                     </div>
-                    <p className="text-sm font-medium text-slate-400">Total Usage</p>
+                    <p className="text-sm font-medium text-neutral-400">Total Usage</p>
                     <p className="text-2xl font-bold text-white mt-1">
                         {templates.reduce((sum, t) => sum + t.usageCount, 0).toLocaleString()}
                     </p>
                 </GlassCard>
                 <GlassCard className="p-4 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Edit className="h-12 w-12 text-amber-500" />
+                        <Edit className="h-12 w-12 text-neutral-400" />
                     </div>
-                    <p className="text-sm font-medium text-slate-400">Drafts</p>
-                    <p className="text-2xl font-bold text-amber-400 mt-1">
+                    <p className="text-sm font-medium text-neutral-400">Drafts</p>
+                    <p className="text-2xl font-bold text-white mt-1">
                         {templates.filter(t => t.status === 'draft').length}
                     </p>
                 </GlassCard>
@@ -513,8 +513,8 @@ export default function EmailBuilderPage() {
                         <div className="p-5 flex-1 space-y-4">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
-                                        <Mail className="h-5 w-5 text-blue-400" />
+                                    <div className="p-2.5 rounded-lg bg-neutral-800 border border-blue-500/20 group-hover:bg-neutral-700 transition-colors">
+                                        <Mail className="h-5 w-5 text-white" />
                                     </div>
                                     <div className="min-w-0">
                                         <h3 className="text-white font-semibold text-base leading-none truncate pr-2">{template.displayName}</h3>
@@ -534,11 +534,11 @@ export default function EmailBuilderPage() {
                                             // Ideally call API to update status
                                         }
                                     }}
-                                    className="data-[state=checked]:bg-emerald-500"
+                                    className="data-[state=checked]:bg-white"
                                 />
                             </div>
 
-                            <div className="relative group/image overflow-hidden rounded-lg border border-slate-700/50 aspect-[16/9] bg-slate-900/50">
+                            <div className="relative group/image overflow-hidden rounded-lg border border-neutral-700/50 aspect-[16/9] bg-neutral-900/50">
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity bg-black/50 z-10 backdrop-blur-sm">
                                     <Button size="sm" variant="secondary" onClick={() => {
                                         setPreviewTemplate(template);
@@ -553,13 +553,13 @@ export default function EmailBuilderPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Subject</p>
-                                <p className="text-sm text-slate-300 truncate">{template.subject || 'No subject'}</p>
+                                <p className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Subject</p>
+                                <p className="text-sm text-neutral-300 truncate">{template.subject || 'No subject'}</p>
                             </div>
 
                             <div className="flex flex-wrap gap-1.5">
                                 {template.allowedPlans.map(plan => (
-                                    <Badge key={plan} variant="secondary" className="bg-slate-800 text-slate-400 border-transparent text-[10px] uppercase tracking-wider px-1.5">
+                                    <Badge key={plan} variant="secondary" className="bg-neutral-800 text-neutral-400 border-transparent text-[10px] uppercase tracking-wider px-1.5">
                                         {plan}
                                     </Badge>
                                 ))}
@@ -567,14 +567,14 @@ export default function EmailBuilderPage() {
                         </div>
 
                         <div className="px-5 py-3 border-t border-white/5 bg-white/5 flex items-center justify-between mt-auto">
-                            <div className="text-xs text-slate-400 font-medium">
-                                <span className="text-slate-200">{template.usageCount}</span> active uses
+                            <div className="text-xs text-neutral-400 font-medium">
+                                <span className="text-neutral-200">{template.usageCount}</span> active uses
                             </div>
                             <div className="flex gap-1">
                                 <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full"
+                                    className="h-8 w-8 p-0 text-neutral-400 hover:text-white hover:bg-neutral-700/50 rounded-full"
                                     onClick={() => handleDuplicate(template)}
                                 >
                                     <Copy className="h-4 w-4" />
@@ -582,7 +582,7 @@ export default function EmailBuilderPage() {
                                 <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-full"
+                                    className="h-8 w-8 p-0 text-white hover:text-blue-300 hover:bg-neutral-800 rounded-full"
                                     onClick={() => handleEdit(template)}
                                 >
                                     <Edit className="h-4 w-4" />
@@ -590,7 +590,7 @@ export default function EmailBuilderPage() {
                                 <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-8 w-8 p-0 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-full"
+                                    className="h-8 w-8 p-0 text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800 rounded-full"
                                     onClick={() => handleDelete(template.id)}
                                 >
                                     <Trash2 className="h-4 w-4" />
@@ -603,14 +603,14 @@ export default function EmailBuilderPage() {
 
             {filteredTemplates.length === 0 && (
                 <div className="text-center py-20 px-4">
-                    <GlassCard className="inline-flex p-6 mb-6 rounded-full bg-slate-900/50 border-slate-800">
-                        <Mail className="h-10 w-10 text-slate-500" />
+                    <GlassCard className="inline-flex p-6 mb-6 rounded-full bg-neutral-900/50 border-neutral-800">
+                        <Mail className="h-10 w-10 text-neutral-500" />
                     </GlassCard>
                     <h3 className="text-xl font-medium text-white">No email templates found</h3>
-                    <p className="text-slate-400 mt-2 max-w-sm mx-auto">
+                    <p className="text-neutral-400 mt-2 max-w-sm mx-auto">
                         No templates match your search. Try adjusting your filters or create a new template.
                     </p>
-                    <Button className="mt-8 bg-blue-600 hover:bg-blue-700 text-white" onClick={handleCreateNew}>
+                    <Button className="mt-8 bg-neutral-700 hover:bg-blue-700 text-white" onClick={handleCreateNew}>
                         <Plus className="h-4 w-4 mr-2" />
                         Create Template
                     </Button>
@@ -618,13 +618,13 @@ export default function EmailBuilderPage() {
             )}
 
             <Dialog open={editDialog} onOpenChange={setEditDialog}>
-                <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-white/10 max-w-6xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+                <DialogContent className="bg-neutral-900/95 backdrop-blur-xl border-white/10 max-w-6xl max-h-[90vh] overflow-hidden flex flex-col p-0">
                     <DialogHeader className="p-6 border-b border-white/10">
                         <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-                            {editingTemplate?.id?.startsWith('new_') ? <Plus className="h-5 w-5 text-blue-400" /> : <Edit className="h-5 w-5 text-blue-400" />}
+                            {editingTemplate?.id?.startsWith('new_') ? <Plus className="h-5 w-5 text-white" /> : <Edit className="h-5 w-5 text-white" />}
                             {editingTemplate?.id?.startsWith('new_') ? 'Create Email Template' : 'Edit Email Template'}
                         </DialogTitle>
-                        <DialogDescription className="text-slate-400">
+                        <DialogDescription className="text-neutral-400">
                             Configure email content, subject, and settings.
                         </DialogDescription>
                     </DialogHeader>
@@ -633,11 +633,11 @@ export default function EmailBuilderPage() {
                         <div className="flex-1 overflow-hidden flex flex-col">
                             <Tabs defaultValue="content" className="flex-1 flex flex-col h-full">
                                 <div className="px-6 pt-4">
-                                    <TabsList className="bg-slate-950/50 border border-white/5 w-full justify-start h-auto p-1">
-                                        <TabsTrigger value="content" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 py-2">General</TabsTrigger>
-                                        <TabsTrigger value="editor" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 py-2">HTML Editor</TabsTrigger>
-                                        <TabsTrigger value="preview" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 py-2">Live Preview</TabsTrigger>
-                                        <TabsTrigger value="settings" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 py-2">Settings</TabsTrigger>
+                                    <TabsList className="bg-neutral-950/50 border border-white/5 w-full justify-start h-auto p-1">
+                                        <TabsTrigger value="content" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-blue-300 py-2">General</TabsTrigger>
+                                        <TabsTrigger value="editor" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-blue-300 py-2">HTML Editor</TabsTrigger>
+                                        <TabsTrigger value="preview" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-blue-300 py-2">Live Preview</TabsTrigger>
+                                        <TabsTrigger value="settings" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-blue-300 py-2">Settings</TabsTrigger>
                                     </TabsList>
                                 </div>
 
@@ -645,69 +645,69 @@ export default function EmailBuilderPage() {
                                     <TabsContent value="content" className="space-y-6 mt-0">
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <Label className="text-slate-300">Display Name</Label>
+                                                <Label className="text-neutral-300">Display Name</Label>
                                                 <Input
                                                     value={editingTemplate.displayName}
                                                     onChange={(e) => setEditingTemplate({ ...editingTemplate, displayName: e.target.value })}
                                                     placeholder="e.g., Welcome Email"
-                                                    className="bg-slate-950/50 border-slate-800 text-white focus:border-blue-500/50"
+                                                    className="bg-neutral-950/50 border-neutral-800 text-white focus:border-blue-500/50"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-slate-300">Template ID</Label>
+                                                <Label className="text-neutral-300">Template ID</Label>
                                                 <Input
                                                     value={editingTemplate.name}
                                                     onChange={(e) => setEditingTemplate({ ...editingTemplate, name: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
                                                     placeholder="welcome_email"
-                                                    className="bg-slate-950/50 border-slate-800 text-white font-mono focus:border-blue-500/50"
+                                                    className="bg-neutral-950/50 border-neutral-800 text-white font-mono focus:border-blue-500/50"
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Subject Line</Label>
+                                            <Label className="text-neutral-300">Subject Line</Label>
                                             <div className="relative">
                                                 <Input
                                                     value={editingTemplate.subject}
                                                     onChange={(e) => setEditingTemplate({ ...editingTemplate, subject: e.target.value })}
                                                     placeholder="e.g., Welcome to {{company_name}}!"
-                                                    className="bg-slate-950/50 border-slate-800 text-white pr-20 focus:border-blue-500/50"
+                                                    className="bg-neutral-950/50 border-neutral-800 text-white pr-20 focus:border-blue-500/50"
                                                 />
-                                                <Badge variant="outline" className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 border-slate-700 bg-slate-900 pointer-events-none">
+                                                <Badge variant="outline" className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neutral-500 border-neutral-700 bg-neutral-900 pointer-events-none">
                                                     Subject
                                                 </Badge>
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Preheader Text</Label>
+                                            <Label className="text-neutral-300">Preheader Text</Label>
                                             <Input
                                                 value={editingTemplate.preheader}
                                                 onChange={(e) => setEditingTemplate({ ...editingTemplate, preheader: e.target.value })}
                                                 placeholder="Preview text shown in email clients"
-                                                className="bg-slate-950/50 border-slate-800 text-white focus:border-blue-500/50"
+                                                className="bg-neutral-950/50 border-neutral-800 text-white focus:border-blue-500/50"
                                             />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Plain Text Version</Label>
+                                            <Label className="text-neutral-300">Plain Text Version</Label>
                                             <Textarea
                                                 value={editingTemplate.textContent}
                                                 onChange={(e) => setEditingTemplate({ ...editingTemplate, textContent: e.target.value })}
                                                 placeholder="Plain text fallback..."
-                                                className="bg-slate-950/50 border-slate-800 text-white min-h-[150px] font-mono text-sm focus:border-blue-500/50"
+                                                className="bg-neutral-950/50 border-neutral-800 text-white min-h-[150px] font-mono text-sm focus:border-blue-500/50"
                                             />
                                         </div>
                                     </TabsContent>
 
                                     <TabsContent value="editor" className="space-y-4 mt-0 h-full flex flex-col">
                                         <div className="flex items-center justify-between mb-2">
-                                            <Label className="text-slate-300">HTML Code</Label>
+                                            <Label className="text-neutral-300">HTML Code</Label>
                                             <div className="flex gap-1">
-                                                <Button size="sm" variant="outline" className="h-7 border-slate-700 bg-slate-800 text-slate-400 hover:text-white">
+                                                <Button size="sm" variant="outline" className="h-7 border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-white">
                                                     <Palette className="h-3.5 w-3.5 mr-1" /> Theme
                                                 </Button>
-                                                <Button size="sm" variant="outline" className="h-7 border-slate-700 bg-slate-800 text-slate-400 hover:text-white">
+                                                <Button size="sm" variant="outline" className="h-7 border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-white">
                                                     <ImageIcon className="h-3.5 w-3.5 mr-1" /> Insert Image
                                                 </Button>
                                             </div>
@@ -715,7 +715,7 @@ export default function EmailBuilderPage() {
                                         <Textarea
                                             value={editingTemplate.htmlContent}
                                             onChange={(e) => setEditingTemplate({ ...editingTemplate, htmlContent: e.target.value })}
-                                            className="flex-1 bg-slate-950 border-slate-800 text-blue-100 font-mono text-sm leading-relaxed p-4 resize-none focus:border-blue-500/50"
+                                            className="flex-1 bg-neutral-950 border-neutral-800 text-blue-100 font-mono text-sm leading-relaxed p-4 resize-none focus:border-blue-500/50"
                                             spellCheck={false}
                                         />
                                     </TabsContent>
@@ -727,7 +727,7 @@ export default function EmailBuilderPage() {
                                                 variant={previewMode === 'desktop' ? 'default' : 'outline'}
                                                 className={cn(
                                                     "w-32",
-                                                    previewMode === 'desktop' ? 'bg-blue-600 hover:bg-blue-700' : 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
+                                                    previewMode === 'desktop' ? 'bg-neutral-700 hover:bg-blue-700' : 'border-neutral-700 text-neutral-400 hover:text-white hover:bg-neutral-800'
                                                 )}
                                                 onClick={() => setPreviewMode('desktop')}
                                             >
@@ -739,7 +739,7 @@ export default function EmailBuilderPage() {
                                                 variant={previewMode === 'mobile' ? 'default' : 'outline'}
                                                 className={cn(
                                                     "w-32",
-                                                    previewMode === 'mobile' ? 'bg-blue-600 hover:bg-blue-700' : 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
+                                                    previewMode === 'mobile' ? 'bg-neutral-700 hover:bg-blue-700' : 'border-neutral-700 text-neutral-400 hover:text-white hover:bg-neutral-800'
                                                 )}
                                                 onClick={() => setPreviewMode('mobile')}
                                             >
@@ -748,7 +748,7 @@ export default function EmailBuilderPage() {
                                             </Button>
                                         </div>
 
-                                        <div className="flex justify-center bg-slate-950/30 rounded-lg p-8 border border-white/5 min-h-[500px]">
+                                        <div className="flex justify-center bg-neutral-950/30 rounded-lg p-8 border border-white/5 min-h-[500px]">
                                             <EmailPreview template={editingTemplate} mode={previewMode} />
                                         </div>
                                     </TabsContent>
@@ -758,15 +758,15 @@ export default function EmailBuilderPage() {
                                             <h3 className="text-base font-medium text-white">Categorization</h3>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label className="text-slate-300">Category</Label>
+                                                    <Label className="text-neutral-300">Category</Label>
                                                     <Select
                                                         value={editingTemplate.category}
                                                         onValueChange={(v) => setEditingTemplate({ ...editingTemplate, category: v as any })}
                                                     >
-                                                        <SelectTrigger className="bg-slate-900/50 border-slate-700 text-white">
+                                                        <SelectTrigger className="bg-neutral-900/50 border-neutral-700 text-white">
                                                             <SelectValue />
                                                         </SelectTrigger>
-                                                        <SelectContent className="bg-slate-900 border-slate-700">
+                                                        <SelectContent className="bg-neutral-900 border-neutral-700">
                                                             {categoryOptions.map(cat => (
                                                                 <SelectItem key={cat.value} value={cat.value} className="text-white">
                                                                     {cat.label}
@@ -776,18 +776,18 @@ export default function EmailBuilderPage() {
                                                     </Select>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label className="text-slate-300">Structure Status</Label>
+                                                    <Label className="text-neutral-300">Structure Status</Label>
                                                     <Select
                                                         value={editingTemplate.status}
                                                         onValueChange={(v) => setEditingTemplate({ ...editingTemplate, status: v as any })}
                                                     >
-                                                        <SelectTrigger className="bg-slate-900/50 border-slate-700 text-white">
+                                                        <SelectTrigger className="bg-neutral-900/50 border-neutral-700 text-white">
                                                             <SelectValue />
                                                         </SelectTrigger>
-                                                        <SelectContent className="bg-slate-900 border-slate-700">
-                                                            <SelectItem value="draft" className="text-amber-400">Draft</SelectItem>
-                                                            <SelectItem value="active" className="text-emerald-400">Active</SelectItem>
-                                                            <SelectItem value="archived" className="text-slate-400">Archived</SelectItem>
+                                                        <SelectContent className="bg-neutral-900 border-neutral-700">
+                                                            <SelectItem value="draft" className="text-white">Draft</SelectItem>
+                                                            <SelectItem value="active" className="text-neutral-300">Active</SelectItem>
+                                                            <SelectItem value="archived" className="text-neutral-400">Archived</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
@@ -797,7 +797,7 @@ export default function EmailBuilderPage() {
                                         <GlassCard className="p-5 space-y-4">
                                             <h3 className="text-base font-medium text-white">Access Control</h3>
                                             <div className="space-y-3">
-                                                <Label className="text-slate-300 block mb-2">Available on Plans</Label>
+                                                <Label className="text-neutral-300 block mb-2">Available on Plans</Label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {plans.map(plan => {
                                                         const isSelected = editingTemplate.allowedPlans.includes(plan);
@@ -808,8 +808,8 @@ export default function EmailBuilderPage() {
                                                                 className={cn(
                                                                     "cursor-pointer px-4 py-2 rounded-lg border transition-all text-sm font-medium",
                                                                     isSelected
-                                                                        ? "bg-blue-600/20 border-blue-500/50 text-blue-100"
-                                                                        : "bg-slate-900/50 border-slate-700 text-slate-400 hover:border-slate-600"
+                                                                        ? "bg-neutral-800/50 border-blue-500/50 text-blue-100"
+                                                                        : "bg-neutral-900/50 border-neutral-700 text-neutral-400 hover:border-neutral-600"
                                                                 )}
                                                             >
                                                                 <span className="capitalize">{plan}</span>
@@ -825,11 +825,11 @@ export default function EmailBuilderPage() {
                         </div>
                     )}
 
-                    <DialogFooter className="p-6 border-t border-white/10 bg-slate-950/30">
-                        <Button variant="ghost" onClick={() => setEditDialog(false)} className="text-slate-400 hover:text-white mr-2">
+                    <DialogFooter className="p-6 border-t border-white/10 bg-neutral-950/30">
+                        <Button variant="ghost" onClick={() => setEditDialog(false)} className="text-neutral-400 hover:text-white mr-2">
                             Cancel
                         </Button>
-                        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white min-w-[100px]">
+                        <Button onClick={handleSave} disabled={saving} className="bg-neutral-700 hover:bg-blue-700 text-white min-w-[100px]">
                             {saving ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -848,11 +848,11 @@ export default function EmailBuilderPage() {
 
             {/* Preview Dialog (Standalone) */}
             <Dialog open={previewDialog} onOpenChange={setPreviewDialog}>
-                <DialogContent className="bg-slate-900/95 backdrop-blur-xl border-white/10 max-w-4xl p-0 overflow-hidden">
-                    <DialogHeader className="p-4 border-b border-white/10 bg-slate-950/50">
+                <DialogContent className="bg-neutral-900/95 backdrop-blur-xl border-white/10 max-w-4xl p-0 overflow-hidden">
+                    <DialogHeader className="p-4 border-b border-white/10 bg-neutral-950/50">
                         <DialogTitle className="text-white text-base">Preview: {previewTemplate?.displayName}</DialogTitle>
                     </DialogHeader>
-                    <div className="p-8 bg-slate-950/80 flex justify-center min-h-[600px]">
+                    <div className="p-8 bg-neutral-950/80 flex justify-center min-h-[600px]">
                         {previewTemplate && <EmailPreview template={previewTemplate} mode={previewMode} />}
                     </div>
                 </DialogContent>

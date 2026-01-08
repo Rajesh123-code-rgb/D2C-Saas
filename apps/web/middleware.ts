@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Public routes that don't require authentication
-const publicRoutes = ['/login', '/signup', '/forgot-password', '/landing.html'];
+const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/landing.html', '/admin'];
 
 // Routes that should redirect to dashboard if authenticated
 const authRoutes = ['/login', '/signup'];
@@ -18,6 +18,11 @@ export function middleware(request: NextRequest) {
         pathname.startsWith('/static') ||
         pathname.includes('.')
     ) {
+        return NextResponse.next();
+    }
+
+    // Admin routes have their own authentication - skip user auth middleware
+    if (pathname.startsWith('/admin')) {
         return NextResponse.next();
     }
 

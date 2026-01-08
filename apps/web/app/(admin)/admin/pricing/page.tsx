@@ -312,18 +312,18 @@ export default function PricingPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Pricing Plans</h1>
-                    <p className="text-slate-400 mt-2 text-lg">Manage subscription tiers, pricing, and features</p>
+                    <p className="text-neutral-400 mt-2 text-lg">Manage subscription tiers, pricing, and features</p>
                 </div>
                 <div className="flex gap-3">
                     <Button
                         variant="outline"
-                        className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white backdrop-blur-md"
+                        className="bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white backdrop-blur-md"
                         disabled={loading}
                     >
                         <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
                         Refresh
                     </Button>
-                    <Button className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
+                    <Button className="bg-neutral-700 hover:bg-neutral-600 text-white shadow-lg shadow-black/30">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Plan
                     </Button>
@@ -337,12 +337,12 @@ export default function PricingPage() {
                         key={plan.id}
                         className={cn(
                             "relative overflow-visible group flex flex-col h-full",
-                            plan.isPopular ? "border-indigo-500/50 shadow-lg shadow-indigo-500/10" : "hover:border-white/20"
+                            plan.isPopular ? "border-neutral-600 shadow-lg shadow-black/20" : "hover:border-white/20"
                         )}
                     >
                         {plan.isPopular && (
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                                <Badge className="bg-indigo-600 text-white border-0 shadow-lg shadow-indigo-500/40 px-3 py-1">
+                                <Badge className="bg-neutral-700 text-white border-0 shadow-lg shadow-black/30 px-3 py-1">
                                     <Star className="h-3 w-3 mr-1 fill-white" />
                                     Popular
                                 </Badge>
@@ -354,13 +354,13 @@ export default function PricingPage() {
                                 <Badge className={cn(
                                     "border-0",
                                     plan.isActive
-                                        ? "bg-green-500/10 text-green-400"
-                                        : "bg-slate-500/10 text-slate-400"
+                                        ? "bg-neutral-800 text-neutral-300"
+                                        : "bg-neutral-500/10 text-neutral-400"
                                 )}>
                                     {plan.isActive ? 'Active' : 'Inactive'}
                                 </Badge>
                             </div>
-                            <CardDescription className="text-slate-400 min-h-[40px]">
+                            <CardDescription className="text-neutral-400 min-h-[40px]">
                                 {plan.description}
                             </CardDescription>
                         </CardHeader>
@@ -369,11 +369,11 @@ export default function PricingPage() {
                                 <p className="text-3xl font-bold text-white tracking-tight">
                                     {formatCurrency(plan.monthlyPrice)}
                                     {plan.monthlyPrice > 0 && (
-                                        <span className="text-sm font-normal text-slate-400 ml-1">/mo</span>
+                                        <span className="text-sm font-normal text-neutral-400 ml-1">/mo</span>
                                     )}
                                 </p>
                                 {plan.yearlyPrice > 0 && (
-                                    <p className="text-xs text-green-400 mt-2 font-medium bg-green-500/10 inline-block px-2 py-1 rounded">
+                                    <p className="text-xs text-neutral-300 mt-2 font-medium bg-neutral-800 inline-block px-2 py-1 rounded">
                                         Save {Math.round((1 - plan.yearlyPrice / (plan.monthlyPrice * 12)) * 100)}% yearly
                                     </p>
                                 )}
@@ -381,18 +381,18 @@ export default function PricingPage() {
 
                             <div className="space-y-3 flex-1">
                                 {plan.features.slice(0, 6).map((feature) => (
-                                    <div key={feature.id} className="flex items-start gap-3 text-sm text-slate-300">
-                                        <div className="h-5 w-5 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <Check className="h-3 w-3 text-indigo-400" />
+                                    <div key={feature.id} className="flex items-start gap-3 text-sm text-neutral-300">
+                                        <div className="h-5 w-5 rounded-full bg-neutral-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <Check className="h-3 w-3 text-white" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <span className="truncate block font-medium text-slate-200">{feature.name}</span>
-                                            <span className="text-xs text-slate-500">{formatFeatureValue(feature)}</span>
+                                            <span className="truncate block font-medium text-neutral-200">{feature.name}</span>
+                                            <span className="text-xs text-neutral-500">{formatFeatureValue(feature)}</span>
                                         </div>
                                     </div>
                                 ))}
                                 {plan.features.length > 6 && (
-                                    <p className="text-xs text-indigo-400 pl-8 font-medium">+{plan.features.length - 6} more features</p>
+                                    <p className="text-xs text-white pl-8 font-medium">+{plan.features.length - 6} more features</p>
                                 )}
                             </div>
 
@@ -400,7 +400,7 @@ export default function PricingPage() {
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    className="flex-1 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
+                                    className="flex-1 bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white"
                                     onClick={() => handleEditPlan(plan)}
                                 >
                                     <Settings className="h-4 w-4 mr-2" />
@@ -412,8 +412,8 @@ export default function PricingPage() {
                                     className={cn(
                                         "bg-white/5 border-white/10 hover:bg-white/10",
                                         plan.isPopular
-                                            ? "text-indigo-400 hover:text-indigo-300"
-                                            : "text-slate-400 hover:text-white"
+                                            ? "text-white hover:text-neutral-300"
+                                            : "text-neutral-400 hover:text-white"
                                     )}
                                     onClick={() => togglePopular(plan.id)}
                                 >
@@ -427,15 +427,15 @@ export default function PricingPage() {
 
             {/* Advanced Edit Dialog */}
             <Dialog open={editDialog} onOpenChange={setEditDialog}>
-                <DialogContent className="bg-[#0B0C15] border-white/10 text-white max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl shadow-indigo-500/10">
+                <DialogContent className="bg-black border-white/10 text-white max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl shadow-black/20">
                     <DialogHeader>
                         <DialogTitle className="text-xl flex items-center gap-2 text-white">
-                            <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400">
+                            <div className="p-2 rounded-lg bg-neutral-700 text-white">
                                 <Settings className="h-5 w-5" />
                             </div>
                             Configure Plan: {editingPlan?.displayName}
                         </DialogTitle>
-                        <DialogDescription className="text-slate-400">
+                        <DialogDescription className="text-neutral-400">
                             Manage pricing, features, and limits for this subscription tier
                         </DialogDescription>
                     </DialogHeader>
@@ -443,43 +443,43 @@ export default function PricingPage() {
                     {editingPlan && (
                         <Tabs defaultValue="general" className="flex-1 overflow-hidden flex flex-col mt-4">
                             <TabsList className="bg-white/5 border-white/10 w-full justify-start p-1 h-auto">
-                                <TabsTrigger value="general" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">General</TabsTrigger>
-                                <TabsTrigger value="features" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">Features ({editingPlan.features.length})</TabsTrigger>
-                                <TabsTrigger value="add" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">Add Features</TabsTrigger>
+                                <TabsTrigger value="general" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">General</TabsTrigger>
+                                <TabsTrigger value="features" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">Features ({editingPlan.features.length})</TabsTrigger>
+                                <TabsTrigger value="add" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">Add Features</TabsTrigger>
                             </TabsList>
 
                             <div className="flex-1 overflow-y-auto mt-6 pr-2 custom-scrollbar">
                                 <TabsContent value="general" className="space-y-6 mt-0">
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Display Name</Label>
+                                            <Label className="text-neutral-300">Display Name</Label>
                                             <Input
                                                 value={editingPlan.displayName}
                                                 onChange={(e) => setEditingPlan({ ...editingPlan, displayName: e.target.value })}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Tier Identifier</Label>
+                                            <Label className="text-neutral-300">Tier Identifier</Label>
                                             <Input
                                                 value={editingPlan.tier}
                                                 onChange={(e) => setEditingPlan({ ...editingPlan, tier: e.target.value })}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-slate-300">Description</Label>
+                                        <Label className="text-neutral-300">Description</Label>
                                         <Textarea
                                             value={editingPlan.description}
                                             onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })}
-                                            className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                            className="bg-white/5 border-white/10 text-white focus:border-white"
                                             rows={2}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Monthly Price (₹)</Label>
+                                            <Label className="text-neutral-300">Monthly Price (₹)</Label>
                                             <Input
                                                 type="number"
                                                 value={editingPlan.monthlyPrice}
@@ -487,11 +487,11 @@ export default function PricingPage() {
                                                     ...editingPlan,
                                                     monthlyPrice: parseInt(e.target.value) || 0
                                                 })}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Yearly Price (₹)</Label>
+                                            <Label className="text-neutral-300">Yearly Price (₹)</Label>
                                             <Input
                                                 type="number"
                                                 value={editingPlan.yearlyPrice}
@@ -499,10 +499,10 @@ export default function PricingPage() {
                                                     ...editingPlan,
                                                     yearlyPrice: parseInt(e.target.value) || 0
                                                 })}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                             {editingPlan.monthlyPrice > 0 && (
-                                                <p className="text-xs text-green-400 mt-1">
+                                                <p className="text-xs text-neutral-300 mt-1">
                                                     Suggested: {formatCurrency(editingPlan.monthlyPrice * 10)} (2 months free)
                                                 </p>
                                             )}
@@ -512,7 +512,7 @@ export default function PricingPage() {
                                         <div className="flex-1 flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                             <div>
                                                 <Label className="text-white">Plan Active</Label>
-                                                <p className="text-xs text-slate-400">Visible to customers</p>
+                                                <p className="text-xs text-neutral-400">Visible to customers</p>
                                             </div>
                                             <Switch
                                                 checked={editingPlan.isActive}
@@ -522,7 +522,7 @@ export default function PricingPage() {
                                         <div className="flex-1 flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                                             <div>
                                                 <Label className="text-white">Mark as Popular</Label>
-                                                <p className="text-xs text-slate-400">Highlight this plan</p>
+                                                <p className="text-xs text-neutral-400">Highlight this plan</p>
                                             </div>
                                             <Switch
                                                 checked={editingPlan.isPopular}
@@ -536,17 +536,17 @@ export default function PricingPage() {
                                     <div className="space-y-6">
                                         {Object.entries(groupFeaturesByCategory(editingPlan.features)).map(([category, features]) => (
                                             <div key={category} className="space-y-3">
-                                                <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider pl-1">{category}</h3>
+                                                <h3 className="text-sm font-semibold text-white uppercase tracking-wider pl-1">{category}</h3>
                                                 <div className="space-y-2">
                                                     {features.map((feature) => (
                                                         <div
                                                             key={feature.id}
                                                             className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 group hover:border-white/20 transition-colors"
                                                         >
-                                                            <GripVertical className="h-4 w-4 text-slate-600 cursor-move" />
+                                                            <GripVertical className="h-4 w-4 text-neutral-600 cursor-move" />
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-sm font-medium text-white truncate">{feature.name}</p>
-                                                                <p className="text-xs text-slate-400 truncate opacity-70 group-hover:opacity-100 transition-opacity">{feature.description}</p>
+                                                                <p className="text-xs text-neutral-400 truncate opacity-70 group-hover:opacity-100 transition-opacity">{feature.description}</p>
                                                             </div>
                                                             <div className="flex items-center gap-2">
                                                                 <Select
@@ -556,7 +556,7 @@ export default function PricingPage() {
                                                                     <SelectTrigger className="w-28 h-8 bg-black/50 border-white/10 text-white text-xs">
                                                                         <SelectValue />
                                                                     </SelectTrigger>
-                                                                    <SelectContent className="bg-[#0B0C15] border-white/10 text-white">
+                                                                    <SelectContent className="bg-black border-white/10 text-white">
                                                                         <SelectItem value="boolean">Boolean</SelectItem>
                                                                         <SelectItem value="number">Number</SelectItem>
                                                                         <SelectItem value="unlimited">Unlimited</SelectItem>
@@ -577,12 +577,12 @@ export default function PricingPage() {
                                                                     />
                                                                 )}
                                                                 {feature.type === 'unlimited' && (
-                                                                    <Badge className="bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30">∞</Badge>
+                                                                    <Badge className="bg-neutral-700 text-white hover:bg-neutral-600/30">∞</Badge>
                                                                 )}
                                                                 <Button
                                                                     size="sm"
                                                                     variant="ghost"
-                                                                    className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                                                    className="h-8 w-8 p-0 text-neutral-400 hover:text-red-300 hover:bg-neutral-800"
                                                                     onClick={() => removeFeature(feature.id)}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
@@ -594,7 +594,7 @@ export default function PricingPage() {
                                             </div>
                                         ))}
                                         {editingPlan.features.length === 0 && (
-                                            <div className="text-center py-8 text-slate-500 bg-white/5 rounded-xl border border-dashed border-white/10">
+                                            <div className="text-center py-8 text-neutral-500 bg-white/5 rounded-xl border border-dashed border-white/10">
                                                 No features configured. Add features from the "Add Features" tab.
                                             </div>
                                         )}
@@ -606,25 +606,25 @@ export default function PricingPage() {
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <h3 className="text-sm font-semibold text-white">Add from Template</h3>
-                                            <span className="text-xs text-slate-400">Quickly add common features</span>
+                                            <span className="text-xs text-neutral-400">Quickly add common features</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             {getAvailableFeatures().map((feature) => (
                                                 <Button
                                                     key={feature.id}
                                                     variant="outline"
-                                                    className="justify-start h-auto py-3 px-4 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white hover:border-indigo-500/50 transition-all text-left"
+                                                    className="justify-start h-auto py-3 px-4 bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white hover:border-neutral-600 transition-all text-left"
                                                     onClick={() => addExistingFeature(feature)}
                                                 >
-                                                    <Plus className="h-4 w-4 mr-3 flex-shrink-0 text-indigo-400" />
+                                                    <Plus className="h-4 w-4 mr-3 flex-shrink-0 text-white" />
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-medium truncate">{feature.name}</p>
-                                                        <p className="text-xs text-slate-500 truncate">{feature.category}</p>
+                                                        <p className="text-xs text-neutral-500 truncate">{feature.category}</p>
                                                     </div>
                                                 </Button>
                                             ))}
                                             {getAvailableFeatures().length === 0 && (
-                                                <p className="text-sm text-slate-500 col-span-2 text-center py-8 bg-white/5 rounded-xl border border-dashed border-white/10">
+                                                <p className="text-sm text-neutral-500 col-span-2 text-center py-8 bg-white/5 rounded-xl border border-dashed border-white/10">
                                                     All template features have been added
                                                 </p>
                                             )}
@@ -639,13 +639,13 @@ export default function PricingPage() {
                                                 placeholder="Feature name..."
                                                 value={newFeatureName}
                                                 onChange={(e) => setNewFeatureName(e.target.value)}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                             <Select value={newFeatureCategory} onValueChange={setNewFeatureCategory}>
                                                 <SelectTrigger className="w-40 bg-white/5 border-white/10 text-white">
                                                     <SelectValue />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-[#0B0C15] border-white/10 text-white">
+                                                <SelectContent className="bg-black border-white/10 text-white">
                                                     <SelectItem value="Limits">Limits</SelectItem>
                                                     <SelectItem value="Features">Features</SelectItem>
                                                     <SelectItem value="Support">Support</SelectItem>
@@ -653,7 +653,7 @@ export default function PricingPage() {
                                                 </SelectContent>
                                             </Select>
                                             <Button
-                                                className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                                                className="bg-neutral-700 hover:bg-neutral-600 text-white shadow-lg shadow-black/30"
                                                 onClick={addFeatureToPlan}
                                                 disabled={!newFeatureName.trim()}
                                             >
@@ -667,10 +667,10 @@ export default function PricingPage() {
                     )}
 
                     <DialogFooter className="mt-4 pt-4 border-t border-white/10">
-                        <Button variant="ghost" onClick={() => setEditDialog(false)} className="text-slate-300 hover:text-white hover:bg-white/10">
+                        <Button variant="ghost" onClick={() => setEditDialog(false)} className="text-neutral-300 hover:text-white hover:bg-white/10">
                             Cancel
                         </Button>
-                        <Button onClick={handleSavePlan} className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" disabled={saving}>
+                        <Button onClick={handleSavePlan} className="bg-neutral-700 hover:bg-neutral-600 text-white shadow-lg shadow-black/30" disabled={saving}>
                             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                             Save Changes
                         </Button>

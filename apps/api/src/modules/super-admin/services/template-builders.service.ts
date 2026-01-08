@@ -149,8 +149,17 @@ export class TemplateBuildersService {
     }
 
     async deleteWhatsAppTemplate(id: string): Promise<void> {
-        const template = await this.getWhatsAppTemplateById(id);
-        await this.whatsappTemplateRepo.remove(template);
+        // Use delete which is more efficient for simple ID-based deletion
+        // and doesn't require fetching (though we might want to check existence if strict)
+        // But getWhatsAppTemplateById checks existence.
+
+        // Wait, if we use delete(id), we don't need to fetch it first technically,
+        // but if we want to ensure it existed (to throw 404), we keep the fetch.
+        // However, standard delete returns DeleteResult which we can check affected > 0.
+
+        // Let's keep the check for 404 correctness, but use delete(id) to avoid object-state issues.
+        await this.getWhatsAppTemplateById(id);
+        await this.whatsappTemplateRepo.delete(id);
     }
 
     async incrementWhatsAppUsage(id: string): Promise<void> {

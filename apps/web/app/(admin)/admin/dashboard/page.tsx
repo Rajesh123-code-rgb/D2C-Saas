@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Building2,
     Users,
@@ -55,16 +56,11 @@ const mockAlerts: Alert[] = [
     { id: '4', type: 'warning', message: 'Low credit balance alert for 3 tenants', time: '2 hours ago' },
 ];
 
-const mockTransactions: Transaction[] = [
-    { id: '1', tenantId: 't1', tenantName: 'ABC Corp', type: 'credit', creditsAmount: 5500, currencyAmount: 5000, description: 'Package purchase', status: 'completed', createdAt: new Date(Date.now() - 10 * 60000).toISOString() },
-    { id: '2', tenantId: 't2', tenantName: 'XYZ Ltd', type: 'credit', creditsAmount: 15000, currencyAmount: 12500, description: 'Package purchase', status: 'completed', createdAt: new Date(Date.now() - 60 * 60000).toISOString() },
-    { id: '3', tenantId: 't3', tenantName: 'Demo Inc', type: 'debit', creditsAmount: -150, currencyAmount: -150, description: 'Message usage', status: 'completed', createdAt: new Date(Date.now() - 120 * 60000).toISOString() },
-];
-
 export default function AdminDashboardPage() {
+    const router = useRouter();
     const [stats, setStats] = useState<DashboardStats>(mockStats);
     const [alerts, setAlerts] = useState<Alert[]>(mockAlerts);
-    const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -92,11 +88,11 @@ export default function AdminDashboardPage() {
         try {
             // Fetch transactions
             const txData = await billingApi.getTransactions({ limit: 5 });
-            if (txData.data && txData.data.length > 0) {
+            if (txData.data) {
                 setTransactions(txData.data);
             }
         } catch (err: any) {
-            console.warn('Could not fetch transactions, using mock data');
+            console.error('Failed to fetch transactions:', err.message);
         }
 
         setLoading(false);
@@ -138,12 +134,12 @@ export default function AdminDashboardPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard Overview</h1>
-                    <p className="text-slate-400 mt-2 text-lg">Platform metrics and key performance indicators</p>
+                    <p className="text-neutral-400 mt-2 text-lg">Platform metrics and key performance indicators</p>
                 </div>
                 <div className="flex gap-3">
                     <Button
                         variant="outline"
-                        className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white backdrop-blur-sm"
+                        className="bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white backdrop-blur-sm"
                         onClick={fetchData}
                         disabled={loading}
                     >
@@ -154,14 +150,17 @@ export default function AdminDashboardPage() {
                         )}
                         Refresh
                     </Button>
-                    <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 border-0">
+                    <Button
+                        className="bg-white hover:bg-neutral-200 text-black font-semibold border-0"
+                        onClick={() => router.push('/admin/analytics')}
+                    >
                         View Analytics
                     </Button>
                 </div>
             </div>
 
             {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm backdrop-blur-md">
+                <div className="p-4 bg-neutral-800 border border-neutral-600/20 rounded-xl text-neutral-300 text-sm backdrop-blur-md">
                     {error}
                 </div>
             )}
@@ -171,38 +170,38 @@ export default function AdminDashboardPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <GlassCard className="glass-card-hover group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-400">
+                        <CardTitle className="text-sm font-medium text-neutral-400">
                             Organizations
                         </CardTitle>
-                        <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 group-hover:text-indigo-300 transition-colors">
+                        <div className="p-2 rounded-lg bg-neutral-800 text-neutral-400 group-hover:bg-neutral-700 group-hover:text-neutral-300 transition-colors">
                             <Building2 className="h-4 w-4" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-indigo-100 transition-colors">{stats.organizations.total}</div>
-                        <p className="text-xs text-slate-400 flex items-center gap-2">
-                            <span className="flex items-center text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">
+                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-neutral-100 transition-colors">{stats.organizations.total}</div>
+                        <p className="text-xs text-neutral-400 flex items-center gap-2">
+                            <span className="flex items-center text-neutral-300 bg-neutral-800 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">
                                 {stats.organizations.active} Active
                             </span>
-                            <span className="w-1 h-1 rounded-full bg-slate-600" />
-                            <span className="text-yellow-400/80">{stats.organizations.trial} Trial</span>
+                            <span className="w-1 h-1 rounded-full bg-neutral-600" />
+                            <span className="text-neutral-400">{stats.organizations.trial} Trial</span>
                         </p>
                     </CardContent>
                 </GlassCard>
 
                 <GlassCard className="glass-card-hover group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-400">
+                        <CardTitle className="text-sm font-medium text-neutral-400">
                             Total Users
                         </CardTitle>
-                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 group-hover:text-blue-300 transition-colors">
+                        <div className="p-2 rounded-lg bg-neutral-800 text-neutral-400 group-hover:bg-neutral-700 group-hover:text-neutral-300 transition-colors">
                             <Users className="h-4 w-4" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-blue-100 transition-colors">{formatNumber(stats.users.total)}</div>
-                        <p className="text-xs text-slate-400">
-                            <span className="text-green-400 flex items-center gap-1">
+                        <div className="text-3xl font-bold text-white mb-1 group-hover:text-neutral-100 transition-colors">{formatNumber(stats.users.total)}</div>
+                        <p className="text-xs text-neutral-400">
+                            <span className="text-neutral-300 flex items-center gap-1">
                                 <TrendingUp className="h-3 w-3" />
                                 {stats.users.active} active today
                             </span>
@@ -212,10 +211,10 @@ export default function AdminDashboardPage() {
 
                 <GlassCard className="glass-card-hover group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-400">
+                        <CardTitle className="text-sm font-medium text-neutral-400">
                             Revenue (Month)
                         </CardTitle>
-                        <div className="p-2 rounded-lg bg-green-500/10 text-green-400 group-hover:bg-green-500/20 group-hover:text-green-300 transition-colors">
+                        <div className="p-2 rounded-lg bg-neutral-800 text-neutral-300 group-hover:bg-neutral-700 group-hover:text-neutral-300 transition-colors">
                             <DollarSign className="h-4 w-4" />
                         </div>
                     </CardHeader>
@@ -223,7 +222,7 @@ export default function AdminDashboardPage() {
                         <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 mb-1">
                             {formatCurrency(stats.revenue.month)}
                         </div>
-                        <p className="text-xs text-green-400 flex items-center bg-green-500/5 w-fit px-1.5 py-0.5 rounded">
+                        <p className="text-xs text-neutral-300 flex items-center bg-neutral-400/5 w-fit px-1.5 py-0.5 rounded">
                             <TrendingUp className="h-3 w-3 mr-1" />
                             {stats.revenue.growth}% from last month
                         </p>
@@ -232,16 +231,16 @@ export default function AdminDashboardPage() {
 
                 <GlassCard className="glass-card-hover group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-400">
+                        <CardTitle className="text-sm font-medium text-neutral-400">
                             Messages Today
                         </CardTitle>
-                        <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 group-hover:text-purple-300 transition-colors">
+                        <div className="p-2 rounded-lg bg-neutral-800 text-neutral-400 group-hover:bg-neutral-700 group-hover:text-neutral-300 transition-colors">
                             <MessageSquare className="h-4 w-4" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-white mb-1 group-hover:text-purple-100 transition-colors">{formatNumber(stats.messages.today)}</div>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-neutral-400">
                             {formatNumber(stats.messages.month)} total this month
                         </p>
                     </CardContent>
@@ -249,16 +248,16 @@ export default function AdminDashboardPage() {
 
                 <GlassCard className="glass-card-hover group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-400">
+                        <CardTitle className="text-sm font-medium text-neutral-400">
                             Emails Today
                         </CardTitle>
-                        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 group-hover:text-orange-300 transition-colors">
+                        <div className="p-2 rounded-lg bg-neutral-800 text-neutral-400 group-hover:bg-neutral-700 group-hover:text-neutral-300 transition-colors">
                             <Mail className="h-4 w-4" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-white mb-1 group-hover:text-orange-100 transition-colors">{formatNumber(stats.emails?.today || 0)}</div>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-neutral-400">
                             {formatNumber(stats.emails?.month || 0)} total this month
                         </p>
                     </CardContent>
@@ -272,25 +271,25 @@ export default function AdminDashboardPage() {
                     <div className="grid gap-6 md:grid-cols-4">
                         <GlassCard className="glass-card-hover group">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-400">
+                                <CardTitle className="text-sm font-medium text-neutral-400">
                                     Active Campaigns
                                 </CardTitle>
-                                <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+                                <div className="p-2 rounded-lg bg-neutral-800 text-neutral-400">
                                     <Target className="h-4 w-4" />
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-3xl font-bold text-white mb-1">{stats.campaigns.active}</div>
-                                <p className="text-xs text-slate-400">{stats.campaigns.total} total campaigns</p>
+                                <p className="text-xs text-neutral-400">{stats.campaigns.total} total campaigns</p>
                             </CardContent>
                         </GlassCard>
 
                         <GlassCard className="glass-card-hover group">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-400">
+                                <CardTitle className="text-sm font-medium text-neutral-400">
                                     A/B Test Campaigns
                                 </CardTitle>
-                                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400">
+                                <div className="p-2 rounded-lg bg-neutral-800 text-neutral-400">
                                     <Beaker className="h-4 w-4" />
                                 </div>
                             </CardHeader>
@@ -298,37 +297,37 @@ export default function AdminDashboardPage() {
                                 <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-1">
                                     {stats.campaigns.abTestCampaigns}
                                 </div>
-                                <p className="text-xs text-slate-400">Running A/B tests</p>
+                                <p className="text-xs text-neutral-400">Running A/B tests</p>
                             </CardContent>
                         </GlassCard>
 
                         <GlassCard className="glass-card-hover group">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-400">
+                                <CardTitle className="text-sm font-medium text-neutral-400">
                                     WhatsApp Campaigns
                                 </CardTitle>
-                                <div className="p-2 rounded-lg bg-green-500/10 text-green-400">
+                                <div className="p-2 rounded-lg bg-neutral-800 text-neutral-300">
                                     <Phone className="h-4 w-4" />
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-3xl font-bold text-white mb-1">{stats.campaigns.whatsappCampaigns}</div>
-                                <p className="text-xs text-slate-400">Template-based</p>
+                                <p className="text-xs text-neutral-400">Template-based</p>
                             </CardContent>
                         </GlassCard>
 
                         <GlassCard className="glass-card-hover group">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-400">
+                                <CardTitle className="text-sm font-medium text-neutral-400">
                                     Email Campaigns
                                 </CardTitle>
-                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                                <div className="p-2 rounded-lg bg-neutral-800 text-neutral-400">
                                     <Mail className="h-4 w-4" />
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-3xl font-bold text-white mb-1">{stats.campaigns.emailCampaigns}</div>
-                                <p className="text-xs text-slate-400">Direct send</p>
+                                <p className="text-xs text-neutral-400">Direct send</p>
                             </CardContent>
                         </GlassCard>
                     </div>
@@ -343,7 +342,7 @@ export default function AdminDashboardPage() {
                         <GlassCard>
                             <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
-                                    <div className="p-1.5 rounded-md bg-green-500/20 text-green-400">
+                                    <div className="p-1.5 rounded-md bg-neutral-400/20 text-neutral-300">
                                         <Phone className="h-5 w-5" />
                                     </div>
                                     WhatsApp Channel
@@ -352,18 +351,18 @@ export default function AdminDashboardPage() {
                             <CardContent>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-slate-400">Total Messages</span>
+                                        <span className="text-neutral-400">Total Messages</span>
                                         <span className="text-white font-semibold">{formatNumber(stats.channelStats.whatsapp.messages)}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-slate-400 flex items-center gap-2">
+                                        <span className="text-neutral-400 flex items-center gap-2">
                                             <ImageIcon className="h-4 w-4" />
                                             Media Uploads
                                         </span>
                                         <span className="text-white font-semibold">{formatNumber(stats.channelStats.whatsapp.mediaUploads)}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-slate-400">Active Conversations</span>
+                                        <span className="text-neutral-400">Active Conversations</span>
                                         <span className="text-white font-semibold">{formatNumber(stats.channelStats.whatsapp.conversations)}</span>
                                     </div>
                                 </div>
@@ -373,7 +372,7 @@ export default function AdminDashboardPage() {
                         <GlassCard>
                             <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
-                                    <div className="p-1.5 rounded-md bg-blue-500/20 text-blue-400">
+                                    <div className="p-1.5 rounded-md bg-neutral-500/20 text-neutral-400">
                                         <Mail className="h-5 w-5" />
                                     </div>
                                     Email Channel
@@ -382,15 +381,15 @@ export default function AdminDashboardPage() {
                             <CardContent>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-slate-400">Emails Sent</span>
+                                        <span className="text-neutral-400">Emails Sent</span>
                                         <span className="text-white font-semibold">{formatNumber(stats.channelStats.email.sent)}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-slate-400">Open Rate</span>
-                                        <span className="text-green-400 font-semibold">{stats.channelStats.email.openRate}%</span>
+                                        <span className="text-neutral-400">Open Rate</span>
+                                        <span className="text-neutral-300 font-semibold">{stats.channelStats.email.openRate}%</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-slate-400">Clicked</span>
+                                        <span className="text-neutral-400">Clicked</span>
                                         <span className="text-white font-semibold">{formatNumber(stats.channelStats.email.clicked)}</span>
                                     </div>
                                 </div>
@@ -408,7 +407,7 @@ export default function AdminDashboardPage() {
                         <Zap className="w-24 h-24 text-purple-500 rotate-12" />
                     </div>
                     <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                        <CardTitle className="text-sm font-medium text-neutral-300 flex items-center gap-2">
                             <div className="h-2 w-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
                             Marketing
                         </CardTitle>
@@ -426,8 +425,8 @@ export default function AdminDashboardPage() {
                         <CheckCircle className="w-24 h-24 text-blue-500 rotate-12" />
                     </div>
                     <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                        <CardTitle className="text-sm font-medium text-neutral-300 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-neutral-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                             Utility
                         </CardTitle>
                     </CardHeader>
@@ -444,8 +443,8 @@ export default function AdminDashboardPage() {
                         <MessageSquare className="w-24 h-24 text-green-500 rotate-12" />
                     </div>
                     <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                        <CardTitle className="text-sm font-medium text-neutral-300 flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-neutral-400 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                             Service
                         </CardTitle>
                     </CardHeader>
@@ -464,12 +463,12 @@ export default function AdminDashboardPage() {
                 <GlassCard>
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                            <div className="p-1.5 rounded-md bg-indigo-500/20 text-indigo-400">
+                            <div className="p-1.5 rounded-md bg-indigo-500/20 text-neutral-400">
                                 <Activity className="h-5 w-5" />
                             </div>
                             System Alerts
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Recent platform notifications and alerts
                         </CardDescription>
                     </CardHeader>
@@ -488,7 +487,7 @@ export default function AdminDashboardPage() {
                                     )}
                                     {(alert.type === 'info' || alert.type === 'error') && (
                                         <div className="h-5 w-5 rounded-full border-2 border-blue-500/50 flex items-center justify-center shrink-0 mt-0.5">
-                                            <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                            <div className="h-2 w-2 rounded-full bg-neutral-500" />
                                         </div>
                                     )}
                                     <div className="flex-1 min-w-0">
@@ -508,12 +507,12 @@ export default function AdminDashboardPage() {
                 <GlassCard>
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                            <div className="p-1.5 rounded-md bg-green-500/20 text-green-400">
+                            <div className="p-1.5 rounded-md bg-neutral-400/20 text-neutral-300">
                                 <CreditCard className="h-5 w-5" />
                             </div>
                             Recent Transactions
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Latest credit purchases and usage
                         </CardDescription>
                     </CardHeader>
@@ -526,8 +525,8 @@ export default function AdminDashboardPage() {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={`h-10 w-10 rounded-full flex items-center justify-center border transition-all ${tx.creditsAmount > 0
-                                            ? 'bg-green-500/10 border-green-500/20 text-green-400 group-hover:border-green-500/40'
-                                            : 'bg-red-500/10 border-red-500/20 text-red-400 group-hover:border-red-500/40'
+                                            ? 'bg-neutral-800 border-green-500/20 text-neutral-300 group-hover:border-green-500/40'
+                                            : 'bg-neutral-800 border-neutral-600/20 text-neutral-300 group-hover:border-red-500/40'
                                             }`}>
                                             {tx.creditsAmount > 0 ? (
                                                 <TrendingUp className="h-5 w-5" />
@@ -541,7 +540,7 @@ export default function AdminDashboardPage() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className={`text-sm font-bold ${tx.currencyAmount > 0 ? 'text-green-400' : 'text-slate-300'}`}>
+                                        <p className={`text-sm font-bold ${tx.currencyAmount > 0 ? 'text-neutral-300' : 'text-neutral-300'}`}>
                                             {tx.currencyAmount > 0 ? '+' : ''}{formatCurrency(tx.currencyAmount)}
                                         </p>
                                         <p className="text-xs text-slate-500">
@@ -551,7 +550,11 @@ export default function AdminDashboardPage() {
                                 </div>
                             ))}
                         </div>
-                        <Button variant="ghost" className="w-full mt-4 text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10">
+                        <Button
+                            variant="ghost"
+                            className="w-full mt-4 text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10"
+                            onClick={() => router.push('/admin/billing')}
+                        >
                             View All Transactions
                         </Button>
                     </CardContent>

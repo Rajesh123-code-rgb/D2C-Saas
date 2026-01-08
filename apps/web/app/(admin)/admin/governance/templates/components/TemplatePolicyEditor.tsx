@@ -163,7 +163,7 @@ export function TemplatePolicyEditor() {
     if (loading) {
         return (
             <div className="flex items-center justify-center p-12">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
             </div>
         );
     }
@@ -174,12 +174,12 @@ export function TemplatePolicyEditor() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-xl font-bold text-white">Policy Configuration</h2>
-                    <p className="text-slate-400 mt-1">Manage prohibited content and per-plan template permissions</p>
+                    <p className="text-neutral-400 mt-1">Manage prohibited content and per-plan template permissions</p>
                 </div>
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
-                        className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                        className="border-neutral-600 text-neutral-300 hover:bg-neutral-700"
                         onClick={fetchPolicy}
                         disabled={saving}
                     >
@@ -187,7 +187,7 @@ export function TemplatePolicyEditor() {
                         Refresh
                     </Button>
                     <Button
-                        className="bg-indigo-600 hover:bg-indigo-700 min-w-[120px]"
+                        className="bg-neutral-700 hover:bg-neutral-600 min-w-[120px]"
                         onClick={handleSave}
                         disabled={saving}
                     >
@@ -205,22 +205,22 @@ export function TemplatePolicyEditor() {
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Prohibited Content */}
-                <Card className="bg-slate-800 border-slate-700 md:col-span-2">
+                <Card className="bg-neutral-800 border-neutral-700 md:col-span-2">
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-red-400" />
+                            <Shield className="h-5 w-5 text-neutral-400" />
                             Content Safety
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Configure prohibited keywords and automated rejection rules
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex flex-col gap-4">
-                            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700">
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-neutral-900/50 border border-neutral-700">
                                 <div className="space-y-1">
                                     <Label className="text-base text-white">Auto-Reject Violations</Label>
-                                    <p className="text-sm text-slate-400">
+                                    <p className="text-sm text-neutral-400">
                                         Automatically reject templates containing prohibited keywords
                                     </p>
                                 </div>
@@ -231,14 +231,14 @@ export function TemplatePolicyEditor() {
                             </div>
 
                             <div className="space-y-3">
-                                <Label className="text-slate-300">Prohibited Keywords</Label>
+                                <Label className="text-neutral-300">Prohibited Keywords</Label>
                                 <div className="flex gap-2">
                                     <Input
                                         value={keywordInput}
                                         onChange={(e) => setKeywordInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddKeyword()}
                                         placeholder="Enter keyword (e.g. 'guaranteed returns')"
-                                        className="bg-slate-900 border-slate-700 text-white"
+                                        className="bg-neutral-900 border-neutral-700 text-white"
                                     />
                                     <Button onClick={handleAddKeyword} variant="secondary">
                                         <Plus className="h-4 w-4" />
@@ -249,7 +249,7 @@ export function TemplatePolicyEditor() {
                                         <Badge
                                             key={keyword}
                                             variant="secondary"
-                                            className="bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20 pl-2 pr-1 py-1 gap-1"
+                                            className="bg-neutral-800 text-neutral-400 hover:bg-red-500/20 border-neutral-600/20 pl-2 pr-1 py-1 gap-1"
                                         >
                                             {keyword}
                                             <button
@@ -267,16 +267,16 @@ export function TemplatePolicyEditor() {
                 </Card>
 
                 {/* Plan Restrictions */}
-                <Card className="bg-slate-800 border-slate-700 md:col-span-2">
+                <Card className="bg-neutral-800 border-neutral-700 md:col-span-2">
                     <CardHeader>
                         <CardTitle className="text-white">Plan Restrictions</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Configure allowed categories and limits per subscription plan
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Tabs defaultValue="free" className="w-full">
-                            <TabsList className="grid w-full grid-cols-4 bg-slate-900 mb-6">
+                            <TabsList className="grid w-full grid-cols-4 bg-neutral-900 mb-6">
                                 <TabsTrigger value="free">Free</TabsTrigger>
                                 <TabsTrigger value="starter">Starter</TabsTrigger>
                                 <TabsTrigger value="pro">Pro</TabsTrigger>
@@ -288,18 +288,18 @@ export function TemplatePolicyEditor() {
                                     <div className="grid gap-6 md:grid-cols-2">
                                         {/* Categories */}
                                         <div className="space-y-4">
-                                            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                            <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">
                                                 Allowed Categories
                                             </h3>
 
-                                            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30">
+                                            <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-700/30">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 rounded-md bg-purple-500/20 text-purple-400">
+                                                    <div className="p-2 rounded-md bg-neutral-700 text-white">
                                                         <MessageSquare className="h-4 w-4" />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-medium text-white">Marketing</p>
-                                                        <p className="text-xs text-slate-400">Promotions & offers</p>
+                                                        <p className="text-xs text-neutral-400">Promotions & offers</p>
                                                     </div>
                                                 </div>
                                                 <Switch
@@ -308,14 +308,14 @@ export function TemplatePolicyEditor() {
                                                 />
                                             </div>
 
-                                            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30">
+                                            <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-700/30">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 rounded-md bg-blue-500/20 text-blue-400">
+                                                    <div className="p-2 rounded-md bg-neutral-700 text-white">
                                                         <Zap className="h-4 w-4" />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-medium text-white">Utility</p>
-                                                        <p className="text-xs text-slate-400">Order updates & alerts</p>
+                                                        <p className="text-xs text-neutral-400">Order updates & alerts</p>
                                                     </div>
                                                 </div>
                                                 <Switch
@@ -324,14 +324,14 @@ export function TemplatePolicyEditor() {
                                                 />
                                             </div>
 
-                                            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30">
+                                            <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-700/30">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 rounded-md bg-green-500/20 text-green-400">
+                                                    <div className="p-2 rounded-md bg-neutral-700 text-neutral-300">
                                                         <Lock className="h-4 w-4" />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-medium text-white">Authentication</p>
-                                                        <p className="text-xs text-slate-400">OTP & Verification</p>
+                                                        <p className="text-xs text-neutral-400">OTP & Verification</p>
                                                     </div>
                                                 </div>
                                                 <Switch
@@ -343,18 +343,18 @@ export function TemplatePolicyEditor() {
 
                                         {/* Limits */}
                                         <div className="space-y-4">
-                                            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                            <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">
                                                 Submission Limits
                                             </h3>
                                             <div className="space-y-2">
-                                                <Label className="text-slate-300">Max New Templates Per Day</Label>
+                                                <Label className="text-neutral-300">Max New Templates Per Day</Label>
                                                 <Input
                                                     type="number"
                                                     value={policy.maxTemplatesPerDay[plan]}
                                                     onChange={(e) => updateLimit(plan, parseInt(e.target.value) || 0)}
-                                                    className="bg-slate-900 border-slate-700 text-white"
+                                                    className="bg-neutral-900 border-neutral-700 text-white"
                                                 />
-                                                <p className="text-xs text-slate-500">
+                                                <p className="text-xs text-neutral-500">
                                                     Limits the number of new templates a tenant can submit to Meta per day.
                                                 </p>
                                             </div>

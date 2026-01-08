@@ -710,25 +710,9 @@ export default function AutomationsPage() {
     };
 
     const fetchTemplates = async () => {
-        // Fallback templates for when API has no data
-        const fallbackTemplates: Template[] = [
-            { id: 'order_confirmation', name: 'Order Confirmation', description: 'Send WhatsApp message when a new order is placed', category: 'Orders', triggerType: 'order_created', preview: 'Order Created → Send WhatsApp Template → Add Tag', useCase: 'Instantly confirm orders to build customer trust. Reduces support inquiries by 40%.', flowSteps: ['Order placed on your store', 'WhatsApp confirmation sent', 'Customer tagged as "Order Placed"'] },
-            { id: 'cod_confirmation', name: 'COD Order Confirmation', description: 'Request confirmation for Cash on Delivery orders', category: 'Orders', triggerType: 'cod_order_created', preview: 'COD Order → Send Confirmation → Wait 6h → Remind', useCase: 'Reduce COD order failures by getting customer commitment upfront.', flowSteps: ['COD order received', 'Confirmation request sent', 'Wait 6 hours', 'Send reminder if no response'] },
-            { id: 'shipping_update', name: 'Shipping Update', description: 'Notify customers with tracking info when their order ships', category: 'Orders', triggerType: 'order_shipped', preview: 'Order Shipped → Send Tracking Info → Add Tag', useCase: 'Keep customers informed about shipment status.', flowSteps: ['Order marked as shipped', 'WhatsApp notification with tracking', 'Customer tagged as "In Transit"'] },
-            { id: 'delivery_confirmation', name: 'Delivery Confirmation', description: 'Confirm delivery and request feedback after 24 hours', category: 'Orders', triggerType: 'order_delivered', preview: 'Order Delivered → Confirm → Wait 24h → Request Review', useCase: 'Close the loop on orders and capture valuable feedback.', flowSteps: ['Delivery status updated', 'Confirmation message sent', 'Wait 24 hours', 'Request product review'] },
-            { id: 'abandoned_cart_1h', name: 'Abandoned Cart (1 Hour)', description: 'Gentle reminder about forgotten cart items', category: 'Cart Recovery', triggerType: 'cart_abandoned', preview: 'Cart Abandoned → Wait 1h → Send Reminder', useCase: 'Recover lost sales with timely reminders.', flowSteps: ['Cart abandoned detected', 'Wait 1 hour', 'Send friendly reminder'] },
-            { id: 'abandoned_cart_24h', name: 'Abandoned Cart (24 Hours)', description: 'Follow up with exclusive discount after 24 hours', category: 'Cart Recovery', triggerType: 'cart_abandoned', preview: 'Cart Abandoned → Wait 24h → Send 10% Discount', useCase: 'Win back hesitant shoppers with an incentive.', flowSteps: ['Cart still abandoned after 24h', 'Generate discount code', 'Send 10% off offer'] },
-            { id: 'payment_failed', name: 'Payment Failed Retry', description: 'Help customers complete failed payments', category: 'Payments', triggerType: 'payment_failed', preview: 'Payment Failed → Send Retry Link → Wait 2h → Remind', useCase: 'Salvage orders lost to payment issues.', flowSteps: ['Payment failure detected', 'Send retry payment link', 'Wait 2 hours', 'Send reminder'] },
-            { id: 'first_order_welcome', name: 'First Order Welcome', description: 'Welcome new customers with personalized message', category: 'Customer Lifecycle', triggerType: 'first_order', preview: 'First Order → Welcome Message → Add Tag', useCase: 'Make a great first impression on new customers.', flowSteps: ['First order detected', 'Send welcome message', 'Tag as "New Customer"'] },
-            { id: 'insta_comment_auto_reply', name: 'Instagram Comment Auto-Reply', description: 'Automatically reply to comments on your posts', category: 'Instagram', triggerType: 'instagram_comment', preview: 'Comment Received → Send Auto DM → Add to Contacts', useCase: 'Never miss a potential lead from Instagram comments.', flowSteps: ['Comment received on post', 'Send personalized DM', 'Add to contact database'] },
-            { id: 'insta_dm_welcome', name: 'Instagram DM Welcome', description: 'Auto-respond to new Instagram DMs', category: 'Instagram', triggerType: 'instagram_dm', preview: 'New DM → Welcome Message → Quick Replies Menu', useCase: 'Respond instantly to DMs 24/7.', flowSteps: ['New DM received', 'Send welcome message', 'Present quick reply options'] },
-            { id: 'new_contact_welcome', name: 'New Contact Welcome', description: 'Welcome new contacts with introductory message', category: 'Engagement', triggerType: 'contact_created', preview: 'Contact Created → Welcome Message → Set Lifecycle', useCase: 'Start every relationship on the right foot.', flowSteps: ['New contact added', 'Send welcome message', 'Set lifecycle to "New"'] },
-            { id: 'review_request', name: 'Review Request', description: 'Request product review after delivery', category: 'Reviews', triggerType: 'order_delivered', preview: 'Delivered + 3d → Request Review → Offer Discount', useCase: 'Build social proof on autopilot.', flowSteps: ['Order delivered confirmed', 'Wait 3 days', 'Send review request'] },
-        ];
-
         try {
             setLoadingTemplates(true);
-            // Fetch admin-created templates from template library API
+            // Fetch templates from template library API (shared with admin dashboard)
             const adminTemplates = await templateLibrary.getAutomationTemplates();
 
             // Map admin templates to the Template interface
@@ -743,15 +727,10 @@ export default function AutomationsPage() {
                 flowSteps: t.nodes?.map(n => n.name) || [],
             }));
 
-            // Combine admin templates with fallback (admin templates first)
-            const allTemplates = mappedTemplates.length > 0
-                ? [...mappedTemplates, ...fallbackTemplates]
-                : fallbackTemplates;
-
-            setTemplates(allTemplates);
+            setTemplates(mappedTemplates);
         } catch (error) {
-            console.error('Error fetching templates, using fallback:', error);
-            setTemplates(fallbackTemplates);
+            console.error('Error fetching templates:', error);
+            setTemplates([]);
         } finally {
             setLoadingTemplates(false);
         }

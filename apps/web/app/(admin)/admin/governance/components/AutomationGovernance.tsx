@@ -82,7 +82,7 @@ export function AutomationGovernance() {
     if (loading) {
         return (
             <div className="flex h-[30vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
             </div>
         );
     }
@@ -94,11 +94,11 @@ export function AutomationGovernance() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-white">Automation Governance</h2>
-                    <p className="text-slate-400 mt-1">
+                    <p className="text-neutral-400 mt-1">
                         Configure global limits and plan-based restrictions for automations.
                     </p>
                 </div>
-                <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20">
+                <Button onClick={handleSave} disabled={saving} className="bg-neutral-700 hover:bg-neutral-600 shadow-lg shadow-black/30">
                     {saving ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -126,28 +126,28 @@ export function AutomationGovernance() {
                             <AlertTriangle className="h-5 w-5 text-yellow-500" />
                             Emergency Controls
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Global switches to instantly disable features across the entire platform.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between rounded-xl bg-yellow-500/10 border border-yellow-500/20 p-4">
+                        <div className="flex items-center justify-between rounded-xl bg-neutral-800 border border-neutral-700 p-4">
                             <div className="space-y-0.5">
                                 <Label className="text-white">Global Kill Switch</Label>
-                                <div className="text-sm text-slate-400">
+                                <div className="text-sm text-neutral-400">
                                     Disables ALL automations platform-wide. Only use in emergencies.
                                 </div>
                             </div>
                             <Switch
                                 checked={policy.globalKillSwitch}
                                 onCheckedChange={(checked) => setPolicy({ ...policy, globalKillSwitch: checked })}
-                                className="data-[state=checked]:bg-yellow-500"
+                                className="data-[state=checked]:bg-white"
                             />
                         </div>
                         <div className="flex items-center justify-between rounded-xl bg-white/5 border border-white/10 p-4">
                             <div className="space-y-0.5">
                                 <Label className="text-white">Automation System Active</Label>
-                                <div className="text-sm text-slate-400">
+                                <div className="text-sm text-neutral-400">
                                     Master switch for the automation engine.
                                 </div>
                             </div>
@@ -163,10 +163,10 @@ export function AutomationGovernance() {
                 <GlassCard>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-white">
-                            <Activity className="h-5 w-5 text-blue-400" />
+                            <Activity className="h-5 w-5 text-white" />
                             Plan Limits
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Set usage limits for each subscription tier.
                         </CardDescription>
                     </CardHeader>
@@ -177,7 +177,7 @@ export function AutomationGovernance() {
                                     <TabsTrigger
                                         key={plan}
                                         value={plan}
-                                        className="capitalize data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400"
+                                        className="capitalize data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400"
                                     >
                                         {plan}
                                     </TabsTrigger>
@@ -187,30 +187,30 @@ export function AutomationGovernance() {
                                 <TabsContent key={plan} value={plan} className="space-y-4 mt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Max Automations</Label>
+                                            <Label className="text-neutral-300">Max Automations</Label>
                                             <Input
                                                 type="number"
                                                 value={policy.planLimits[plan as keyof typeof policy.planLimits]?.maxAutomations || 0}
                                                 onChange={(e) => updatePlanLimit(plan, 'maxAutomations', e.target.value)}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Max Steps per Automation</Label>
+                                            <Label className="text-neutral-300">Max Steps per Automation</Label>
                                             <Input
                                                 type="number"
                                                 value={policy.planLimits[plan as keyof typeof policy.planLimits]?.maxStepsPerAutomation || 0}
                                                 onChange={(e) => updatePlanLimit(plan, 'maxStepsPerAutomation', e.target.value)}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-slate-300">Max Executions (Daily)</Label>
+                                            <Label className="text-neutral-300">Max Executions (Daily)</Label>
                                             <Input
                                                 type="number"
                                                 value={policy.planLimits[plan as keyof typeof policy.planLimits]?.maxExecutionsPerDay || 0}
                                                 onChange={(e) => updatePlanLimit(plan, 'maxExecutionsPerDay', e.target.value)}
-                                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                                className="bg-white/5 border-white/10 text-white focus:border-white"
                                             />
                                         </div>
                                     </div>
@@ -224,10 +224,10 @@ export function AutomationGovernance() {
                 <GlassCard>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-white">
-                            <Shield className="h-5 w-5 text-purple-400" />
+                            <Shield className="h-5 w-5 text-white" />
                             Feature Restrictions
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-neutral-400">
                             Control which advanced features are available to specific plans.
                         </CardDescription>
                     </CardHeader>
@@ -238,10 +238,10 @@ export function AutomationGovernance() {
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-0.5">
                                             <Label className="capitalize text-white font-medium flex items-center gap-2">
-                                                <Zap className="h-4 w-4 text-indigo-400" />
+                                                <Zap className="h-4 w-4 text-white" />
                                                 {key.replace(/([A-Z])/g, ' $1').trim()}
                                             </Label>
-                                            <div className="text-sm text-slate-400">
+                                            <div className="text-sm text-neutral-400">
                                                 Enable or disable this feature type globally.
                                             </div>
                                         </div>
@@ -251,15 +251,15 @@ export function AutomationGovernance() {
                                         />
                                     </div>
                                     <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-                                        <Label className="text-sm text-slate-300">Allowed Plans</Label>
+                                        <Label className="text-sm text-neutral-300">Allowed Plans</Label>
                                         <div className="flex flex-wrap gap-2">
                                             {PLANS.map((plan) => (
                                                 <Badge
                                                     key={plan}
                                                     variant="outline"
                                                     className={`cursor-pointer capitalize px-3 py-1 transition-all ${setting.allowedPlans.includes(plan)
-                                                            ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50 hover:bg-indigo-500/30'
-                                                            : 'bg-transparent text-slate-500 border-slate-700 hover:text-slate-300 hover:border-slate-500'
+                                                            ? 'bg-neutral-700 text-neutral-300 border-neutral-600 hover:bg-neutral-600/30'
+                                                            : 'bg-transparent text-neutral-500 border-neutral-700 hover:text-neutral-300 hover:border-neutral-500'
                                                         }`}
                                                     onClick={() => {
                                                         const newPlans = setting.allowedPlans.includes(plan)

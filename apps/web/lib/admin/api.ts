@@ -116,11 +116,14 @@ export const dashboardApi = {
 // ============ Organizations APIs ============
 export const organizationsApi = {
     getAll: (params?: { page?: number; limit?: number; status?: string; tier?: string; search?: string }) =>
-        adminApi.get<PaginatedResponse<Organization>>('/admin/tenants', params),
-    getById: (id: string) => adminApi.get<Organization>(`/admin/tenants/${id}`),
-    suspend: (id: string, reason: string) => adminApi.post(`/admin/tenants/${id}/suspend`, { reason }),
-    reactivate: (id: string) => adminApi.post(`/admin/tenants/${id}/reactivate`),
-    updatePlan: (id: string, plan: string) => adminApi.patch(`/admin/tenants/${id}/plan`, { plan }),
+        adminApi.get<PaginatedResponse<Organization>>('/admin/organizations', params),
+    getById: (id: string) => adminApi.get<Organization>(`/admin/organizations/${id}`),
+    suspend: (id: string, reason: string) => adminApi.post(`/admin/organizations/${id}/suspend`, { reason }),
+    reactivate: (id: string) => adminApi.post(`/admin/organizations/${id}/reactivate`),
+    updatePlan: (id: string, data: { planId: string }) =>
+        adminApi.put<Organization>(`/admin/organizations/${id}/plan`, data),
+    impersonate: (id: string) =>
+        adminApi.post<{ accessToken: string; user: any; tenant: any }>(`/admin/organizations/${id}/impersonate`, {}),
 };
 
 // ============ Users APIs ============
@@ -159,6 +162,8 @@ export const billingApi = {
     // Transactions
     getTransactions: (params?: { page?: number; limit?: number; tenantId?: string; type?: string }) =>
         adminApi.get<PaginatedResponse<Transaction>>('/admin/billing/transactions', params),
+    getTenantTransactions: (tenantId: string, params?: { page?: number; limit?: number; type?: string }) =>
+        adminApi.get<PaginatedResponse<Transaction>>(`/admin/billing/transactions/tenant/${tenantId}`, params),
 
     // Revenue
     getRevenueStats: (period?: string) =>
@@ -198,6 +203,7 @@ export const auditLogsApi = {
         adminId?: string;
         startDate?: string;
         endDate?: string;
+        tenantId?: string;
     }) => adminApi.get<PaginatedResponse<AuditLog>>('/admin/audit-logs', params),
     getById: (id: string) => adminApi.get<AuditLog>(`/admin/audit-logs/${id}`),
     export: (params?: { startDate?: string; endDate?: string }) =>
@@ -211,6 +217,9 @@ export const settingsApi = {
     getIntegrations: () => adminApi.get<IntegrationSettings>('/admin/settings/integrations'),
     updateIntegrations: (data: Partial<IntegrationSettings>) =>
         adminApi.put<IntegrationSettings>('/admin/settings/integrations', data),
+    getSeoSettings: () => adminApi.get<GlobalSeoSettings>('/admin/settings/seo'),
+    updateSeoSettings: (data: Partial<GlobalSeoSettings>) =>
+        adminApi.put<GlobalSeoSettings>('/admin/settings/seo', data),
 };
 
 // ============ Governance APIs ============
@@ -615,6 +624,20 @@ export interface IntegrationSettings {
     stripeSecretKey: string;
     sendgridApiKey: string;
     openaiApiKey: string;
+}
+
+export interface GlobalSeoSettings {
+    id: string;
+    siteTitle: string;
+    siteDescription: string;
+    keywords: string[];
+    ogImageUrl: string;
+    twitterHandle: string;
+    googleAnalyticsId: string;
+    faviconUrl?: string;
+    robotsTxt?: string;
+    sitemapUrl?: string;
+    updatedAt: string;
 }
 
 export interface AutomationPolicy {

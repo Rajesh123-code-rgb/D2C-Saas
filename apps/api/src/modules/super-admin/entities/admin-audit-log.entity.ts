@@ -35,6 +35,7 @@ export enum AdminAuditAction {
     CREDIT_ISSUE = 'credit_issue',
     REFUND = 'refund',
     PRICING_CHANGE = 'pricing_change',
+    IMPERSONATE = 'impersonate',
 
     // System
     KILL_SWITCH = 'kill_switch',

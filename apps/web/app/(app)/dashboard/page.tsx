@@ -20,6 +20,7 @@ import {
     X,
 } from 'lucide-react';
 import { WalletOverview } from '@/components/dashboard/wallet-overview';
+import { api } from '@/lib/api';
 
 interface DashboardMetrics {
     conversations: {
@@ -80,21 +81,7 @@ export default function DashboardPage() {
         setError(null);
 
         try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/analytics/dashboard`,
-                {
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch dashboard metrics');
-            }
-
-            const data = await response.json();
+            const data = await api.get<DashboardMetrics>('/analytics/dashboard');
             setMetrics(data);
         } catch (err) {
             console.error('Error fetching metrics:', err);
@@ -106,14 +93,8 @@ export default function DashboardPage() {
 
     const fetchOnboardingStatus = useCallback(async () => {
         try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/onboarding/status`,
-                { credentials: 'include' }
-            );
-            if (response.ok) {
-                const data = await response.json();
-                setOnboarding(data);
-            }
+            const data = await api.get<OnboardingStatus>('/onboarding/status');
+            setOnboarding(data);
         } catch (err) {
             console.error('Error fetching onboarding status:', err);
         }
@@ -121,10 +102,7 @@ export default function DashboardPage() {
 
     const handleDismissOnboarding = async () => {
         try {
-            await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/onboarding/skip-all`,
-                { method: 'POST', credentials: 'include' }
-            );
+            await api.post('/onboarding/skip-all');
             setOnboardingDismissed(true);
         } catch (err) {
             console.error('Error dismissing onboarding:', err);

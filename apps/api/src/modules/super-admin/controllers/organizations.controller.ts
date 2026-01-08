@@ -11,12 +11,14 @@ import {
     HttpCode,
     HttpStatus,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, In } from 'typeorm';
 import { Request } from 'express';
-import { SuperAdminGuard } from '../guards/super-admin.guard';
+import { SuperAdminGuard, RequireSuperAdminPermission } from '../guards/super-admin.guard';
 import {
     OrganizationFilterDto,
     OrganizationResponseDto,
@@ -25,10 +27,10 @@ import {
     UpdateOrganizationPlanDto,
 } from '../dto/organization.dto';
 import { Tenant, TenantStatus, SubscriptionTier } from '../../tenants/tenant.entity';
-import { User } from '../../users/user.entity';
+import { User, UserStatus } from '../../users/user.entity';
 import { Channel } from '../../channels/channel.entity';
 import { MessageWallet } from '../entities/message-wallet.entity';
-import { AdminAuditLog, AdminAuditAction } from '../entities/admin-audit-log.entity';
+import { AdminAuditLog, AdminAuditAction, AdminResourceType } from '../entities/admin-audit-log.entity';
 
 @ApiTags('Admin Organizations')
 @Controller('admin/organizations')
@@ -46,6 +48,8 @@ export class OrganizationsController {
         private readonly walletRepository: Repository<MessageWallet>,
         @InjectRepository(AdminAuditLog)
         private readonly auditLogRepository: Repository<AdminAuditLog>,
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
     ) { }
 
     @Get()
@@ -260,7 +264,7 @@ export class OrganizationsController {
             targetTenantName?: string;
         },
     ) {
-        const admin = req.admin!;
+        const admin: any = req.user!;
         const auditLog = this.auditLogRepository.create({
             adminId: admin.id,
             adminEmail: admin.email,
@@ -280,5 +284,93 @@ export class OrganizationsController {
         });
 
         await this.auditLogRepository.save(auditLog);
+    }
+    @Post(':id/impersonate')
+    @RequireSuperAdminPermission('canImpersonate')
+    @ApiOperation({ summary: 'Impersonate a tenant admin' })
+    @ApiResponse({ status: 200, description: 'Impersonation token generated' })
+    async impersonate(
+        @Param('id') id: string,
+        @Req() req: Request,
+    ) {
+        try {
+            const admin: any = req.user; // SuperAdminUser
+
+            console.log(`[Impersonate] Admin ${admin?.id} attempting to impersonate tenant ${id}`);
+
+            // 1. Get tenant
+            const tenant = await this.tenantRepository.findOne({ where: { id } });
+            if (!tenant) {
+                console.warn(`[Impersonate] Tenant ${id} not found`);
+                throw new Error('Tenant not found');
+            }
+
+            // 2. Get tenant owner or first admin
+            const user = await this.userRepository.findOne({
+                where: { tenantId: id, status: UserStatus.ACTIVE }, // strict check
+                order: { role: 'ASC', createdAt: 'ASC' }, // Owner first (usually)
+            });
+
+            if (!user) {
+                console.warn(`[Impersonate] No active admin user found for tenant ${id}`);
+                throw new Error('No active admin user found for this tenant');
+            }
+
+            // 3. Generate impersonation token
+            const payload = {
+                sub: user.id,
+                email: user.email,
+                tenantId: user.tenantId,
+                role: user.role,
+                isImpersonated: true,
+                impersonatedBy: admin.id,
+            };
+
+            const secret = this.configService.get<string>('JWT_SECRET');
+            if (!secret) {
+                console.error('[Impersonate] JWT_SECRET is missing');
+                throw new Error('System configuration error: JWT_SECRET missing');
+            }
+
+            const token = this.jwtService.sign(payload, { secret, expiresIn: '1h' });
+
+            // 4. Audit log
+            await this.auditLogRepository.save({
+                adminId: admin.id,
+                adminEmail: admin.email,
+                adminName: `${admin.firstName} ${admin.lastName}`,
+                action: AdminAuditAction.IMPERSONATE,
+                resourceType: 'tenant',
+                resourceId: tenant.id,
+                resourceName: tenant.name,
+                targetTenantId: tenant.id,
+                targetTenantName: tenant.name,
+                description: `Impersonated tenant user: ${user.email}`,
+                ipAddress: req.ip || '',
+                success: true,
+                createdAt: new Date(),
+            });
+
+            console.log(`[Impersonate] Success for tenant ${tenant.name}`);
+
+            return {
+                accessToken: token,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    role: user.role,
+                },
+                tenant: {
+                    id: tenant.id,
+                    name: tenant.name,
+                    slug: tenant.slug,
+                },
+            };
+        } catch (error: any) {
+            console.error('[Impersonate] Error:', error);
+            throw new Error(error.message || 'Internal server error during impersonation');
+        }
     }
 }

@@ -23,6 +23,7 @@ export enum AdminAuditAction {
     REACTIVATE = 'REACTIVATE',
     PRICING_CHANGE = 'PRICING_CHANGE',
     SETTINGS_UPDATE = 'SETTINGS_UPDATE',
+    IMPERSONATE = 'IMPERSONATE',
 }
 
 export enum AdminResourceType {
@@ -61,6 +62,11 @@ export class AdminAuditLogFilterDto {
     @IsOptional()
     @IsString()
     endDate?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by tenant/organization ID' })
+    @IsOptional()
+    @IsString()
+    tenantId?: string;
 
     @ApiPropertyOptional({ default: 1 })
     @IsOptional()

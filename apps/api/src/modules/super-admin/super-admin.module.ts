@@ -20,6 +20,7 @@ import { WhatsAppConversation } from './entities/whatsapp-conversation.entity';
 import { AutomationTemplate } from './entities/automation-template.entity';
 import { PremadeWhatsAppTemplate } from './entities/premade-whatsapp-template.entity';
 import { PremadeEmailTemplate } from './entities/premade-email-template.entity';
+import { GlobalSeoSettings } from './entities/global-seo-settings.entity';
 
 // External Entities
 import { Tenant } from '../tenants/tenant.entity';
@@ -58,6 +59,7 @@ import { TemplateGovernanceController } from './controllers/template-governance.
 import { EmailGovernanceController } from './controllers/email-governance.controller';
 import { SystemUsageController } from './controllers/system-usage.controller';
 import { TemplateBuildersController, TemplateLibraryController } from './controllers/template-builders.controller';
+import { PublicSettingsController } from './controllers/public-settings.controller';
 
 @Module({
     imports: [
@@ -77,6 +79,7 @@ import { TemplateBuildersController, TemplateLibraryController } from './control
             AutomationTemplate,
             PremadeWhatsAppTemplate,
             PremadeEmailTemplate,
+            GlobalSeoSettings,
             // External entities for dashboard/organizations
             Tenant,
             User,
@@ -113,7 +116,9 @@ import { TemplateBuildersController, TemplateLibraryController } from './control
         OrganizationsController,
         AdminUsersController,
         AdminAuditLogsController,
+        AdminAuditLogsController,
         SettingsController,
+        PublicSettingsController,
         AutomationGovernanceController,
         TemplateGovernanceController,
         EmailGovernanceController,

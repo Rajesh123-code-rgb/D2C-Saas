@@ -50,35 +50,22 @@ import {
 import { cn } from '@/lib/utils';
 import { billingApi, Wallet, Transaction, RevenueStats } from '@/lib/admin/api';
 
-// Fallback mock data
-const mockWallets: Wallet[] = [
-    { id: '1', tenantId: 't1', tenantName: 'ABC Corp', creditBalance: 4500, currencyBalance: 4500, currency: 'INR', status: 'active', autoRechargeEnabled: true, lastTransactionAt: '2024-12-27T10:00:00' },
-    { id: '2', tenantId: 't2', tenantName: 'XYZ Ltd', creditBalance: 125, currencyBalance: 125, currency: 'INR', status: 'active', autoRechargeEnabled: false, lastTransactionAt: '2024-12-27T09:30:00' },
-    { id: '3', tenantId: 't3', tenantName: 'Demo Inc', creditBalance: 0, currencyBalance: 0, currency: 'INR', status: 'depleted', autoRechargeEnabled: false, lastTransactionAt: '2024-12-26T15:00:00' },
-    { id: '4', tenantId: 't4', tenantName: 'TechStart', creditBalance: 12500, currencyBalance: 12500, currency: 'INR', status: 'active', autoRechargeEnabled: true, lastTransactionAt: '2024-12-27T11:00:00' },
-];
-
-const mockTransactions: Transaction[] = [
-    { id: '1', tenantId: 't1', tenantName: 'ABC Corp', type: 'credit', creditsAmount: 5500, currencyAmount: 5000, description: 'Growth package purchase', status: 'completed', createdAt: '2024-12-27T10:00:00' },
-    { id: '2', tenantId: 't2', tenantName: 'XYZ Ltd', type: 'debit', creditsAmount: -50, currencyAmount: -50, description: 'Marketing message', status: 'completed', createdAt: '2024-12-27T09:30:00' },
-    { id: '3', tenantId: 't4', tenantName: 'TechStart', type: 'credit', creditsAmount: 15000, currencyAmount: 12500, description: 'Enterprise package purchase', status: 'completed', createdAt: '2024-12-27T08:00:00' },
-    { id: '4', tenantId: 't3', tenantName: 'Demo Inc', type: 'refund', creditsAmount: 500, currencyAmount: 500, description: 'Failed campaign refund', status: 'completed', createdAt: '2024-12-26T15:00:00' },
-    { id: '5', tenantId: 't1', tenantName: 'ABC Corp', type: 'adjustment', creditsAmount: 100, currencyAmount: 0, description: 'Promotional credits', status: 'completed', createdAt: '2024-12-26T12:00:00' },
-];
-
-const mockRevenueStats: RevenueStats = {
-    today: { revenue: 25000, transactions: 15 },
-    week: { revenue: 175000, transactions: 89 },
-    month: { revenue: 680000, transactions: 412 },
-    metaCost: 450000,
-    grossMargin: 230000,
+// Mock data removed - using real API
+const emptyWallets: Wallet[] = [];
+const emptyTransactions: Transaction[] = [];
+const emptyRevenueStats: RevenueStats = {
+    today: { revenue: 0, transactions: 0 },
+    week: { revenue: 0, transactions: 0 },
+    month: { revenue: 0, transactions: 0 },
+    metaCost: 0,
+    grossMargin: 0,
     topTenants: [],
 };
 
 export default function BillingPage() {
-    const [wallets, setWallets] = useState<Wallet[]>(mockWallets);
-    const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
-    const [revenueStats, setRevenueStats] = useState<RevenueStats>(mockRevenueStats);
+    const [wallets, setWallets] = useState<Wallet[]>(emptyWallets);
+    const [transactions, setTransactions] = useState<Transaction[]>(emptyTransactions);
+    const [revenueStats, setRevenueStats] = useState<RevenueStats>(emptyRevenueStats);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
@@ -93,44 +80,34 @@ export default function BillingPage() {
 
         try {
             const walletsResponse = await billingApi.getWallets({ search: searchQuery || undefined });
-            setWallets(walletsResponse?.data ?? walletsResponse ?? mockWallets);
+            setWallets(walletsResponse?.data || []);
         } catch (err: any) {
-            console.warn('Could not fetch wallets, using mock data:', err.message);
-            setWallets(mockWallets);
+            console.error('Failed to fetch wallets:', err.message);
         }
 
         try {
             const params: Record<string, any> = { limit: 20 };
             if (typeFilter !== 'all') params.type = typeFilter;
             const txResponse = await billingApi.getTransactions(params);
-            setTransactions(txResponse?.data ?? txResponse ?? mockTransactions);
+            setTransactions(txResponse?.data || []);
         } catch (err: any) {
-            console.warn('Could not fetch transactions, using mock data:', err.message);
-            setTransactions(mockTransactions);
+            console.error('Failed to fetch transactions:', err.message);
         }
 
         try {
             const stats = await billingApi.getRevenueStats('month');
-            setRevenueStats({
-                today: {
-                    revenue: stats?.today?.revenue ?? mockRevenueStats.today.revenue,
-                    transactions: stats?.today?.transactions ?? mockRevenueStats.today.transactions
-                },
-                week: {
-                    revenue: stats?.week?.revenue ?? mockRevenueStats.week.revenue,
-                    transactions: stats?.week?.transactions ?? mockRevenueStats.week.transactions
-                },
-                month: {
-                    revenue: stats?.month?.revenue ?? mockRevenueStats.month.revenue,
-                    transactions: stats?.month?.transactions ?? mockRevenueStats.month.transactions
-                },
-                metaCost: stats?.metaCost ?? mockRevenueStats.metaCost,
-                grossMargin: stats?.grossMargin ?? mockRevenueStats.grossMargin,
-                topTenants: stats?.topTenants ?? mockRevenueStats.topTenants,
-            });
+            if (stats) {
+                setRevenueStats({
+                    today: stats.today || emptyRevenueStats.today,
+                    week: stats.week || emptyRevenueStats.week,
+                    month: stats.month || emptyRevenueStats.month,
+                    metaCost: stats.metaCost || 0,
+                    grossMargin: stats.grossMargin || 0,
+                    topTenants: stats.topTenants || [],
+                });
+            }
         } catch (err: any) {
-            console.warn('Could not fetch revenue stats, using mock data:', err.message);
-            setRevenueStats(mockRevenueStats);
+            console.error('Failed to fetch revenue stats:', err.message);
         }
 
         setLoading(false);
@@ -154,9 +131,9 @@ export default function BillingPage() {
 
     const getStatusBadge = (status: string) => {
         const styles: Record<string, string> = {
-            active: 'bg-green-500/10 text-green-400 border-0',
-            suspended: 'bg-yellow-500/10 text-yellow-400 border-0',
-            depleted: 'bg-red-500/10 text-red-400 border-0',
+            active: 'bg-neutral-800 text-neutral-300 border-0',
+            suspended: 'bg-neutral-800 text-neutral-400 border-0',
+            depleted: 'bg-neutral-800 text-neutral-400 border-0',
         };
         return (
             <Badge className={cn('capitalize', styles[status] || styles.active)}>
@@ -168,15 +145,15 @@ export default function BillingPage() {
     const getTransactionIcon = (type: string) => {
         switch (type) {
             case 'credit':
-                return <TrendingUp className="h-4 w-4 text-green-400" />;
+                return <TrendingUp className="h-4 w-4 text-neutral-300" />;
             case 'debit':
-                return <TrendingDown className="h-4 w-4 text-red-400" />;
+                return <TrendingDown className="h-4 w-4 text-neutral-400" />;
             case 'refund':
-                return <TrendingUp className="h-4 w-4 text-blue-400" />;
+                return <TrendingUp className="h-4 w-4 text-white" />;
             case 'adjustment':
-                return <DollarSign className="h-4 w-4 text-purple-400" />;
+                return <DollarSign className="h-4 w-4 text-white" />;
             default:
-                return <DollarSign className="h-4 w-4 text-slate-400" />;
+                return <DollarSign className="h-4 w-4 text-neutral-400" />;
         }
     };
 
@@ -230,18 +207,18 @@ export default function BillingPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Billing & Credits</h1>
-                    <p className="text-slate-400 mt-2 text-lg">Manage tenant wallets, transactions, and revenue</p>
+                    <p className="text-neutral-400 mt-2 text-lg">Manage tenant wallets, transactions, and revenue</p>
                 </div>
                 <div className="flex gap-3">
                     <Button
                         variant="outline"
-                        className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white backdrop-blur-md"
+                        className="bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white backdrop-blur-md"
                         onClick={() => fetchData()}
                     >
                         <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
                         Refresh Data
                     </Button>
-                    <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/20 border-0">
+                    <Button className="bg-gradient-to-r from-neutral-700 to-neutral-900 hover:from-neutral-600 hover:to-neutral-500 text-white shadow-lg shadow-black/30 border-0">
                         <Download className="h-4 w-4 mr-2" />
                         Download Report
                     </Button>
@@ -250,28 +227,28 @@ export default function BillingPage() {
 
             {/* Revenue Overview Cards */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <GlassCard className="glass-card-hover border-l-4 border-l-indigo-500">
+                <GlassCard className="glass-card-hover border-l-4 border-l-neutral-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                            <div className="p-2 rounded-lg bg-neutral-800 text-white">
                                 <DollarSign className="h-5 w-5" />
                             </div>
-                            <span className="text-xs font-medium text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">+12.5%</span>
+                            <span className="text-xs font-medium text-neutral-300 bg-neutral-800 px-2 py-0.5 rounded-full">+12.5%</span>
                         </div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Total Revenue (Month)</p>
+                        <p className="text-xs text-neutral-400 uppercase tracking-wider font-medium">Total Revenue (Month)</p>
                         <p className="text-2xl font-bold text-white mt-1">{formatCurrency(revenueStats.month.revenue)}</p>
                     </CardContent>
                 </GlassCard>
 
-                <GlassCard className="glass-card-hover border-l-4 border-l-purple-500">
+                <GlassCard className="glass-card-hover border-l-4 border-l-neutral-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                            <div className="p-2 rounded-lg bg-neutral-800 text-white">
                                 <Receipt className="h-5 w-5" />
                             </div>
-                            <span className="text-xs font-medium text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">+8.2%</span>
+                            <span className="text-xs font-medium text-neutral-300 bg-neutral-800 px-2 py-0.5 rounded-full">+8.2%</span>
                         </div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Gross Margin</p>
+                        <p className="text-xs text-neutral-400 uppercase tracking-wider font-medium">Gross Margin</p>
                         <p className="text-2xl font-bold text-white mt-1">{formatCurrency(revenueStats.grossMargin)}</p>
                     </CardContent>
                 </GlassCard>
@@ -279,23 +256,23 @@ export default function BillingPage() {
                 <GlassCard className="glass-card-hover border-l-4 border-l-blue-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                            <div className="p-2 rounded-lg bg-neutral-800 text-white">
                                 <ArrowRightLeft className="h-5 w-5" />
                             </div>
                         </div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Transactions (Month)</p>
+                        <p className="text-xs text-neutral-400 uppercase tracking-wider font-medium">Transactions (Month)</p>
                         <p className="text-2xl font-bold text-white mt-1">{revenueStats.month.transactions}</p>
                     </CardContent>
                 </GlassCard>
 
-                <GlassCard className="glass-card-hover border-l-4 border-l-amber-500">
+                <GlassCard className="glass-card-hover border-l-4 border-l-neutral-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+                            <div className="p-2 rounded-lg bg-neutral-800 text-white">
                                 <WalletIcon className="h-5 w-5" />
                             </div>
                         </div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Meta API Costs</p>
+                        <p className="text-xs text-neutral-400 uppercase tracking-wider font-medium">Meta API Costs</p>
                         <p className="text-2xl font-bold text-white mt-1">{formatCurrency(revenueStats.metaCost)}</p>
                     </CardContent>
                 </GlassCard>
@@ -303,11 +280,11 @@ export default function BillingPage() {
 
             <Tabs defaultValue="wallets" className="space-y-6">
                 <TabsList className="bg-white/5 border border-white/10 p-1">
-                    <TabsTrigger value="wallets" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">
+                    <TabsTrigger value="wallets" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">
                         <CreditCard className="h-4 w-4 mr-2" />
                         Tenant Wallets
                     </TabsTrigger>
-                    <TabsTrigger value="transactions" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">
+                    <TabsTrigger value="transactions" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">
                         <ArrowRightLeft className="h-4 w-4 mr-2" />
                         Transactions
                     </TabsTrigger>
@@ -317,12 +294,12 @@ export default function BillingPage() {
                 <TabsContent value="wallets" className="space-y-6">
                     <div className="flex gap-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
                             <Input
                                 placeholder="Search by tenant name..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500"
+                                className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-neutral-500 focus:border-white"
                             />
                         </div>
                         <Button className="bg-white/5 border border-white/10 hover:bg-white/10 text-white">
@@ -338,49 +315,49 @@ export default function BillingPage() {
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center border border-white/5 shadow-inner">
-                                                <Building2 className="h-5 w-5 text-slate-300" />
+                                                <Building2 className="h-5 w-5 text-neutral-300" />
                                             </div>
                                             <div>
                                                 <CardTitle className="text-white text-lg">{wallet.tenantName}</CardTitle>
-                                                <CardDescription className="text-slate-400 text-xs">ID: {wallet.tenantId}</CardDescription>
+                                                <CardDescription className="text-neutral-400 text-xs">ID: {wallet.tenantId}</CardDescription>
                                             </div>
                                         </div>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white hover:bg-white/10">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-white/10">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="bg-[#0B0C15] border-white/10 text-white">
+                                            <DropdownMenuContent align="end" className="bg-black border-white/10 text-white">
                                                 <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">View Details</DropdownMenuItem>
                                                 <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">Transaction History</DropdownMenuItem>
-                                                <DropdownMenuItem className="hover:bg-white/5 cursor-pointer text-red-400">Suspend Wallet</DropdownMenuItem>
+                                                <DropdownMenuItem className="hover:bg-white/5 cursor-pointer text-neutral-400">Suspend Wallet</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="pt-4 space-y-4">
                                     <div className="space-y-1">
-                                        <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Available Balance</p>
+                                        <p className="text-xs text-neutral-400 uppercase tracking-wider font-medium">Available Balance</p>
                                         <div className="flex items-baseline gap-2">
-                                            <h3 className={cn("text-2xl font-bold", wallet.creditBalance < 500 ? "text-red-400" : "text-white")}>
+                                            <h3 className={cn("text-2xl font-bold", wallet.creditBalance < 500 ? "text-neutral-400" : "text-white")}>
                                                 {formatCurrency(wallet.creditBalance)}
                                             </h3>
                                             {getStatusBadge(wallet.status)}
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 pt-2 border-t border-white/5">
+                                    <div className="grid grid-cols-2 gap-2 text-xs text-neutral-400 pt-2 border-t border-white/5">
                                         <div>
                                             <p>Currency: <span className="text-white">{wallet.currency}</span></p>
                                         </div>
                                         <div className="text-right">
-                                            <p>Auto-Recharge: <span className={wallet.autoRechargeEnabled ? "text-green-400" : "text-slate-500"}>{wallet.autoRechargeEnabled ? 'S' : 'Off'}</span></p>
+                                            <p>Auto-Recharge: <span className={wallet.autoRechargeEnabled ? "text-neutral-300" : "text-neutral-500"}>{wallet.autoRechargeEnabled ? 'S' : 'Off'}</span></p>
                                         </div>
                                     </div>
 
                                     <Button
-                                        className="w-full bg-white/5 hover:bg-indigo-600 hover:text-white text-indigo-300 border border-indigo-500/30 transition-all duration-300 group"
+                                        className="w-full bg-white/5 hover:bg-neutral-700 hover:text-white text-neutral-300 border border-neutral-700 transition-all duration-300 group"
                                         onClick={() => {
                                             setSelectedWallet(wallet);
                                             setAddCreditsDialog(true);
@@ -406,7 +383,7 @@ export default function BillingPage() {
                                         <Filter className="h-4 w-4 mr-2" />
                                         <SelectValue placeholder="Filter by type" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#0B0C15] border-white/10 text-white">
+                                    <SelectContent className="bg-black border-white/10 text-white">
                                         <SelectItem value="all">All Transactions</SelectItem>
                                         <SelectItem value="credit">Credits (Purchase)</SelectItem>
                                         <SelectItem value="debit">Debits (Usage)</SelectItem>
@@ -420,7 +397,7 @@ export default function BillingPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-white/5 bg-white/[0.02]">
+                                        <tr className="text-left text-xs text-neutral-400 uppercase tracking-wider border-b border-white/5 bg-white/[0.02]">
                                             <th className="px-6 py-4 font-medium">Date & Time</th>
                                             <th className="px-6 py-4 font-medium">Tenant</th>
                                             <th className="px-6 py-4 font-medium">Type</th>
@@ -432,9 +409,9 @@ export default function BillingPage() {
                                     <tbody className="divide-y divide-white/5">
                                         {filteredTransactions.map((tx) => (
                                             <tr key={tx.id} className="hover:bg-white/5 transition-colors text-sm">
-                                                <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                                                <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">
                                                     {new Date(tx.createdAt).toLocaleDateString()}
-                                                    <span className="text-slate-500 ml-2 text-xs">
+                                                    <span className="text-neutral-500 ml-2 text-xs">
                                                         {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </td>
@@ -442,24 +419,24 @@ export default function BillingPage() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
                                                         <div className={cn("p-1.5 rounded-full bg-opacity-10",
-                                                            tx.type === 'credit' ? "bg-green-500 text-green-400" :
-                                                                tx.type === 'debit' ? "bg-red-500 text-red-400" :
-                                                                    tx.type === 'refund' ? "bg-blue-500 text-blue-400" :
-                                                                        "bg-purple-500 text-purple-400"
+                                                            tx.type === 'credit' ? "bg-green-500 text-neutral-300" :
+                                                                tx.type === 'debit' ? "bg-red-500 text-neutral-400" :
+                                                                    tx.type === 'refund' ? "bg-blue-500 text-white" :
+                                                                        "bg-neutral-600 text-white"
                                                         )}>
                                                             {getTransactionIcon(tx.type)}
                                                         </div>
-                                                        <span className="capitalize text-slate-300">{tx.type}</span>
+                                                        <span className="capitalize text-neutral-300">{tx.type}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-slate-300 max-w-xs truncate">{tx.description}</td>
+                                                <td className="px-6 py-4 text-neutral-300 max-w-xs truncate">{tx.description}</td>
                                                 <td className={cn("px-6 py-4 text-right font-bold",
-                                                    tx.creditsAmount > 0 ? "text-green-400" : "text-slate-300"
+                                                    tx.creditsAmount > 0 ? "text-neutral-300" : "text-neutral-300"
                                                 )}>
                                                     {tx.creditsAmount > 0 ? '+' : ''}{formatNumber(tx.creditsAmount)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <Badge variant="outline" className="bg-green-500/10 text-green-400 border-0">
+                                                    <Badge variant="outline" className="bg-neutral-800 text-neutral-300 border-0">
                                                         {tx.status}
                                                     </Badge>
                                                 </td>
@@ -475,39 +452,39 @@ export default function BillingPage() {
 
             {/* Add Credits Dialog */}
             <Dialog open={addCreditsDialog} onOpenChange={setAddCreditsDialog}>
-                <DialogContent className="bg-[#0B0C15] border-white/10 text-white sm:max-w-[425px]">
+                <DialogContent className="bg-black border-white/10 text-white sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Add Manual Credits</DialogTitle>
-                        <DialogDescription className="text-slate-400">
+                        <DialogDescription className="text-neutral-400">
                             Add credits to {selectedWallet?.tenantName}'s wallet. This action will be logged.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="credits" className="text-slate-300">Amount (INR)</Label>
+                            <Label htmlFor="credits" className="text-neutral-300">Amount (INR)</Label>
                             <Input
                                 id="credits"
                                 type="number"
                                 placeholder="e.g. 5000"
                                 value={creditsToAdd}
                                 onChange={(e) => setCreditsToAdd(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                className="bg-white/5 border-white/10 text-white focus:border-white"
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="reason" className="text-slate-300">Reason</Label>
+                            <Label htmlFor="reason" className="text-neutral-300">Reason</Label>
                             <Input
                                 id="reason"
                                 placeholder="e.g. Manual top-up request"
                                 value={creditReason}
                                 onChange={(e) => setCreditReason(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white focus:border-indigo-500"
+                                className="bg-white/5 border-white/10 text-white focus:border-white"
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setAddCreditsDialog(false)} className="bg-transparent border-white/10 text-slate-300 hover:text-white hover:bg-white/10">Cancel</Button>
-                        <Button onClick={handleAddCredits} disabled={actionLoading} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+                        <Button variant="outline" onClick={() => setAddCreditsDialog(false)} className="bg-transparent border-white/10 text-neutral-300 hover:text-white hover:bg-white/10">Cancel</Button>
+                        <Button onClick={handleAddCredits} disabled={actionLoading} className="bg-neutral-700 hover:bg-neutral-600 text-white">
                             {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Confirm Transfer
                         </Button>

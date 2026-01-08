@@ -106,7 +106,7 @@ const mockMetrics: Metric[] = [
         changeType: 'increase',
         format: 'number',
         icon: <Users className="h-5 w-5" />,
-        color: 'blue'
+        color: 'gray'
     },
     {
         label: 'Messages Sent',
@@ -116,7 +116,7 @@ const mockMetrics: Metric[] = [
         changeType: 'increase',
         format: 'number',
         icon: <MessageSquare className="h-5 w-5" />,
-        color: 'purple'
+        color: 'gray'
     },
     {
         label: 'Delivery Rate',
@@ -126,7 +126,7 @@ const mockMetrics: Metric[] = [
         changeType: 'increase',
         format: 'percent',
         icon: <Target className="h-5 w-5" />,
-        color: 'indigo'
+        color: 'gray'
     },
     {
         label: 'Avg Response Time',
@@ -136,7 +136,7 @@ const mockMetrics: Metric[] = [
         changeType: 'increase',
         format: 'number',
         icon: <Clock className="h-5 w-5" />,
-        color: 'amber'
+        color: 'gray'
     },
     {
         label: 'Conversion Rate',
@@ -146,14 +146,14 @@ const mockMetrics: Metric[] = [
         changeType: 'increase',
         format: 'percent',
         icon: <Zap className="h-5 w-5" />,
-        color: 'rose'
+        color: 'gray'
     },
 ];
 
 const mockChannelMetrics: ChannelMetric[] = [
     { channel: 'WhatsApp', icon: <Smartphone className="h-5 w-5" />, messages: 1850000, delivered: 1795000, read: 1620000, responded: 890000, color: 'green' },
-    { channel: 'SMS', icon: <MessageSquare className="h-5 w-5" />, messages: 420000, delivered: 415000, read: 390000, responded: 145000, color: 'blue' },
-    { channel: 'Email', icon: <Mail className="h-5 w-5" />, messages: 180000, delivered: 172000, read: 68000, responded: 12000, color: 'purple' },
+    { channel: 'SMS', icon: <MessageSquare className="h-5 w-5" />, messages: 420000, delivered: 415000, read: 390000, responded: 145000, color: 'gray' },
+    { channel: 'Email', icon: <Mail className="h-5 w-5" />, messages: 180000, delivered: 172000, read: 68000, responded: 12000, color: 'gray' },
 ];
 
 const mockCampaigns: CampaignPerformance[] = [
@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Analytics & Reports</h1>
-                    <p className="text-slate-400 mt-2 text-lg">Comprehensive platform performance insights</p>
+                    <p className="text-neutral-400 mt-2 text-lg">Comprehensive platform performance insights</p>
                 </div>
                 <div className="flex gap-3">
                     <Select value={dateRange} onValueChange={setDateRange}>
@@ -230,7 +230,7 @@ export default function AnalyticsPage() {
                             <Calendar className="h-4 w-4 mr-2" />
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#0B0C15] border-white/10 text-white">
+                        <SelectContent className="bg-black border-white/10 text-white">
                             <SelectItem value="24h">Last 24 hours</SelectItem>
                             <SelectItem value="7d">Last 7 days</SelectItem>
                             <SelectItem value="30d">Last 30 days</SelectItem>
@@ -240,13 +240,13 @@ export default function AnalyticsPage() {
                     </Select>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white backdrop-blur-md">
+                            <Button variant="outline" className="bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white backdrop-blur-md">
                                 <Download className="h-4 w-4 mr-2" />
                                 Export
                                 <ChevronDown className="h-4 w-4 ml-2" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-[#0B0C15] border-white/10 text-white">
+                        <DropdownMenuContent className="bg-black border-white/10 text-white">
                             <DropdownMenuItem className="text-white cursor-pointer hover:bg-white/5">
                                 <FileText className="h-4 w-4 mr-2" />
                                 Export as PDF
@@ -263,7 +263,7 @@ export default function AnalyticsPage() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <Button
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                        className="bg-neutral-700 hover:bg-neutral-600 text-white shadow-lg shadow-black/30"
                         disabled={loading}
                         onClick={handleRefresh}
                     >
@@ -276,23 +276,23 @@ export default function AnalyticsPage() {
             {/* Main Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
                 <TabsList className="bg-white/5 border border-white/10 p-1">
-                    <TabsTrigger value="overview" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">
+                    <TabsTrigger value="overview" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">
                         <BarChart3 className="h-4 w-4 mr-2" />
                         Overview
                     </TabsTrigger>
-                    <TabsTrigger value="channels" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">
+                    <TabsTrigger value="channels" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Channels
                     </TabsTrigger>
-                    <TabsTrigger value="campaigns" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">
+                    <TabsTrigger value="campaigns" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">
                         <Target className="h-4 w-4 mr-2" />
                         Campaigns
                     </TabsTrigger>
-                    <TabsTrigger value="geographic" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">
+                    <TabsTrigger value="geographic" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">
                         <Globe className="h-4 w-4 mr-2" />
                         Geographic
                     </TabsTrigger>
-                    <TabsTrigger value="realtime" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400">
+                    <TabsTrigger value="realtime" className="data-[state=active]:bg-neutral-700 data-[state=active]:text-white text-neutral-400">
                         <Activity className="h-4 w-4 mr-2" />
                         Real-time
                     </TabsTrigger>
@@ -312,8 +312,8 @@ export default function AnalyticsPage() {
                                         <Badge className={cn(
                                             "flex items-center gap-1 border-0",
                                             metric.changeType === 'increase'
-                                                ? "bg-green-500/10 text-green-400"
-                                                : "bg-red-500/10 text-red-400"
+                                                ? "bg-neutral-800 text-neutral-300"
+                                                : "bg-neutral-800 text-neutral-400"
                                         )}>
                                             {metric.changeType === 'increase' ? (
                                                 <ArrowUpRight className="h-3 w-3" />
@@ -323,7 +323,7 @@ export default function AnalyticsPage() {
                                             {metric.change}%
                                         </Badge>
                                     </div>
-                                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{metric.label}</p>
+                                    <p className="text-xs text-neutral-400 font-medium uppercase tracking-wider">{metric.label}</p>
                                     <p className="text-2xl font-bold text-white mt-1">
                                         {formatValue(metric.value, metric.format)}
                                     </p>
@@ -340,20 +340,20 @@ export default function AnalyticsPage() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="text-white flex items-center gap-2">
-                                            <div className="p-2 rounded-lg bg-green-500/10 text-green-400">
+                                            <div className="p-2 rounded-lg bg-neutral-800 text-neutral-300">
                                                 <DollarSign className="h-5 w-5" />
                                             </div>
                                             Revenue Trend
                                         </CardTitle>
-                                        <CardDescription className="text-slate-400 mt-1">
+                                        <CardDescription className="text-neutral-400 mt-1">
                                             Daily revenue for the selected period
                                         </CardDescription>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">
+                                        <p className="text-3xl font-bold text-transparent bg-clip-text text-white">
                                             {formatValue(1250000, 'currency')}
                                         </p>
-                                        <p className="text-sm text-green-400/80 font-medium">+12.6% vs last period</p>
+                                        <p className="text-sm text-neutral-300/80 font-medium">+12.6% vs last period</p>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -367,7 +367,7 @@ export default function AnalyticsPage() {
                                                     style={{ height: `${(day.revenue / 55000) * 100}%` }}
                                                 />
                                             </div>
-                                            <p className="text-[10px] text-slate-500 mt-2 font-mono group-hover:text-green-400 transition-colors">
+                                            <p className="text-[10px] text-neutral-500 mt-2 font-mono group-hover:text-neutral-300 transition-colors">
                                                 {new Date(day.date).getDate()}
                                             </p>
                                         </div>
@@ -382,18 +382,18 @@ export default function AnalyticsPage() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="text-white flex items-center gap-2">
-                                            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                                            <div className="p-2 rounded-lg bg-neutral-800 text-white">
                                                 <MessageSquare className="h-5 w-5" />
                                             </div>
                                             Message Volume
                                         </CardTitle>
-                                        <CardDescription className="text-slate-400 mt-1">
+                                        <CardDescription className="text-neutral-400 mt-1">
                                             Messages sent across all channels
                                         </CardDescription>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-3xl font-bold text-white">2.45M</p>
-                                        <p className="text-sm text-blue-400/80 font-medium">+15.3% vs last period</p>
+                                        <p className="text-sm text-white/80 font-medium">+15.3% vs last period</p>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -407,7 +407,7 @@ export default function AnalyticsPage() {
                                                     style={{ height: `${(day.messages / 110000) * 100}%` }}
                                                 />
                                             </div>
-                                            <p className="text-[10px] text-slate-500 mt-2 font-mono group-hover:text-blue-400 transition-colors">
+                                            <p className="text-[10px] text-neutral-500 mt-2 font-mono group-hover:text-white transition-colors">
                                                 {new Date(day.date).getDate()}
                                             </p>
                                         </div>
@@ -421,7 +421,7 @@ export default function AnalyticsPage() {
                     <GlassCard>
                         <CardHeader>
                             <CardTitle className="text-white flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                                <div className="p-2 rounded-lg bg-neutral-800 text-white">
                                     <Users className="h-5 w-5" />
                                 </div>
                                 Top Performing Tenants
@@ -441,12 +441,12 @@ export default function AnalyticsPage() {
                                         className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all hover:translate-x-1"
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/20">
+                                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-neutral-700 to-neutral-800 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-black/30">
                                                 {i + 1}
                                             </div>
                                             <div>
                                                 <p className="font-medium text-white">{tenant.name}</p>
-                                                <p className="text-xs text-slate-400 mt-0.5">
+                                                <p className="text-xs text-neutral-400 mt-0.5">
                                                     {tenant.messages.toLocaleString()} messages
                                                 </p>
                                             </div>
@@ -458,8 +458,8 @@ export default function AnalyticsPage() {
                                             <Badge className={cn(
                                                 "mt-1 border-0",
                                                 tenant.growth >= 0
-                                                    ? "bg-green-500/10 text-green-400"
-                                                    : "bg-red-500/10 text-red-400"
+                                                    ? "bg-neutral-800 text-neutral-300"
+                                                    : "bg-neutral-800 text-neutral-400"
                                             )}>
                                                 {tenant.growth >= 0 ? '+' : ''}{tenant.growth}%
                                             </Badge>
@@ -483,7 +483,7 @@ export default function AnalyticsPage() {
                                         </div>
                                         <div>
                                             <CardTitle className="text-white text-lg">{channel.channel}</CardTitle>
-                                            <CardDescription className="text-slate-400">
+                                            <CardDescription className="text-neutral-400">
                                                 {formatValue(channel.messages, 'number')} messages
                                             </CardDescription>
                                         </div>
@@ -493,40 +493,40 @@ export default function AnalyticsPage() {
                                     <div className="space-y-4">
                                         <div>
                                             <div className="flex justify-between text-xs mb-2 uppercase tracking-wide font-medium">
-                                                <span className="text-slate-500">Delivery Rate</span>
-                                                <span className="text-green-400">
+                                                <span className="text-neutral-500">Delivery Rate</span>
+                                                <span className="text-neutral-300">
                                                     {((channel.delivered / channel.messages) * 100).toFixed(1)}%
                                                 </span>
                                             </div>
-                                            <Progress value={(channel.delivered / channel.messages) * 100} className="h-1.5 bg-slate-800" indicatorClassName="bg-green-500" />
+                                            <Progress value={(channel.delivered / channel.messages) * 100} className="h-1.5 bg-neutral-800" indicatorClassName="bg-green-500" />
                                         </div>
                                         <div>
                                             <div className="flex justify-between text-xs mb-2 uppercase tracking-wide font-medium">
-                                                <span className="text-slate-500">Read Rate</span>
-                                                <span className="text-blue-400">
+                                                <span className="text-neutral-500">Read Rate</span>
+                                                <span className="text-white">
                                                     {((channel.read / channel.delivered) * 100).toFixed(1)}%
                                                 </span>
                                             </div>
-                                            <Progress value={(channel.read / channel.delivered) * 100} className="h-1.5 bg-slate-800" indicatorClassName="bg-blue-500" />
+                                            <Progress value={(channel.read / channel.delivered) * 100} className="h-1.5 bg-neutral-800" indicatorClassName="bg-blue-500" />
                                         </div>
                                         <div>
                                             <div className="flex justify-between text-xs mb-2 uppercase tracking-wide font-medium">
-                                                <span className="text-slate-500">Response Rate</span>
-                                                <span className="text-purple-400">
+                                                <span className="text-neutral-500">Response Rate</span>
+                                                <span className="text-white">
                                                     {((channel.responded / channel.read) * 100).toFixed(1)}%
                                                 </span>
                                             </div>
-                                            <Progress value={(channel.responded / channel.read) * 100} className="h-1.5 bg-slate-800" indicatorClassName="bg-purple-500" />
+                                            <Progress value={(channel.responded / channel.read) * 100} className="h-1.5 bg-neutral-800" indicatorClassName="bg-neutral-600" />
                                         </div>
                                     </div>
                                     <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-4 text-center">
                                         <div className="bg-white/5 rounded-lg p-2">
                                             <p className="text-xl font-bold text-white">{formatValue(channel.delivered, 'number')}</p>
-                                            <p className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Delivered</p>
+                                            <p className="text-[10px] uppercase tracking-wider text-neutral-400 mt-1">Delivered</p>
                                         </div>
                                         <div className="bg-white/5 rounded-lg p-2">
                                             <p className="text-xl font-bold text-white">{formatValue(channel.responded, 'number')}</p>
-                                            <p className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Responses</p>
+                                            <p className="text-[10px] uppercase tracking-wider text-neutral-400 mt-1">Responses</p>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -543,7 +543,7 @@ export default function AnalyticsPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="text-left text-slate-400 text-xs uppercase tracking-wider border-b border-white/10">
+                                        <tr className="text-left text-neutral-400 text-xs uppercase tracking-wider border-b border-white/10">
                                             <th className="pb-4 font-medium pl-4">Channel</th>
                                             <th className="pb-4 font-medium text-right">Messages</th>
                                             <th className="pb-4 font-medium text-right">Delivered</th>
@@ -561,13 +561,13 @@ export default function AnalyticsPage() {
                                                     <div className={`w-2 h-2 rounded-full bg-${channel.color}-500`} />
                                                     {channel.channel}
                                                 </td>
-                                                <td className="py-4 text-right text-slate-300">{channel.messages.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-slate-300">{channel.delivered.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-green-400 font-medium">{((channel.delivered / channel.messages) * 100).toFixed(1)}%</td>
-                                                <td className="py-4 text-right text-slate-300">{channel.read.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-blue-400 font-medium">{((channel.read / channel.delivered) * 100).toFixed(1)}%</td>
-                                                <td className="py-4 text-right text-slate-300">{channel.responded.toLocaleString()}</td>
-                                                <td className="py-4 text-right pr-4 text-purple-400 font-medium">{((channel.responded / channel.read) * 100).toFixed(1)}%</td>
+                                                <td className="py-4 text-right text-neutral-300">{channel.messages.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300">{channel.delivered.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300 font-medium">{((channel.delivered / channel.messages) * 100).toFixed(1)}%</td>
+                                                <td className="py-4 text-right text-neutral-300">{channel.read.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-white font-medium">{((channel.read / channel.delivered) * 100).toFixed(1)}%</td>
+                                                <td className="py-4 text-right text-neutral-300">{channel.responded.toLocaleString()}</td>
+                                                <td className="py-4 text-right pr-4 text-white font-medium">{((channel.responded / channel.read) * 100).toFixed(1)}%</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -582,13 +582,13 @@ export default function AnalyticsPage() {
                     <div className="grid gap-4 md:grid-cols-4">
                         {[
                             { label: 'Total Campaigns', value: '24', sub: '+4 this month', color: 'green' },
-                            { label: 'Active Campaigns', value: '8', sub: 'Running now', color: 'blue' },
-                            { label: 'Avg. Conversion Rate', value: '4.2%', sub: '+0.8% vs avg', color: 'purple' },
-                            { label: 'Total Conversions', value: '9,740', sub: '+22% this period', color: 'amber' }
+                            { label: 'Active Campaigns', value: '8', sub: 'Running now', color: 'gray' },
+                            { label: 'Avg. Conversion Rate', value: '4.2%', sub: '+0.8% vs avg', color: 'gray' },
+                            { label: 'Total Conversions', value: '9,740', sub: '+22% this period', color: 'gray' }
                         ].map((stat, i) => (
                             <GlassCard key={i} className="glass-card-hover">
                                 <CardContent className="pt-6">
-                                    <p className="text-xs text-slate-400 uppercase tracking-wider">{stat.label}</p>
+                                    <p className="text-xs text-neutral-400 uppercase tracking-wider">{stat.label}</p>
                                     <p className="text-3xl font-bold text-white mt-2">{stat.value}</p>
                                     <p className={`text-xs mt-2 text-${stat.color}-400`}>{stat.sub}</p>
                                 </CardContent>
@@ -600,7 +600,7 @@ export default function AnalyticsPage() {
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-white">Campaign Performance</CardTitle>
-                                <Button variant="outline" className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10">
+                                <Button variant="outline" className="bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10">
                                     <Filter className="h-4 w-4 mr-2" />
                                     Filter
                                 </Button>
@@ -610,7 +610,7 @@ export default function AnalyticsPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="text-left text-slate-400 text-xs uppercase tracking-wider border-b border-white/10">
+                                        <tr className="text-left text-neutral-400 text-xs uppercase tracking-wider border-b border-white/10">
                                             <th className="pb-4 font-medium pl-4">Campaign</th>
                                             <th className="pb-4 font-medium">Channel</th>
                                             <th className="pb-4 font-medium text-right">Sent</th>
@@ -627,24 +627,24 @@ export default function AnalyticsPage() {
                                             <tr key={campaign.id} className="hover:bg-white/5 transition-colors text-sm">
                                                 <td className="py-4 pl-4 text-white font-medium">{campaign.name}</td>
                                                 <td className="py-4">
-                                                    <Badge variant="outline" className="bg-white/5 text-slate-300 border-white/10">
+                                                    <Badge variant="outline" className="bg-white/5 text-neutral-300 border-white/10">
                                                         {campaign.channel}
                                                     </Badge>
                                                 </td>
-                                                <td className="py-4 text-right text-slate-300">{campaign.sent.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-slate-300">{campaign.delivered.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-slate-300">{campaign.opened.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-slate-300">{campaign.clicked.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-green-400 font-medium">{campaign.converted.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-indigo-400 font-medium">
+                                                <td className="py-4 text-right text-neutral-300">{campaign.sent.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300">{campaign.delivered.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300">{campaign.opened.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300">{campaign.clicked.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300 font-medium">{campaign.converted.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-white font-medium">
                                                     {((campaign.converted / campaign.sent) * 100).toFixed(2)}%
                                                 </td>
                                                 <td className="py-4 pr-4">
                                                     <Badge className={cn(
                                                         "border-0",
-                                                        campaign.status === 'active' ? "bg-green-500/10 text-green-400" :
-                                                            campaign.status === 'completed' ? "bg-blue-500/10 text-blue-400" :
-                                                                "bg-yellow-500/10 text-yellow-400"
+                                                        campaign.status === 'active' ? "bg-neutral-800 text-neutral-300" :
+                                                            campaign.status === 'completed' ? "bg-neutral-800 text-white" :
+                                                                "bg-neutral-800 text-neutral-400"
                                                     )}>
                                                         {campaign.status}
                                                     </Badge>
@@ -664,14 +664,14 @@ export default function AnalyticsPage() {
                         <GlassCard>
                             <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
-                                    <Globe className="h-5 w-5 text-indigo-400" />
+                                    <Globe className="h-5 w-5 text-white" />
                                     Geographic Distribution
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-64 flex items-center justify-center border border-dashed border-white/10 rounded-xl bg-white/5">
-                                    <div className="text-center text-slate-500">
-                                        <Globe className="h-12 w-12 mx-auto mb-2 text-slate-600" />
+                                    <div className="text-center text-neutral-500">
+                                        <Globe className="h-12 w-12 mx-auto mb-2 text-neutral-600" />
                                         <p>World Map Visualization</p>
                                         <p className="text-sm">(Integrate with map library)</p>
                                     </div>
@@ -687,7 +687,7 @@ export default function AnalyticsPage() {
                                 <div className="space-y-5">
                                     {mockGeographicData.map((country, i) => (
                                         <div key={country.code} className="flex items-center gap-4 group">
-                                            <div className="w-6 text-center text-slate-500 font-mono text-sm">{i + 1}</div>
+                                            <div className="w-6 text-center text-neutral-500 font-mono text-sm">{i + 1}</div>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className="text-white font-medium text-sm">{country.country}</span>
@@ -695,16 +695,16 @@ export default function AnalyticsPage() {
                                                         {formatValue(country.revenue, 'currency')}
                                                     </span>
                                                 </div>
-                                                <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                                                <div className="h-2 w-full bg-neutral-800 rounded-full overflow-hidden">
                                                     <div
-                                                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 group-hover:from-indigo-400 group-hover:to-purple-400 transition-all"
+                                                        className="h-full bg-gradient-to-r from-neutral-600 to-neutral-500 group-hover:from-neutral-500 group-hover:to-neutral-400 transition-all"
                                                         style={{ width: `${(country.revenue / mockGeographicData[0].revenue) * 100}%` }}
                                                     />
                                                 </div>
                                             </div>
                                             <Badge className={cn(
                                                 "w-16 justify-center border-0 bg-white/5",
-                                                country.growth >= 0 ? "text-green-400" : "text-red-400"
+                                                country.growth >= 0 ? "text-neutral-300" : "text-neutral-400"
                                             )}>
                                                 {country.growth >= 0 ? '+' : ''}{country.growth}%
                                             </Badge>
@@ -723,7 +723,7 @@ export default function AnalyticsPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="text-left text-slate-400 text-xs uppercase tracking-wider border-b border-white/10">
+                                        <tr className="text-left text-neutral-400 text-xs uppercase tracking-wider border-b border-white/10">
                                             <th className="pb-4 font-medium pl-4">Country</th>
                                             <th className="pb-4 font-medium text-right">Active Users</th>
                                             <th className="pb-4 font-medium text-right">Messages</th>
@@ -736,12 +736,12 @@ export default function AnalyticsPage() {
                                         {mockGeographicData.map((country) => (
                                             <tr key={country.code} className="hover:bg-white/5 transition-colors text-sm">
                                                 <td className="py-4 pl-4 text-white font-medium">{country.country}</td>
-                                                <td className="py-4 text-right text-slate-300">{country.users.toLocaleString()}</td>
-                                                <td className="py-4 text-right text-slate-300">{country.messages.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300">{country.users.toLocaleString()}</td>
+                                                <td className="py-4 text-right text-neutral-300">{country.messages.toLocaleString()}</td>
                                                 <td className="py-4 text-right text-white font-medium">{formatValue(country.revenue, 'currency')}</td>
-                                                <td className="py-4 text-right text-slate-400">{formatValue(Math.round(country.revenue / country.users), 'currency')}</td>
+                                                <td className="py-4 text-right text-neutral-400">{formatValue(Math.round(country.revenue / country.users), 'currency')}</td>
                                                 <td className="py-4 text-right pr-4">
-                                                    <span className={cn("inline-block px-2 py-0.5 rounded text-xs font-medium", country.growth >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400')}>
+                                                    <span className={cn("inline-block px-2 py-0.5 rounded text-xs font-medium", country.growth >= 0 ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-800 text-neutral-400')}>
                                                         {country.growth >= 0 ? '+' : ''}{country.growth}%
                                                     </span>
                                                 </td>
@@ -759,9 +759,9 @@ export default function AnalyticsPage() {
                     <div className="grid gap-4 md:grid-cols-4">
                         {[
                             { label: 'Messages/Minute', value: '1,247', color: 'green' },
-                            { label: 'Active Sessions', value: '3,842', color: 'blue' },
-                            { label: 'Active Campaigns', value: '8', color: 'purple' },
-                            { label: 'Server Load', value: '42%', color: 'amber' },
+                            { label: 'Active Sessions', value: '3,842', color: 'gray' },
+                            { label: 'Active Campaigns', value: '8', color: 'gray' },
+                            { label: 'Server Load', value: '42%', color: 'gray' },
                         ].map((stat, i) => (
                             <GlassCard key={i} className={`border-l-4 border-l-${stat.color}-500`}>
                                 <CardContent className="pt-6">
@@ -769,7 +769,7 @@ export default function AnalyticsPage() {
                                         <Activity className={`h-4 w-4 text-${stat.color}-400 animate-pulse`} />
                                         <span className={`text-xs text-${stat.color}-400 uppercase font-bold tracking-wider`}>Live</span>
                                     </div>
-                                    <p className="text-sm text-slate-400">{stat.label}</p>
+                                    <p className="text-sm text-neutral-400">{stat.label}</p>
                                     <p className="text-3xl font-bold text-white mt-1">{stat.value}</p>
                                 </CardContent>
                             </GlassCard>

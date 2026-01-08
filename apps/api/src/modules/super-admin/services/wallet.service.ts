@@ -23,6 +23,8 @@ import {
     TransactionFilterDto,
     TransactionListResponseDto,
 } from '../dto/billing.dto';
+import { Tenant } from '../../tenants/tenant.entity'; // Import Tenant
+import { In } from 'typeorm'; // Import In
 
 @Injectable()
 export class WalletService {
@@ -39,6 +41,8 @@ export class WalletService {
         private packageRepository: Repository<TopUpPackage>,
         @InjectRepository(AdminAuditLog)
         private auditLogRepository: Repository<AdminAuditLog>,
+        @InjectRepository(Tenant)
+        private tenantRepository: Repository<Tenant>,
         private dataSource: DataSource,
     ) { }
 
@@ -63,6 +67,63 @@ export class WalletService {
         }
 
         return wallet;
+    }
+
+    /**
+     * Get all wallets (with filters)
+     */
+    async getWallets(
+        filter: { page?: number; limit?: number; search?: string },
+    ): Promise<{ data: WalletResponseDto[]; total: number; page: number; limit: number; totalPages: number }> {
+        const page = filter.page || 1;
+        const limit = filter.limit || 20;
+        const skip = (page - 1) * limit;
+
+        const queryBuilder = this.walletRepository.createQueryBuilder('wallet');
+
+        // Note: We might need to join user/tenant table if we want to search by tenant name
+        // Assuming tenantId is enough for now, or we can fetch tenant details using a subscriber/relation
+        // But the current entity doesn't show a relation to Tenant entity.
+        // Let's assume we can search by tenantId for now, or add relation later.
+
+        // Actually, looking at the mock data, we need tenantName.
+        // We should probably rely on the relation if it exists, or just return tenantId and let frontend fetch details?
+        // Let's check api.ts types. Wallet has tenantName.
+        // We need to fetch tenant names.
+        // Since we don't have a direct relation in MessageWallet entity (it uses tenantId column),
+        // We might need to join loosely or do a second query.
+
+        if (filter.search) {
+            queryBuilder.andWhere('wallet.tenantId ILIKE :search', { search: `%${filter.search}%` });
+        }
+
+        const [wallets, total] = await queryBuilder
+            .skip(skip)
+            .take(limit)
+            .getManyAndCount();
+
+        // Fetch tenant details
+        const tenantIds = wallets.map(w => w.tenantId);
+        let tenantMap = new Map<string, string>();
+
+        if (tenantIds.length > 0) {
+            const tenants = await this.tenantRepository.find({
+                where: { id: In(tenantIds) },
+                select: ['id', 'name'],
+            });
+            tenantMap = new Map(tenants.map(t => [t.id, t.name]));
+        }
+
+        return {
+            data: wallets.map(w => ({
+                ...this.toWalletResponse(w),
+                tenantName: tenantMap.get(w.tenantId) || w.tenantId, // Use name if found, else ID
+            })),
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 
     /**

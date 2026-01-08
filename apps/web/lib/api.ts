@@ -413,102 +413,15 @@ const FALLBACK_EMAIL_TEMPLATES: AdminEmailTemplate[] = [
 
 // Template Library endpoints (admin-created templates for users)
 export const templateLibrary = {
-    // Automation templates
+    // Automation templates - fetches from shared database (same as admin dashboard)
     getAutomationTemplates: async (category?: string): Promise<AdminAutomationTemplate[]> => {
-        // Fallback templates (Always include these to ensure they are visible)
-        const fallbackTemplates: AdminAutomationTemplate[] = [
-            {
-                id: 'tm_welcome_email',
-                name: 'Welcome Email Sequence',
-                description: 'Send a welcome email to new subscribers',
-                category: 'Engagement',
-                triggerType: 'contact_created',
-                isActive: true,
-                allowedPlans: ['starter', 'pro', 'enterprise'],
-                usageCount: 0,
-                nodes: [
-                    { id: 'trigger', type: 'trigger', name: 'Contact Created', config: { type: 'contact_created' } },
-                    {
-                        id: 'action_1',
-                        type: 'action',
-                        name: 'Send Welcome Email',
-                        config: {
-                            type: 'send_email',
-                            subject: 'Welcome to our community! 👋',
-                            message: '<p>Hi {{contact.firstName}},</p><p>Thank you for joining us! We are excited to have you on board.</p>'
-                        }
-                    }
-                ]
-            },
-            {
-                id: 'tm_order_confirm',
-                name: 'Order Confirmation Email',
-                description: 'Send detailed order receipt via email',
-                category: 'Orders',
-                triggerType: 'order_created',
-                isActive: true,
-                allowedPlans: ['starter', 'pro', 'enterprise'],
-                usageCount: 0,
-                nodes: [
-                    { id: 'trigger', type: 'trigger', name: 'Order Created', config: { type: 'order_created' } },
-                    {
-                        id: 'action_1',
-                        type: 'action',
-                        name: 'Send Order Email',
-                        config: {
-                            type: 'send_email',
-                            subject: 'Order Confirmation #{{order.id}}',
-                            message: '<p>Hi {{contact.firstName}},</p><p>Thanks for your order! We have received it and are processing it now.</p>'
-                        }
-                    }
-                ]
-            },
-            {
-                id: 'tm_cart_recovery',
-                name: 'Abandoned Cart Email Recovery',
-                description: 'Recover lost sales with an email reminder',
-                category: 'Cart Recovery',
-                triggerType: 'cart_abandoned',
-                isActive: true,
-                allowedPlans: ['starter', 'pro', 'enterprise'],
-                usageCount: 0,
-                nodes: [
-                    { id: 'trigger', type: 'trigger', name: 'Cart Abandoned', config: { type: 'cart_abandoned' } },
-                    { id: 'wait_1', type: 'delay', name: 'Wait 1h', config: { duration: 1, unit: 'hours' } },
-                    {
-                        id: 'action_1',
-                        type: 'action',
-                        name: 'Send Recovery Email',
-                        config: {
-                            type: 'send_email',
-                            subject: 'You left something behind! 👀',
-                            message: '<p>Hi {{contact.firstName}},</p><p>We noticed you left some items in your cart. Come back and complete your purchase!</p>'
-                        }
-                    }
-                ]
-            }
-        ];
-
-        let apiTemplates: AdminAutomationTemplate[] = [];
         try {
-            apiTemplates = await api.get<AdminAutomationTemplate[]>('/templates/library/automation', { params: { category } });
-        } catch {
-            console.warn('Failed to fetch automation templates, using fallback only');
-            apiTemplates = [];
+            const params = category && category !== 'All' ? { category } : {};
+            return await api.get<AdminAutomationTemplate[]>('/templates/library/automation', { params });
+        } catch (error) {
+            console.warn('Failed to fetch automation templates:', error);
+            return [];
         }
-
-        // Merge API templates with fallback templates
-        const combined = [...apiTemplates];
-        fallbackTemplates.forEach(fallback => {
-            if (!combined.find(t => t.name === fallback.name)) {
-                combined.push(fallback);
-            }
-        });
-
-        if (category && category !== 'All') {
-            return combined.filter(t => t.category === category);
-        }
-        return combined;
     },
 
     getAutomationTemplate: (id: string) =>

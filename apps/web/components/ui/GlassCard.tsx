@@ -11,14 +11,14 @@ export function GlassCard({ className, children, backgroundImage, ...props }: Gl
     return (
         <div
             className={cn(
-                "glass-card rounded-xl overflow-hidden relative",
+                "rounded-xl border border-neutral-800 bg-neutral-900 overflow-hidden relative transition-all duration-200 hover:border-neutral-700",
                 className
             )}
             {...props}
         >
             {backgroundImage && (
                 <div
-                    className="absolute inset-0 opacity-20 pointer-events-none z-0"
+                    className="absolute inset-0 opacity-10 pointer-events-none z-0"
                     style={{
                         backgroundImage: `url(${backgroundImage})`,
                         backgroundSize: 'cover',

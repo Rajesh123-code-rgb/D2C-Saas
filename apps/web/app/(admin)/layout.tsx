@@ -22,6 +22,8 @@ import {
     Package,
     LogOut,
     Mail,
+    Sun,
+    Moon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,6 +32,8 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AdminThemeProvider, useAdminTheme } from './contexts/admin-theme-context';
+import './admin-theme.css';
 
 const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -40,7 +44,6 @@ const navigation = [
     { name: 'Automation Builder', href: '/admin/builders/automation', icon: Zap },
     { name: 'WhatsApp Builder', href: '/admin/builders/whatsapp', icon: FileText },
     { name: 'Email Builder', href: '/admin/builders/email', icon: Mail },
-    // Governance
     // Governance
     { name: 'Governance', href: '/admin/governance', icon: Shield },
     // Billing
@@ -53,12 +56,15 @@ const navigation = [
     { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const [admin, setAdmin] = useState<any>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [loading, setLoading] = useState(true);
+    const { theme, toggleTheme } = useAdminTheme();
+
+    const isDark = theme === 'dark';
 
     useEffect(() => {
         // Check if admin is authenticated
@@ -89,17 +95,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         router.push('/admin/login');
     };
 
-    // Show login page without layout
-    if (pathname === '/admin/login') {
-        return <>{children}</>;
-    }
-
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-slate-900">
+            <div className={cn("flex h-screen items-center justify-center", isDark ? "bg-black" : "bg-gray-50")}>
                 <div className="text-center">
-                    <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent mx-auto" />
-                    <p className="text-slate-400">Loading Admin Panel...</p>
+                    <div className={cn("mb-4 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent mx-auto", isDark ? "border-white" : "border-gray-900")} />
+                    <p className={cn(isDark ? "text-neutral-400" : "text-gray-500")}>Loading Admin Panel...</p>
                 </div>
             </div>
         );
@@ -110,22 +111,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     return (
-        <div className="flex h-screen overflow-hidden bg-[#0B0C15]">
+        <div className={cn("flex h-screen overflow-hidden", isDark ? "bg-black" : "bg-gray-50")} data-admin-theme>
             {/* Sidebar */}
             <aside
                 className={cn(
-                    'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/5 bg-[#0B0C15]/60 backdrop-blur-xl transition-transform lg:translate-x-0',
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                    'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r transition-transform lg:translate-x-0',
+                    sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+                    isDark ? 'border-neutral-800 bg-black' : 'border-gray-200 bg-white'
                 )}
             >
                 {/* Logo */}
-                <div className="flex h-16 items-center gap-3 border-b border-white/5 px-6">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20">
-                        <Shield className="h-5 w-5 text-white" />
+                <div className={cn("flex h-16 items-center gap-3 border-b px-6", isDark ? "border-neutral-800" : "border-gray-200")}>
+                    <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", isDark ? "bg-white" : "bg-gray-900")}>
+                        <Shield className={cn("h-5 w-5", isDark ? "text-black" : "text-white")} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-bold text-white tracking-wide">Admin Panel</span>
-                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Super Admin</span>
+                        <span className={cn("font-bold tracking-wide", isDark ? "text-white" : "text-gray-900")}>Admin Panel</span>
+                        <span className={cn("text-[10px] uppercase tracking-wider font-semibold", isDark ? "text-neutral-500" : "text-gray-500")}>Super Admin</span>
                     </div>
                 </div>
 
@@ -138,38 +140,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 key={item.name}
                                 href={item.href}
                                 className={cn(
-                                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 relative overflow-hidden group',
+                                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative overflow-hidden group',
                                     isActive
-                                        ? 'text-white'
-                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                        ? isDark ? 'bg-white text-black' : 'bg-gray-900 text-white'
+                                        : isDark ? 'text-neutral-400 hover:text-white hover:bg-neutral-900' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                                 )}
                             >
-                                {isActive && (
-                                    <div className="absolute inset-0 bg-indigo-500/5 border-l-2 border-indigo-500" />
-                                )}
-                                <item.icon className={cn("h-5 w-5 relative z-10 transition-colors", isActive ? "text-indigo-400" : "text-slate-500 group-hover:text-indigo-300")} />
-                                <span className="relative z-10">{item.name}</span>
+                                <item.icon className={cn(
+                                    "h-5 w-5 transition-colors",
+                                    isActive
+                                        ? isDark ? "text-black" : "text-white"
+                                        : isDark ? "text-neutral-500 group-hover:text-white" : "text-gray-400 group-hover:text-gray-900"
+                                )} />
+                                <span>{item.name}</span>
                             </Link>
                         );
                     })}
                 </nav>
 
                 {/* Admin User */}
-                <div className="border-t border-white/5 p-4">
+                <div className={cn("border-t p-4", isDark ? "border-neutral-800" : "border-gray-200")}>
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600/20 text-indigo-400 font-semibold">
+                        <div className={cn("flex h-10 w-10 items-center justify-center rounded-full font-semibold", isDark ? "bg-neutral-800 text-white" : "bg-gray-200 text-gray-900")}>
                             {admin?.firstName?.[0]}{admin?.lastName?.[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">
+                            <p className={cn("text-sm font-medium truncate", isDark ? "text-white" : "text-gray-900")}>
                                 {admin?.firstName} {admin?.lastName}
                             </p>
-                            <p className="text-xs text-slate-400 truncate">{admin?.role}</p>
+                            <p className={cn("text-xs truncate", isDark ? "text-neutral-500" : "text-gray-500")}>{admin?.role}</p>
                         </div>
                     </div>
                     <Button
                         variant="ghost"
-                        className="w-full mt-3 justify-start text-slate-300 hover:bg-white/5 hover:text-white"
+                        className={cn("w-full mt-3 justify-start", isDark ? "text-neutral-400 hover:bg-neutral-900 hover:text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900")}
                         size="sm"
                         onClick={handleLogout}
                     >
@@ -182,7 +186,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Mobile sidebar overlay */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm lg:hidden"
+                    className={cn("fixed inset-0 z-40 backdrop-blur-sm lg:hidden", isDark ? "bg-black/80" : "bg-black/50")}
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
@@ -190,34 +194,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main Content */}
             <div className="flex flex-1 flex-col lg:pl-64">
                 {/* Top Bar */}
-                <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-white/5 bg-[#0B0C15] px-6">
+                <header className={cn("sticky top-0 z-30 flex h-16 items-center gap-4 border-b px-6", isDark ? "border-neutral-800 bg-black" : "border-gray-200 bg-white")}>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="lg:hidden text-slate-300 hover:bg-white/5"
+                        className={cn("lg:hidden", isDark ? "text-neutral-400 hover:bg-neutral-900" : "text-gray-600 hover:bg-gray-100")}
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                     >
                         {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </Button>
 
                     <div className="flex-1">
-                        <h1 className="text-lg font-semibold text-white">
+                        <h1 className={cn("text-lg font-semibold", isDark ? "text-white" : "text-gray-900")}>
                             {navigation.find(n => pathname.startsWith(n.href))?.name || 'Admin Panel'}
                         </h1>
                     </div>
 
+                    {/* Theme Toggle Button */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleTheme}
+                        className={cn("relative", isDark ? "text-neutral-400 hover:bg-neutral-900 hover:text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900")}
+                        title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    >
+                        {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                    </Button>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="relative text-slate-300 hover:bg-white/5">
+                            <Button variant="ghost" size="icon" className={cn("relative", isDark ? "text-neutral-400 hover:bg-neutral-900" : "text-gray-600 hover:bg-gray-100")}>
                                 <Bell className="h-5 w-5" />
-                                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                                <span className={cn("absolute top-1 right-1 h-2 w-2 rounded-full", isDark ? "bg-white" : "bg-gray-900")} />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-80 bg-[#0B0C15] border-white/10">
-                            <div className="px-3 py-2 border-b border-white/10">
-                                <p className="text-sm font-medium text-white">Notifications</p>
+                        <DropdownMenuContent align="end" className={cn("w-80", isDark ? "bg-black border-neutral-800" : "bg-white border-gray-200")}>
+                            <div className={cn("px-3 py-2 border-b", isDark ? "border-neutral-800" : "border-gray-200")}>
+                                <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>Notifications</p>
                             </div>
-                            <div className="p-3 text-center text-sm text-slate-400">
+                            <div className={cn("p-3 text-center text-sm", isDark ? "text-neutral-500" : "text-gray-500")}>
                                 No new notifications
                             </div>
                         </DropdownMenuContent>
@@ -225,10 +240,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden px-6 pt-4 pb-6 bg-[#0B0C15] custom-scrollbar">
+                <main className={cn("flex-1 overflow-y-auto overflow-x-hidden px-6 pt-4 pb-6 custom-scrollbar", isDark ? "bg-black" : "bg-gray-50")}>
                     {children}
                 </main>
             </div>
         </div>
+    );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+
+    // Login page doesn't need the theme provider or layout
+    if (pathname === '/admin/login') {
+        return <>{children}</>;
+    }
+
+    return (
+        <AdminThemeProvider>
+            <AdminLayoutContent>{children}</AdminLayoutContent>
+        </AdminThemeProvider>
     );
 }

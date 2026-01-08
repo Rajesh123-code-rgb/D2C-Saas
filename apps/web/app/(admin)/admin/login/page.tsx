@@ -49,28 +49,28 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-black px-4">
             <div className="w-full max-w-md">
                 {/* Logo & Title */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-indigo-600 mb-4">
-                        <Shield className="h-8 w-8 text-white" />
+                    <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-white mb-4">
+                        <Shield className="h-8 w-8 text-black" />
                     </div>
                     <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
-                    <p className="text-slate-400 mt-1">Sign in to access the admin dashboard</p>
+                    <p className="text-neutral-500 mt-1">Sign in to access the admin dashboard</p>
                 </div>
 
                 {/* Login Form */}
-                <div className="bg-slate-800 rounded-2xl border border-slate-700 p-8">
+                <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-8">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-400 text-sm">
+                            <div className="bg-neutral-800 border border-neutral-600/50 rounded-lg p-3 text-neutral-400 text-sm">
                                 {error}
                             </div>
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="email" className="text-slate-300">
+                            <Label htmlFor="email" className="text-neutral-300">
                                 Email Address
                             </Label>
                             <Input
@@ -80,12 +80,12 @@ export default function AdminLoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500"
+                                className="bg-black border-neutral-700 text-white placeholder:text-neutral-600 focus:border-white focus:ring-white"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password" className="text-slate-300">
+                            <Label htmlFor="password" className="text-neutral-300">
                                 Password
                             </Label>
                             <div className="relative">
@@ -96,12 +96,12 @@ export default function AdminLoginPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-500 pr-10"
+                                    className="bg-black border-neutral-700 text-white placeholder:text-neutral-600 focus:border-white focus:ring-white pr-10"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
                                 >
                                     {showPassword ? (
                                         <EyeOff className="h-4 w-4" />
@@ -114,7 +114,7 @@ export default function AdminLoginPage() {
 
                         <Button
                             type="submit"
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                            className="w-full bg-white hover:bg-neutral-200 text-black font-semibold"
                             disabled={loading}
                         >
                             {loading ? (
@@ -130,7 +130,7 @@ export default function AdminLoginPage() {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-slate-500 text-sm mt-6">
+                <p className="text-center text-neutral-600 text-sm mt-6">
                     Protected area. Unauthorized access is prohibited.
                 </p>
             </div>

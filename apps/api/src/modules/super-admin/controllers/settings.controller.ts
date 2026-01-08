@@ -20,6 +20,7 @@ import {
     UpdateIntegrationSettingsDto,
 } from '../dto/settings.dto';
 import { AdminAuditLog, AdminAuditAction } from '../entities/admin-audit-log.entity';
+import { GlobalSeoSettings } from '../entities/global-seo-settings.entity';
 
 // Platform settings entity (would typically be stored in DB or config)
 interface StoredSettings {
@@ -87,6 +88,8 @@ export class SettingsController {
     constructor(
         @InjectRepository(AdminAuditLog)
         private readonly auditLogRepository: Repository<AdminAuditLog>,
+        @InjectRepository(GlobalSeoSettings)
+        private readonly seoSettingsRepository: Repository<GlobalSeoSettings>,
         private readonly configService: ConfigService,
     ) {
         // Initialize integration settings from environment
@@ -202,6 +205,47 @@ export class SettingsController {
         }
 
         return integrationSettings;
+        return integrationSettings;
+    }
+
+    // ==================== SEO SETTINGS ====================
+
+    @Get('seo')
+    @ApiOperation({ summary: 'Get SEO settings' })
+    @ApiResponse({ status: 200, description: 'SEO settings' })
+    async getSeoSettings(): Promise<GlobalSeoSettings> {
+        let settings = await this.seoSettingsRepository.findOne({ where: {} });
+        if (!settings) {
+            settings = this.seoSettingsRepository.create();
+            await this.seoSettingsRepository.save(settings);
+        }
+        return settings;
+    }
+
+    @Put('seo')
+    @ApiOperation({ summary: 'Update SEO settings' })
+    @ApiResponse({ status: 200, description: 'SEO settings updated' })
+    async updateSeoSettings(
+        @Body() dto: Partial<GlobalSeoSettings>,
+        @Req() req: Request,
+    ): Promise<GlobalSeoSettings> {
+        let settings = await this.seoSettingsRepository.findOne({ where: {} });
+        if (!settings) {
+            settings = this.seoSettingsRepository.create();
+        }
+
+        const previousValues = { ...settings };
+        Object.assign(settings, dto);
+        await this.seoSettingsRepository.save(settings);
+
+        // Log the action
+        await this.createAuditLog(req, AdminAuditAction.UPDATE, 'system_settings', 'seo', 'SEO Settings', {
+            previousValues,
+            newValues: dto,
+            description: 'Updated SEO settings',
+        });
+
+        return settings;
     }
 
     private maskSecret(secret: string): string {

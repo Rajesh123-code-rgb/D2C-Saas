@@ -1,0 +1,91 @@
+/* Admin Theme Styles - Light & Dark Mode */
+
+/* Dark Theme (Default) */
+.admin-dark,
+:root:not(.admin-light) [data-admin-theme] {
+    --admin-bg: 0 0% 0%;
+    --admin-bg-secondary: 0 0% 10%;
+    --admin-bg-tertiary: 0 0% 15%;
+    --admin-border: 0 0% 20%;
+    --admin-text: 0 0% 100%;
+    --admin-text-secondary: 0 0% 60%;
+    --admin-text-muted: 0 0% 40%;
+    --admin-accent: 0 0% 100%;
+    --admin-accent-hover: 0 0% 90%;
+    --admin-card: 0 0% 8%;
+    --admin-card-hover: 0 0% 12%;
+    --admin-sidebar: 0 0% 0%;
+    --admin-header: 0 0% 0%;
+}
+
+/* Light Theme */
+.admin-light [data-admin-theme],
+.admin-light {
+    --admin-bg: 0 0% 98%;
+    --admin-bg-secondary: 0 0% 96%;
+    --admin-bg-tertiary: 0 0% 94%;
+    --admin-border: 0 0% 88%;
+    --admin-text: 0 0% 10%;
+    --admin-text-secondary: 0 0% 40%;
+    --admin-text-muted: 0 0% 60%;
+    --admin-accent: 0 0% 10%;
+    --admin-accent-hover: 0 0% 20%;
+    --admin-card: 0 0% 100%;
+    --admin-card-hover: 0 0% 98%;
+    --admin-sidebar: 0 0% 100%;
+    --admin-header: 0 0% 100%;
+}
+
+/* Apply theme variables to admin elements */
+[data-admin-theme] {
+    background-color: hsl(var(--admin-bg));
+    color: hsl(var(--admin-text));
+}
+
+[data-admin-theme] .admin-sidebar {
+    background-color: hsl(var(--admin-sidebar));
+    border-color: hsl(var(--admin-border));
+}
+
+[data-admin-theme] .admin-header {
+    background-color: hsl(var(--admin-header));
+    border-color: hsl(var(--admin-border));
+}
+
+[data-admin-theme] .admin-card {
+    background-color: hsl(var(--admin-card));
+    border-color: hsl(var(--admin-border));
+}
+
+[data-admin-theme] .admin-card:hover {
+    background-color: hsl(var(--admin-card-hover));
+}
+
+[data-admin-theme] .admin-text {
+    color: hsl(var(--admin-text));
+}
+
+[data-admin-theme] .admin-text-secondary {
+    color: hsl(var(--admin-text-secondary));
+}
+
+[data-admin-theme] .admin-text-muted {
+    color: hsl(var(--admin-text-muted));
+}
+
+[data-admin-theme] .admin-border {
+    border-color: hsl(var(--admin-border));
+}
+
+[data-admin-theme] .admin-bg-secondary {
+    background-color: hsl(var(--admin-bg-secondary));
+}
+
+[data-admin-theme] .admin-accent {
+    background-color: hsl(var(--admin-accent));
+    color: hsl(var(--admin-bg));
+}
+
+[data-admin-theme] .admin-accent:hover {
+    background-color: hsl(var(--admin-accent-hover));
+}
