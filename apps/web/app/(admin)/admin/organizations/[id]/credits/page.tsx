@@ -17,7 +17,6 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { organizationsApi, billingApi, Organization } from '@/lib/admin/api';
 import { cn } from '@/lib/utils';
