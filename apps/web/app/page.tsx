@@ -14,7 +14,6 @@ import {
     ShoppingCart,
     Workflow,
     Check,
-    ArrowRight,
     Globe,
     Shield
 } from 'lucide-react';

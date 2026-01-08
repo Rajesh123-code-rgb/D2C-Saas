@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('token')?.value;

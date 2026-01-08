@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { templateLibrary } from '@/lib/api';
@@ -211,24 +211,7 @@ interface TemplateCardProps {
     onPreview?: () => void;
 }
 
-function TemplateCard({ type, template, selected, onSelect, onPreview }: TemplateCardProps) {
-    const getCategoryColor = (category: string) => {
-        const colors: Record<string, string> = {
-            welcome: 'bg-green-100 text-green-700',
-            cart: 'bg-orange-100 text-orange-700',
-            nurture: 'bg-pink-100 text-pink-700',
-            support: 'bg-cyan-100 text-cyan-700',
-            notification: 'bg-amber-100 text-amber-700',
-            MARKETING: 'bg-purple-100 text-purple-700',
-            UTILITY: 'bg-blue-100 text-blue-700',
-            AUTHENTICATION: 'bg-slate-100 text-slate-700',
-            newsletter: 'bg-indigo-100 text-indigo-700',
-            promotional: 'bg-rose-100 text-rose-700',
-            transactional: 'bg-teal-100 text-teal-700',
-        };
-        return colors[category] || 'bg-gray-100 text-gray-700';
-    };
-
+function TemplateCard({ type, template, onSelect, onPreview }: TemplateCardProps) {
     // Render HTML Thumbnail for Email
     const renderThumbnail = () => {
         if (type === 'email' && (template.htmlContent || template.body)) {

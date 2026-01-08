@@ -93,7 +93,7 @@ export default function SettingsPage() {
 }
 
 function GeneralSettings() {
-    const [user, setUser] = useState<any>(null);
+    const [_user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
