@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-    Building2,
     Users,
     CreditCard,
     MessageSquare,
@@ -17,7 +16,6 @@ import {
     Loader2,
     Wallet,
     Mail,
-    Phone,
     Hash,
 } from 'lucide-react';
 import { CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
