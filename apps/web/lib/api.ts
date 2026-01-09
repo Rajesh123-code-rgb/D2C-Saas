@@ -88,8 +88,19 @@ class ApiClient {
 
     async login(data: { email: string; password: string }) {
         const response = await this.client.post('/auth/login', data);
-        // Don't store in localStorage - using cookies instead
-        // The login page will call /api/auth/cookies to set cookies
+
+        if (response.data.accessToken) {
+            this.setToken(response.data.accessToken);
+            if (typeof window !== 'undefined') {
+                if (response.data.user) {
+                    localStorage.setItem('user', JSON.stringify(response.data.user));
+                }
+                if (response.data.tenant) {
+                    localStorage.setItem('tenant', JSON.stringify(response.data.tenant));
+                }
+            }
+        }
+
         return response.data;
     }
 
